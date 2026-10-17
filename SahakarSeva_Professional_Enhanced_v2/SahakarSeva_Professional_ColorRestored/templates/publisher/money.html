@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+
+{% block title %}Money & Welfare - SahakarSeva Apex Federation{% endblock %}
+{% block page_title %}Money & Welfare{% endblock %}
+{% block nav_publisher_money %}active{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Header Section -->
+    <div
+        class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-2 border-bottom">
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                <i data-lucide="wallet" class="text-primary" style="width: 28px; height: 28px;"></i>
+                Money & Welfare
+            </h1>
+            <p class="text-secondary small mb-0">Overview of platform revenue, society earnings, and worker welfare funds.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('publisher.dashboard') }}"
+                class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Command Center
+            </a>
+            <a href="{{ url_for('publisher.export_backup') }}"
+                class="btn btn-outline-primary btn-sm fw-semibold d-flex align-items-center gap-1">
+                <i data-lucide="download" style="width: 14px; height: 14px;"></i> Export Ledger
+            </a>
+        </div>
+    </div>
+
+    <!-- Two Clear Tabs -->
+    <ul class="nav nav-tabs mb-4 gap-2 border-bottom" id="moneyTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button
+                class="nav-link fw-semibold px-4 py-3 d-flex align-items-center gap-2 {% if active_tab != 'welfare' %}active{% endif %}"
+                id="tab-revenue-btn" data-bs-toggle="tab" data-bs-target="#tab-revenue" type="button" role="tab"
+                aria-controls="tab-revenue"
+                aria-selected="{% if active_tab != 'welfare' %}true{% else %}false{% endif %}">
+                <i data-lucide="pie-chart" style="width: 18px; height: 18px;"></i>
+                <span>Platform & Society Revenue</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button
+                class="nav-link fw-semibold px-4 py-3 d-flex align-items-center gap-2 {% if active_tab == 'welfare' %}active{% endif %}"
+                id="tab-welfare-btn" data-bs-toggle="tab" data-bs-target="#tab-welfare" type="button" role="tab"
+                aria-controls="tab-welfare"
+                aria-selected="{% if active_tab == 'welfare' %}true{% else %}false{% endif %}">
+                <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                <span>Worker Welfare Fund (Suraksha Nidhi)</span>
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="moneyTabsContent">
+        <!-- TAB 1: Platform & Society Revenue -->
+        <div class="tab-pane fade {% if active_tab != 'welfare' %}show active{% endif %}" id="tab-revenue"
+            role="tabpanel" aria-labelledby="tab-revenue-btn">
+            <!-- 4 Simple Top Cards -->
+            <div class="row g-3 mb-4">
+                <!-- Card 1: Total Bookings Value -->
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-secondary fw-semibold text-uppercase d-block"
+                                    style="font-size: 0.72rem; letter-spacing: 0.5px;">Total Bookings Value</span>
+                                <span class="visually-hidden">Total Platform Volume</span>
+                                <h3 class="fw-bold text-dark mb-0 mt-1">₹{{ '%.2f'|format(total_platform_volume) }}</h3>
+                                <span class="text-muted small">Total spent on bookings</span>
+                            </div>
+                            <div class="p-3 bg-light text-primary rounded-3">
+                                <i data-lucide="trending-up" style="width: 24px; height: 24px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Artisan Direct Wages (88%) -->
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white border-start border-4 border-success">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-success fw-semibold text-uppercase d-block"
+                                    style="font-size: 0.72rem; letter-spacing: 0.5px;">Artisan Direct Wages (88%)</span>
+                                <h3 class="fw-bold text-success mb-0 mt-1">₹{{ '%.2f'|format(worker_payout_total) }}</h3>
+                                <span class="text-muted small">Direct earnings paid to working artisans</span>
+                            </div>
+                            <div class="p-3 bg-success-subtle text-success rounded-3">
+                                <i data-lucide="banknote" style="width: 24px; height: 24px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Primary Societies Share (8%) -->
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white border-start border-4 border-primary">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-primary fw-semibold text-uppercase d-block"
+                                    style="font-size: 0.72rem; letter-spacing: 0.5px;">Primary Societies Share (8%)</span>
+                                <h3 class="fw-bold text-primary mb-0 mt-1">₹{{ '%.2f'|format(society_share) }}</h3>
+                                <span class="text-muted small">Operations share to societies</span>
+                            </div>
+                            <div class="p-3 bg-primary-subtle text-primary rounded-3">
+                                <i data-lucide="building" style="width: 24px; height: 24px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Total Settled Jobs -->
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white border-start border-4 border-info">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-info fw-semibold text-uppercase d-block"
+                                    style="font-size: 0.72rem; letter-spacing: 0.5px;">Total Settled Jobs</span>
+                                <h3 class="fw-bold text-dark mb-0 mt-1">{{ total_settled_jobs }}</h3>
+                                <span class="text-muted small">Completed & paid requests</span>
+                            </div>
+                            <div class="p-3 bg-info-subtle text-info rounded-3">
+                                <i data-lucide="check-circle-2" style="width: 24px; height: 24px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simple Society Revenue Table -->
+            <div class="card border-0 shadow-sm rounded-3 bg-white mb-4">
+                <div
+                    class="card-header bg-white border-bottom py-3 px-3 px-md-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                            <i data-lucide="layers" class="text-primary" style="width: 18px; height: 18px;"></i>
+                            Society Revenue
+                        </h5>
+                        <span class="text-muted small">Earnings and administration split across registered primary
+                            cooperative societies</span>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold">
+                        {{ society_breakdown|length }} Societies
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+                            <thead class="table-light text-secondary text-uppercase"
+                                style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                <tr>
+                                    <th class="ps-3 ps-md-4 py-3">Society Name</th>
+                                    <th class="py-3 text-center">Completed Jobs</th>
+                                    <th class="py-3 text-end">Total Value (₹)</th>
+                                    <th class="py-3 text-end text-success">Artisan Payout (88%)</th>
+                                    <th class="py-3 text-end text-primary">Society Cut (8%)</th>
+                                    <th class="pe-3 pe-md-4 py-3 text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in society_breakdown %}
+                                <tr>
+                                    <!-- Society Name -->
+                                    <td class="ps-3 ps-md-4 py-3">
+                                        <div class="fw-bold text-dark d-flex align-items-center gap-2">
+                                            <i data-lucide="building" class="text-primary flex-shrink-0"
+                                                style="width: 16px; height: 16px;"></i>
+                                            {{ s.name }}
+                                        </div>
+                                    </td>
+
+                                    <!-- Completed Jobs -->
+                                    <td class="py-3 text-center">
+                                        <span class="badge bg-light text-dark border px-2 py-1">
+                                            {{ s.completed_jobs }}
+                                        </span>
+                                    </td>
+
+                                    <!-- Total Value (₹) -->
+                                    <td class="py-3 text-end fw-bold text-dark font-monospace">
+                                        ₹{{ '%.2f'|format(s.total_value) }}
+                                    </td>
+
+                                    <!-- Artisan Payout (88%) -->
+                                    <td class="py-3 text-end fw-bold text-success font-monospace">
+                                        ₹{{ '%.2f'|format(s.worker_payout) }}
+                                    </td>
+
+                                    <!-- Society Cut (8%) -->
+                                    <td class="py-3 text-end fw-bold text-primary font-monospace">
+                                        ₹{{ '%.2f'|format(s.society_cut) }}
+                                    </td>
+
+                                    <!-- Status -->
+                                    <td class="pe-3 pe-md-4 py-3 text-center">
+                                        {% if s.status == 'Active' or s.is_verified %}
+                                        <span
+                                            class="badge bg-success-subtle text-success px-2 py-1 fw-semibold d-inline-flex align-items-center gap-1">
+                                            <i data-lucide="check" style="width: 12px; height: 12px;"></i> Active
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-warning-subtle text-warning px-2 py-1 fw-semibold">
+                                            Pending
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        No registered cooperative societies found.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td class="ps-3 ps-md-4 py-3 text-dark">Platform Total</td>
+                                    <td class="py-3 text-center">{{ total_settled_jobs }}</td>
+                                    <td class="py-3 text-end text-dark font-monospace">₹{{
+                                        '%.2f'|format(total_platform_volume) }}</td>
+                                    <td class="py-3 text-end text-success font-monospace">₹{{
+                                        '%.2f'|format(worker_payout_total) }}</td>
+                                    <td class="py-3 text-end text-primary font-monospace">₹{{
+                                        '%.2f'|format(society_share) }}</td>
+                                    <td class="pe-3 pe-md-4 py-3 text-center text-success">Verified</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Worker Welfare Fund (Suraksha Nidhi) -->
+        <div class="tab-pane fade {% if active_tab == 'welfare' %}show active{% endif %}" id="tab-welfare"
+            role="tabpanel" aria-labelledby="tab-welfare-btn">
+            <!-- 3 Clear Metrics Cards -->
+            <div class="row g-3 mb-4">
+                <!-- Card 1: Welfare Pool Balance (4%) -->
+                <div class="col-12 col-md-4">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white border-start border-4 border-success">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-success fw-semibold text-uppercase d-block"
+                                    style="font-size: 0.72rem; letter-spacing: 0.5px;">Welfare Pool Balance (4%)</span>
+                                <h3 class="fw-bold text-success mb-0 mt-1">₹{{ '%.2f'|format(welfare_pool_balance) }}
+                                </h3>
+                                <span class="text-muted small">Accumulated insurance pool</span>
+                            </div>
+                            <div class="p-3 bg-success-subtle text-success rounded-3">
+                                <i data-lucide="shield-check" style="width: 24px; height: 24px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Active Insurance Policies -->
+                <div class="col-12 col-md-4">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white border-start border-4 border-info">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-info fw-semibold text-uppercase d-block"
+                                    style="font-size: 0.72rem; letter-spacing: 0.5px;">Active Insurance Policies</span>
+                                <h3 class="fw-bold text-info mb-0 mt-1">{{ active_insurance_policies }} Active</h3>
+                                <span class="text-muted small">Workers covered under PMJJBY / PMSBY</span>
+                            </div>
+                            <div class="p-3 bg-info-subtle text-info rounded-3">
+                                <i data-lucide="heart-pulse" style="width: 24px; height: 24px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Claims Paid Out -->
+                <div class="col-12 col-md-4">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white border-start border-4 border-warning">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <span class="text-warning-emphasis fw-semibold text-uppercase d-block"
+                                    style="font-size: 0.72rem; letter-spacing: 0.5px;">Claims Paid Out</span>
+                                <h3 class="fw-bold text-warning-emphasis mb-0 mt-1">₹{{ '%.2f'|format(claims_paid_out)
+                                    }}</h3>
+                                <span class="text-muted small">Total support funds disbursed to workers</span>
+                            </div>
+                            <div class="p-3 bg-warning-subtle text-warning rounded-3">
+                                <i data-lucide="umbrella" style="width: 24px; height: 24px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simple Welfare Log Table -->
+            <div class="card border-0 shadow-sm rounded-3 bg-white mb-4">
+                <div
+                    class="card-header bg-white border-bottom py-3 px-3 px-md-4 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                            <i data-lucide="file-text" class="text-primary" style="width: 18px; height: 18px;"></i>
+                            Welfare Log
+                        </h5>
+                        <span class="text-muted small">Record of welfare contributions, policy renewals, and benefit
+                            payments</span>
+                    </div>
+                    <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-semibold">
+                        {{ welfare_log|length }} Entries
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+                            <thead class="table-light text-secondary text-uppercase"
+                                style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                <tr>
+                                    <th class="ps-3 ps-md-4 py-3">Worker Name</th>
+                                    <th class="py-3">Trade</th>
+                                    <th class="py-3 text-end">Contribution / Debit (₹)</th>
+                                    <th class="py-3">Reason / Scheme</th>
+                                    <th class="pe-3 pe-md-4 py-3 text-center">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for w in welfare_log %}
+                                <tr>
+                                    <!-- Worker Name -->
+                                    <td class="ps-3 ps-md-4 py-3">
+                                        <div class="fw-bold text-dark">{{ w.worker_name }}</div>
+                                        <span class="text-muted small" style="font-size: 0.75rem;">{{ w.society_name
+                                            }}</span>
+                                    </td>
+
+                                    <!-- Trade -->
+                                    <td class="py-3">
+                                        <span class="badge bg-secondary-subtle text-secondary fw-semibold">
+                                            {{ w.trade }}
+                                        </span>
+                                    </td>
+
+                                    <!-- Contribution / Debit (₹) -->
+                                    <td
+                                        class="py-3 text-end font-monospace fw-bold {% if w.is_credit %}text-success{% else %}text-danger{% endif %}">
+                                        {% if w.is_credit %}+₹{{ '%.2f'|format(w.amount) }}{% else %}-₹{{
+                                        '%.2f'|format(w.amount) }}{% endif %}
+                                    </td>
+
+                                    <!-- Reason / Scheme -->
+                                    <td class="py-3">
+                                        <div class="fw-semibold text-dark">{{ w.reason }}</div>
+                                        {% if w.description and w.description != w.reason %}
+                                        <div class="text-muted small" style="font-size: 0.75rem;">{{ w.description }}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- Date -->
+                                    <td class="pe-3 pe-md-4 py-3 text-center text-muted small">
+                                        {{ w.date }}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">
+                                        No welfare log records found.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

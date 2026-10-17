@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% block title %}Payments - SahakarSeva{% endblock %}
+{% block page_title %}Payments{% endblock %}
+{% block page_title_bc %}Payments{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+  <!-- Page Header -->
+  <div class="section-head d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4 pb-2 border-bottom">
+    <div>
+      <p class="text-secondary mb-0">View bills, pay securely, and see how your payment directly supports workers.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill small fw-medium d-inline-flex align-items-center gap-1">
+        <i data-lucide="shield-check" style="width:14px;height:14px;"></i>
+        <span>100% Transparent Cooperative Tariff</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- Summary KPI Cards -->
+  <div class="row g-3 mb-4">
+    <!-- Total Settled -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-secondary small fw-medium">Total Settled</span>
+          <div class="rounded-circle bg-success-subtle text-success p-2 d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+            <i data-lucide="check-circle-2" style="width:18px;height:18px;"></i>
+          </div>
+        </div>
+        <div class="fs-4 fw-bold text-dark mb-1">₹{{ '%.2f'|format(summary.total_paid) }}</div>
+        <div class="text-muted small">Completed cooperative services</div>
+      </div>
+    </div>
+
+    <!-- Artisan Living Wage Share (88%) -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-secondary small fw-medium">Artisan Fair Wage (88%)</span>
+          <div class="rounded-circle bg-primary-subtle text-primary p-2 d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+            <i data-lucide="heart-handshake" style="width:18px;height:18px;"></i>
+          </div>
+        </div>
+        <div class="fs-4 fw-bold text-primary mb-1">₹{{ '%.2f'|format(summary.artisan_wage) }}</div>
+        <div class="text-muted small">Direct livelihood to gig workers</div>
+      </div>
+    </div>
+
+    <!-- Welfare & Insurance Cess (4%) -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-secondary small fw-medium">Suraksha Nidhi (4%)</span>
+          <div class="rounded-circle bg-warning-subtle text-warning p-2 d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+            <i data-lucide="shield" style="width:18px;height:18px;"></i>
+          </div>
+        </div>
+        <div class="fs-4 fw-bold text-warning mb-1">₹{{ '%.2f'|format(summary.welfare_cess) }}</div>
+        <div class="text-muted small">Worker healthcare & safety reserve</div>
+      </div>
+    </div>
+
+    <!-- Pending Invoices -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="card border-0 shadow-sm rounded-3 p-3 bg-white h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="text-secondary small fw-medium">Pending Dues</span>
+          <div class="rounded-circle {% if summary.pending_count > 0 %}bg-danger-subtle text-danger{% else %}bg-light text-muted{% endif %} p-2 d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+            <i data-lucide="clock" style="width:18px;height:18px;"></i>
+          </div>
+        </div>
+        <div class="fs-4 fw-bold {% if summary.pending_count > 0 %}text-danger{% else %}text-dark{% endif %} mb-1">
+          {% if summary.pending_count > 0 %}
+            ₹{{ '%.2f'|format(summary.pending_amount) }}
+          {% else %}
+            ₹0.00
+          {% endif %}
+        </div>
+        <div class="text-muted small">
+          {% if summary.pending_count > 0 %}
+            {{ summary.pending_count }} invoice(s) awaiting payment
+          {% else %}
+            All payments up to date
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoices Section -->
+  <div class="row g-3">
+    {% for p in invoices %}
+      <div class="col-12 col-lg-6" id="invoice-col-{{ p.id }}">
+        <div class="simple-list-card d-flex flex-column justify-content-between h-100 p-4 rounded-3 border shadow-sm bg-white" id="payment-card-{{ p.id }}">
+          <!-- Top Row: Amount + Badge -->
+          <div>
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+              <div>
+                <div class="fs-4 fw-bold text-dark">₹{{ '%.2f'|format(p.amount|float) }}</div>
+                <div class="text-secondary small mt-1">{{ p.description or 'Cooperative service payment' }}</div>
+              </div>
+
+              <!-- Dynamic Status Badge -->
+              <div id="badge-container-{{ p.id }}">
+                {% if p.status == 'Paid' %}
+                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill small">Paid</span>
+                {% elif p.status in ['Pending Payment', 'Pending', 'Generated'] %}
+                  <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 rounded-pill small">Pending Payment</span>
+                {% elif p.status == 'Cancelled' %}
+                  <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 rounded-pill small">Cancelled</span>
+                {% else %}
+                  <span class="badge bg-danger-subtle text-danger border px-2 py-1 rounded-pill small">{{ p.status }}</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Meta Details: Invoice # and Date -->
+            <div class="d-flex align-items-center gap-2 text-muted small flex-wrap mb-3">
+              {% if p.invoice_number %}
+                <span class="fw-medium text-dark">#{{ p.invoice_number }}</span>
+                <span>·</span>
+              {% endif %}
+              <span id="status-label-{{ p.id }}" class="fw-semibold {% if p.status == 'Paid' %}text-success{% elif p.status in ['Pending Payment', 'Pending', 'Generated'] %}text-warning{% elif p.status == 'Cancelled' %}text-secondary{% else %}text-danger{% endif %}">
+                {{ p.status }}
+              </span>
+              {% if p.date %}
+                <span>·</span>
+                <span class="d-inline-flex align-items-center gap-1">
+                  <i data-lucide="calendar" style="width: 12px; height: 12px;"></i>
+                  <span>{{ p.date.strftime('%b %d, %Y') }}</span>
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Action Buttons Row -->
+          <div>
+            <div class="d-flex flex-wrap align-items-center gap-2 pt-3 border-top" id="action-container-{{ p.id }}">
+              {% if p.status in ['Pending Payment', 'Pending', 'Generated'] %}
+                <!-- Pay Now Button -->
+                <form method="POST" action="{{ url_for('customer.pay_invoice', payment_id=p.id) }}" onsubmit="handlePayInvoice(event, '{{ p.id }}', this)" class="d-inline">
+                  <button class="btn btn-primary btn-sm d-flex align-items-center gap-1 px-3 shadow-sm" type="submit" id="pay-btn-{{ p.id }}">
+                    <i data-lucide="credit-card" style="width: 14px; height: 14px;"></i>
+                    <span id="pay-text-{{ p.id }}">Pay Now</span>
+                    <span class="spinner-border spinner-border-sm d-none" id="pay-spinner-{{ p.id }}" role="status"></span>
+                  </button>
+                </form>
+              {% endif %}
+
+              <!-- Download Invoice Button -->
+              <a href="/api/pdf/invoice/{{ p.id }}" target="_blank" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" title="Download Official PDF Invoice">
+                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+                <span>Download Invoice</span>
+              </a>
+
+              <!-- Wage Breakdown Toggle Button -->
+              <button class="btn btn-outline-dark btn-sm d-flex align-items-center gap-1" type="button" data-bs-toggle="collapse" data-bs-target="#breakdown-{{ p.id }}" aria-expanded="false" aria-controls="breakdown-{{ p.id }}">
+                <i data-lucide="pie-chart" style="width: 14px; height: 14px;"></i>
+                <span>Wage Split Breakdown</span>
+              </button>
+            </div>
+
+            <!-- Collapsible Cooperative Wage Breakdown -->
+            {% set gross = p.amount|float %}
+            {% set worker_payout = p.worker_payout|float if p.worker_payout else (gross * 0.88)|round(2) %}
+            {% set society_fee = p.society_admin_fee|float if p.society_admin_fee else (gross * 0.08)|round(2) %}
+            {% set welfare_cess = p.welfare_cess|float if p.welfare_cess else (gross * 0.04)|round(2) %}
+            <div class="collapse mt-3" id="breakdown-{{ p.id }}">
+              <div class="card card-body bg-light border-0 rounded-3 p-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-bold small text-uppercase text-muted">Transparent Cooperative Split</span>
+                  <span class="badge bg-white text-dark border small">88 / 8 / 4 Ratio</span>
+                </div>
+
+                <!-- 3-Segment Progress Bar -->
+                <div class="progress mb-3" style="height: 8px; border-radius: 6px;">
+                  <div class="progress-bar bg-success" role="progressbar" style="width: 88%;" aria-valuenow="88" aria-valuemin="0" aria-valuemax="100" title="88% Worker Payout"></div>
+                  <div class="progress-bar bg-primary" role="progressbar" style="width: 8%;" aria-valuenow="8" aria-valuemin="0" aria-valuemax="100" title="8% Society Operations"></div>
+                  <div class="progress-bar bg-warning" role="progressbar" style="width: 4%;" aria-valuenow="4" aria-valuemin="0" aria-valuemax="100" title="4% Suraksha Nidhi"></div>
+                </div>
+
+                <div class="row g-2 small">
+                  <div class="col-12 col-sm-4">
+                    <div class="d-flex align-items-center gap-1 mb-1">
+                      <span class="d-inline-block rounded-circle bg-success" style="width: 8px; height: 8px;"></span>
+                      <span class="text-muted">Artisan Share (88%)</span>
+                    </div>
+                    <div class="text-success fw-bold">₹{{ '%.2f'|format(worker_payout) }}</div>
+                  </div>
+                  <div class="col-12 col-sm-4">
+                    <div class="d-flex align-items-center gap-1 mb-1">
+                      <span class="d-inline-block rounded-circle bg-primary" style="width: 8px; height: 8px;"></span>
+                      <span class="text-muted">Society Ops (8%)</span>
+                    </div>
+                    <div class="text-primary fw-bold">₹{{ '%.2f'|format(society_fee) }}</div>
+                  </div>
+                  <div class="col-12 col-sm-4">
+                    <div class="d-flex align-items-center gap-1 mb-1">
+                      <span class="d-inline-block rounded-circle bg-warning" style="width: 8px; height: 8px;"></span>
+                      <span class="text-muted">Welfare Cess (4%)</span>
+                    </div>
+                    <div class="text-warning fw-bold">₹{{ '%.2f'|format(welfare_cess) }}</div>
+                  </div>
+                </div>
+                <div class="mt-2 pt-2 border-top small text-muted d-flex align-items-center gap-1">
+                  <i data-lucide="shield-check" style="width: 12px; height: 12px;" class="text-success"></i>
+                  <span>Zero hidden platform commission. Every rupee is accounted for.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contextual Inline Error for this Payment Card -->
+            <div id="payment-error-{{ p.id }}" class="alert alert-danger d-none py-2 px-3 mt-3 mb-0 small" role="alert"></div>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="col-12">
+        <div class="empty-card text-center py-5 bg-white rounded-3 border shadow-sm">
+          <i data-lucide="receipt" class="mb-2 text-muted" style="width: 42px; height: 42px;"></i>
+          <h3 class="h5 fw-bold text-dark">No bills right now</h3>
+          <p class="text-secondary small mb-0">Your payments and billing statements will appear here after a service is billed.</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function handlePayInvoice(e, paymentId, form) {
+  e.preventDefault();
+
+  const btn = document.getElementById(`pay-btn-${paymentId}`);
+  const btnText = document.getElementById(`pay-text-${paymentId}`);
+  const spinner = document.getElementById(`pay-spinner-${paymentId}`);
+  const errorBanner = document.getElementById(`payment-error-${paymentId}`);
+  const actionContainer = document.getElementById(`action-container-${paymentId}`);
+  const statusLabel = document.getElementById(`status-label-${paymentId}`);
+  const badgeContainer = document.getElementById(`badge-container-${paymentId}`);
+
+  // Reset inline error
+  if (errorBanner) {
+    errorBanner.textContent = '';
+    errorBanner.classList.add('d-none');
+  }
+
+  // Loading state
+  if (btn) btn.disabled = true;
+  if (btnText) btnText.textContent = 'Processing...';
+  if (spinner) spinner.classList.remove('d-none');
+
+  try {
+    const response = await fetch(form.action, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.status === 'success') {
+      // 1. Update badge to Paid
+      if (badgeContainer) {
+        badgeContainer.innerHTML = '<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill small">Paid</span>';
+      }
+
+      // 2. Update status label
+      if (statusLabel) {
+        statusLabel.textContent = 'Paid';
+        statusLabel.className = 'fw-semibold text-success';
+      }
+
+      // 3. Replace Pay Now button with paid indicator, keep other action buttons
+      const payForm = btn ? btn.closest('form') : null;
+      if (payForm) {
+        payForm.remove();
+      }
+
+      // 4. Show sleek toast notification
+      const successMsg = data.message || 'Payment completed. 4% welfare cess credited to Suraksha Nidhi.';
+      if (typeof showToast === 'function') {
+        showToast(successMsg, 'success');
+      }
+    } else {
+      const errMsg = data.message || 'Payment processing failed. Please try again.';
+      if (errorBanner) {
+        errorBanner.textContent = errMsg;
+        errorBanner.classList.remove('d-none');
+      }
+      if (typeof showToast === 'function') {
+        showToast(errMsg, 'danger');
+      }
+      if (btn) btn.disabled = false;
+      if (btnText) btnText.textContent = 'Pay Now';
+      if (spinner) spinner.classList.add('d-none');
+    }
+  } catch (err) {
+    console.error('Payment network error:', err);
+    const networkMsg = 'A network error occurred while processing payment.';
+    if (errorBanner) {
+      errorBanner.textContent = networkMsg;
+      errorBanner.classList.remove('d-none');
+    }
+    if (typeof showToast === 'function') {
+      showToast(networkMsg, 'danger');
+    }
+    if (btn) btn.disabled = false;
+    if (btnText) btnText.textContent = 'Pay Now';
+    if (spinner) spinner.classList.add('d-none');
+  }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  if (window.lucide) lucide.createIcons();
+});
+</script>
+{% endblock %}

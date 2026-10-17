@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Factor Authentication - SahakarSeva</title>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary-blue: #3d6b61;
+            --primary-hover: #2e6256;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        .logo-title {
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #3d6b61, #6e988d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-control {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            color: #f1f5f9;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            letter-spacing: 4px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .form-control:focus {
+            background: rgba(15, 23, 42, 0.8);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+            color: #f1f5f9;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .alert-custom {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-radius: 8px;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 576px) {
+            body {
+                padding: 12px;
+            }
+            .login-card {
+                padding: 20px 16px;
+                border-radius: 12px;
+            }
+            .form-control {
+                padding: 10px 12px;
+                font-size: 1rem;
+                letter-spacing: 3px;
+            }
+            .btn-primary {
+                padding: 10px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="text-center mb-4">
+            <h4 class="logo-title mb-1">SahakarSeva</h4>
+            <div class="text-secondary small">Cooperative Gig Services Platform</div>
+        </div>
+
+        <div class="text-center mb-4">
+            <div class="fw-bold mb-2">Two-Factor Authentication</div>
+            <div class="text-secondary small">Enter the 6-digit code from Google/Microsoft Authenticator app to proceed.</div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'danger' else 'info' }} alert-custom py-2 px-3 mb-3 text-center" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('auth.login_2fa') }}" method="POST">
+            <div class="mb-4">
+                <input type="text" class="form-control" name="code" placeholder="000000" maxlength="6" pattern="[0-9]*" autocomplete="off" required autofocus>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 mb-3">Verify Code</button>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-link text-secondary text-decoration-none w-100 text-center small">Cancel and Log Out</a>
+    </div>
+
+</body>
+</html>

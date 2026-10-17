@@ -1,0 +1,377 @@
+/* SahakarSeva Premium UI — visual layer only */
+:root{
+  --primary-color:#0f4c3a;
+  --primary-hover:#0b3b2e;
+  --primary-rgb:15,76,58;
+  --brand-deep:#14211c;
+  --brand-deep-2:#1c2b25;
+  --brand-soft:#eef4ef;
+  --brand-pale:#f7f7f2;
+  --brand-line:#dfe6e1;
+  --accent-warm:#c39a4a;
+  --background-color:#f6f5f1;
+  --surface-color:#ffffff;
+  --border-color:#e2e6e1;
+  --text-primary:#18231f;
+  --text-secondary:#5f6d67;
+}
+
+html{scroll-behavior:smooth}
+body:not(.auth-page){background:var(--background-color);color:var(--text-primary)}
+
+/* Desktop app shell */
+.sidebar{
+  background:linear-gradient(180deg,#15221d 0%,#111b17 100%) !important;
+  border-right:1px solid rgba(255,255,255,.06) !important;
+}
+.sidebar-header{border-bottom:1px solid rgba(255,255,255,.08)!important}
+.sidebar-brand{color:#fff!important}
+.sidebar-brand .brand-mark{background:#2d6a57!important;box-shadow:none!important}
+.sidebar-item a{color:#dce7e1!important;border-radius:13px!important;padding:.72rem .9rem!important;font-weight:600!important}
+.sidebar-item a span{color:#dce7e1!important;opacity:1!important;visibility:visible!important}
+.sidebar-item a svg,.sidebar-item a i{color:#9db2aa!important;opacity:1!important;visibility:visible!important}
+.sidebar-item a:hover{background:rgba(255,255,255,.08)!important;color:#fff!important;transform:translateX(2px)}
+.sidebar-item a:hover svg,.sidebar-item a:hover i{color:#7bd0ad!important}
+.sidebar-item a:hover span{color:#fff!important}
+.sidebar-item.active a{background:linear-gradient(90deg,rgba(46,145,107,.28),rgba(46,145,107,.10))!important;color:#fff!important;box-shadow:inset 3px 0 0 #34d399!important}
+.sidebar-item.active a svg,.sidebar-item.active a i{color:#4ade80!important}
+.sidebar-item.active a span{color:#fff!important;font-weight:700!important}
+.user-widget{padding:8px;border-radius:14px;background:rgba(255,255,255,.045)}
+.user-avatar{background:#2d6a57!important;color:#fff!important}
+.user-name{color:#fff!important}.user-role{color:#93a29a!important}
+.sidebar-footer{border-top:1px solid #e2e8f0!important}
+.sidebar-logout-btn{border-color:#fecaca!important;color:#dc3545!important;background:#fff!important;font-weight:600!important}
+.sidebar-logout-btn:hover{background:#fee2e2!important;color:#b91c1c!important;border-color:#fca5a5!important}
+.sidebar-footer .btn-primary{background:#2d6a57!important;border-color:#2d6a57!important}
+
+.header-bar{
+  background:rgba(255,255,255,.92)!important;
+  border-bottom:1px solid #e6e7e4!important;
+  backdrop-filter:blur(14px);
+}
+.header-bar .sidebar-toggle-btn,
+.header-bar .theme-toggle{color:#30413a!important}
+
+.main-content{background:var(--background-color)}
+.page-container{max-width:1500px;margin:0 auto}
+
+/* Common cards and panels */
+.card,.premium-card,.simple-list-card,.quick-card,.booking-step,.stat-card,.auth-card{
+  border:1px solid var(--brand-line)!important;
+  box-shadow:0 8px 26px rgba(20,33,28,.055)!important;
+}
+.card,.premium-card{border-radius:18px!important}
+.card:hover,.premium-card:hover{box-shadow:0 14px 34px rgba(20,33,28,.075)!important}
+.card-header{background:#fbfbf8!important;border-bottom:1px solid var(--brand-line)!important}
+
+/* Buttons — less Bootstrap, more premium */
+.btn-primary{background:linear-gradient(135deg,#123f31,#1c604c)!important;border-color:#123f31!important;border-radius:11px!important;font-weight:800!important;box-shadow:0 7px 16px rgba(15,76,58,.14)!important}
+.btn-primary:hover{background:linear-gradient(135deg,#0c3428,#154c3c)!important;transform:translateY(-1px)}
+.btn-outline-primary{color:#124b3a!important;border-color:#afc2b8!important;border-radius:11px!important;font-weight:700!important}
+.btn-outline-primary:hover{background:#eef4ef!important;border-color:#7ea592!important}
+.btn-light{border-color:#dfe5e1!important;background:#fff!important;color:#263630!important;border-radius:11px!important}
+.btn-success{background:#1e7056!important;border-color:#1e7056!important}
+.btn-outline-info,.btn-info{color:#2d6655!important;border-color:#abc5b9!important;background:#f4f8f5!important}
+
+/* Headings */
+.page-container h1,.page-container h2,.page-container h3,.page-container h4,.page-container h5{color:#18231f;font-weight:800}
+.text-primary{color:#14503e!important}.bg-primary{background:#14503e!important}.border-primary{border-color:#76a493!important}
+.text-info{color:#3d7463!important}.bg-info{background:#3d7463!important}.bg-info-subtle,.bg-primary-subtle{background:#edf4ef!important}
+
+/* Customer/worker home hero */
+.simple-hero,.worker-hero{
+  background:linear-gradient(135deg,#fff 0%,#f1f5f0 100%)!important;
+  border:1px solid #dfe7e1!important;
+  box-shadow:0 12px 30px rgba(20,33,28,.06)!important;
+}
+.simple-hero:after,.worker-hero:after{
+  content:'';width:110px;height:110px;position:absolute;right:22px;top:18px;border-radius:50%;
+  background:radial-gradient(circle,rgba(195,154,74,.14),rgba(195,154,74,0) 66%);pointer-events:none
+}
+.quick-card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease!important}
+.quick-card:hover{transform:translateY(-3px)!important;border-color:#bdd0c6!important}
+.quick-card.primary{background:linear-gradient(135deg,#f0f7f2,#fff)!important}
+.quick-icon{background:#edf4ef!important;color:#14503e!important}
+
+/* Admin command center */
+.admin-dashboard-shell .admin-welcome-strip{
+  background:linear-gradient(135deg,#18251f 0%,#21342c 100%)!important;
+  border-color:#18251f!important;color:#fff!important;
+  box-shadow:0 16px 34px rgba(15,29,23,.16)!important;
+}
+.admin-dashboard-shell .admin-welcome-strip h1{color:#fff!important}
+.admin-dashboard-shell .admin-welcome-strip p,.admin-dashboard-shell .admin-eyebrow{color:#b7c7bf!important}
+.admin-dashboard-shell .admin-quick-btn{background:rgba(255,255,255,.08)!important;border-color:rgba(255,255,255,.13)!important;color:#fff!important;box-shadow:none!important}
+.admin-dashboard-shell .admin-quick-btn:hover{background:#fff!important;color:#17372c!important}
+.admin-dashboard-shell .card,.admin-dashboard-shell .premium-card{background:#fff!important}
+.admin-dashboard-shell .stat-icon{background:#edf4ef!important;color:#14503e!important}
+.admin-dashboard-shell .section-title{font-weight:900!important}
+.admin-dashboard-shell .table thead th{background:#f7f8f5!important}
+
+/* Publisher */
+.tab-content .card,.tab-content .premium-card{border-radius:18px!important}
+.badge.bg-primary{background:#14503e!important}.badge.bg-info{background:#6a9284!important}
+
+/* Assistant */
+.service-assistant-fab{
+  right:22px!important;bottom:22px!important;
+  min-height:54px!important;padding:7px 16px 7px 8px!important;
+  border:1px solid rgba(255,255,255,.20)!important;border-radius:999px!important;
+  background:linear-gradient(135deg,#173c30,#24634e)!important;
+  box-shadow:0 18px 42px rgba(16,54,43,.28)!important;
+}
+.assistant-fab-mark{
+  width:40px!important;height:40px!important;border-radius:50%!important;
+  background:linear-gradient(145deg,#eaf5ef,#d5e9df)!important;color:#123f31!important;
+  border:1px solid rgba(15,76,58,.08)
+}
+.assistant-fab-mark svg{filter:drop-shadow(0 2px 4px rgba(15,76,58,.12))}
+.assistant-fab-label{font-size:.82rem!important;letter-spacing:.01em}
+.service-assistant-panel{
+  border-radius:24px!important;border:1px solid #dae4de!important;
+  box-shadow:0 30px 70px rgba(18,37,30,.20)!important;
+}
+.assistant-head{background:linear-gradient(135deg,#f2f7f4,#e8f1ec)!important}
+.assistant-head-mark{background:linear-gradient(145deg,#173c30,#2a6d56)!important;border-radius:13px!important}
+.assistant-dot{background:#2f9a72!important}
+.assistant-bubble.bot{background:#fff!important;border-color:#e0e8e3!important}
+.assistant-bubble.user{background:#173c30!important}
+.assistant-quick-actions button:hover{background:#edf5f0!important}
+.assistant-input-row .form-control{background:#fafbf9!important}
+.assistant-mic{background:#fff!important;color:#285d4b!important;border-color:#d7e2dc!important}
+.assistant-send{background:#173c30!important;border-color:#173c30!important}
+
+/* Mobile: keep full app feeling, not cramped */
+@media(max-width:991px){
+  .main-content{margin-left:0!important}
+  .sidebar{box-shadow:12px 0 30px rgba(0,0,0,.18)!important}
+  .header-bar{height:64px!important}
+}
+@media(max-width:576px){
+  .service-assistant-fab{right:14px!important;bottom:calc(12px + env(safe-area-inset-bottom))!important}
+  .assistant-fab-label{display:inline!important}
+  .service-assistant-panel{right:10px!important;bottom:76px!important;width:calc(100vw - 20px)!important}
+}
+
+.assistant-fab-mark img{width:24px;height:24px;display:block}.assistant-head-mark img{width:25px;height:25px;display:block}
+
+/* Cleaner role dashboards: reduce visual noise without hiding required features. */
+body:not(.auth-page) .page-container>.container-fluid>h1,
+body:not(.auth-page) .page-container>.container-fluid>h2{letter-spacing:-.035em}
+body:not(.auth-page) .form-label{font-weight:700;color:#3e4c46}
+body:not(.auth-page) .form-control,body:not(.auth-page) .form-select{border-radius:11px;border-color:#dce4df}
+body:not(.auth-page) table{border-color:#e4e8e4}
+body:not(.auth-page) .table-hover tbody tr:hover{background:#f5f8f5}
+body:not(.auth-page) .alert-info{background:#eef5f1!important;border-color:#d7e6de!important;color:#27483b!important}
+body:not(.auth-page) .bg-warning{background:#b88936!important}
+body:not(.auth-page) .text-warning{color:#9b6d20!important}
+
+/* Original SahakarSeva dashboard palette — color-only restoration.
+   Layout, spacing, components and UX are intentionally unchanged. */
+:root{
+  --primary-color:#0d6efd!important;
+  --primary-hover:#0a58ca!important;
+  --secondary-color:#6c757d!important;
+  --success-color:#198754!important;
+  --warning-color:#ffc107!important;
+  --danger-color:#dc3545!important;
+  --info-color:#0dcaf0!important;
+  --text-primary:#13233f!important;
+  --text-secondary:#64748b!important;
+  --text-muted:#94a3b8!important;
+  --border-color:#e3e8ef!important;
+  --background-color:#f8fafc!important;
+  --surface-color:#ffffff!important;
+}
+
+/* Navigation/brand colors */
+.sidebar{
+  background:#fff!important;
+  border-right:1px solid #e2e8f0!important;
+}
+.sidebar-brand .brand-mark{
+  background:#eaf2ff!important;
+  color:#0d6efd!important;
+  box-shadow:none!important;
+}
+.sidebar-brand .brand-name{color:#ffffff!important}
+.sidebar-item a{color:#dce7e1!important}
+.sidebar-item a svg,.sidebar-item a i{color:#9db2aa!important}
+.sidebar-item a:hover{
+  background:rgba(255,255,255,.08)!important;
+  color:#ffffff!important;
+}
+.sidebar-item a:hover svg,
+.sidebar-item a:hover i,
+.sidebar-item a:hover span{
+  color:#7bd0ad!important;
+}
+.sidebar-item.active a{
+  background:linear-gradient(90deg,rgba(46,145,107,.28),rgba(46,145,107,.10))!important;
+  color:#ffffff!important;
+  box-shadow:inset 3px 0 0 #34d399!important;
+}
+.sidebar-item.active a svg,.sidebar-item.active a i{color:#4ade80!important}
+.user-avatar{background:#176b50!important;color:#ffffff!important}
+.user-name{color:#ffffff!important}
+.user-role{color:#9db2aa!important}
+.sidebar-footer .btn-primary{background:#176b50!important;border-color:#176b50!important}
+
+/* Buttons/links */
+.btn-primary,.auth-page .btn-primary{
+  background:#0d6efd!important;border-color:#0d6efd!important;
+}
+.btn-primary:hover,.auth-page .btn-primary:hover{background:#0b5ed7!important;border-color:#0a58ca!important}
+.btn-outline-primary{color:#0d6efd!important;border-color:#9ec5fe!important}
+.btn-outline-primary:hover{background:#eaf2ff!important;border-color:#0d6efd!important;color:#0a58ca!important}
+.text-primary{color:#0d6efd!important}.bg-primary{background:#0d6efd!important}.border-primary{border-color:#0d6efd!important}
+.text-success{color:#198754!important}.bg-success{background:#198754!important}.border-success{border-color:#198754!important}
+.text-warning{color:#b58100!important}.bg-warning{background:#ffc107!important}.border-warning{border-color:#ffc107!important}
+.text-danger{color:#dc3545!important}.bg-danger{background:#dc3545!important}.border-danger{border-color:#dc3545!important}
+.text-info{color:#087f9f!important}.bg-info{background:#0dcaf0!important}.border-info{border-color:#0dcaf0!important}
+
+/* Dashboard cards keep the original multicolor feel. */
+.stat-card.border-primary{border-left-color:#0d6efd!important}
+.stat-card.border-success{border-left-color:#198754!important}
+.stat-card.border-warning{border-left-color:#ffc107!important}
+.stat-card.border-info{border-left-color:#0dcaf0!important}
+.stat-card.border-danger{border-left-color:#dc3545!important}
+
+.stat-card .text-primary,.stat-card .stat-icon.text-primary{color:#0d6efd!important}
+.stat-card .text-success,.stat-card .stat-icon.text-success{color:#198754!important}
+.stat-card .text-warning,.stat-card .stat-icon.text-warning{color:#b58100!important}
+.stat-card .text-info,.stat-card .stat-icon.text-info{color:#087f9f!important}
+.stat-card .stat-icon.bg-primary{background:rgba(13,110,253,.10)!important}
+.stat-card .stat-icon.bg-success{background:rgba(25,135,84,.10)!important}
+.stat-card .stat-icon.bg-warning{background:rgba(255,193,7,.14)!important}
+.stat-card .stat-icon.bg-info{background:rgba(13,202,240,.12)!important}
+
+/* Keep admin/publisher accents colorful rather than green-only. */
+.admin-dashboard-shell .admin-welcome-strip{
+  background:linear-gradient(135deg,#0d6efd 0%,#2b7ff0 100%)!important;
+  border-color:#0d6efd!important;
+}
+.admin-dashboard-shell .admin-quick-btn:hover{background:#0d6efd!important;color:#fff!important;border-color:#0d6efd!important}
+.admin-dashboard-shell .stat-icon{background:#eaf2ff!important;color:#0d6efd!important}
+.admin-dashboard-shell .bg-primary-subtle{background:#eaf2ff!important}
+.admin-dashboard-shell .text-info{color:#087f9f!important}
+
+/* Assistant uses the same primary blue as the original app palette. */
+.service-assistant-fab{background:linear-gradient(135deg,#0d6efd,#2563eb)!important;box-shadow:0 18px 42px rgba(13,110,253,.24)!important}
+.assistant-fab-mark{background:#eaf2ff!important;color:#0d6efd!important}
+.assistant-head-mark{background:linear-gradient(145deg,#0d6efd,#2563eb)!important}
+.assistant-bubble.user{background:#0d6efd!important}
+.assistant-quick-actions button:hover{background:#eaf2ff!important}
+.assistant-action-link,.assistant-send{background:#0d6efd!important;border-color:#0d6efd!important}
+.assistant-mic{color:#0d6efd!important}
+
+/* Alerts/status chips match the original semantic colors. */
+.status-chip{background:rgba(13,110,253,.09)!important;color:#0d6efd!important}
+.status-chip.success{background:rgba(25,135,84,.10)!important;color:#198754!important}
+.badge.bg-primary:not([class*="subtle"]):not([class*="opacity"]){background:#0d6efd!important;color:#fff!important}.badge.bg-success:not([class*="subtle"]):not([class*="opacity"]){background:#198754!important;color:#fff!important}.badge.bg-warning:not([class*="subtle"]):not([class*="opacity"]){background:#ffc107!important;color:#1e293b!important}.badge.bg-danger:not([class*="subtle"]):not([class*="opacity"]){background:#dc3545!important;color:#fff!important}.badge.bg-info:not([class*="subtle"]):not([class*="opacity"]){background:#0dcaf0!important;color:#0f172a!important}
+
+/* =========================================================
+   SIDEBAR HIGH-CONTRAST VISIBILITY & LOGOUT
+   Ensures sidebar items are crystal clear, perfectly legible
+   on dark theme, with rich hover & active states.
+   ========================================================= */
+.sidebar {
+  background: linear-gradient(180deg, #101d18 0%, #0b1512 100%) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+.sidebar-item a {
+  color: #dce7e1 !important;
+  font-weight: 600 !important;
+  transition: all 0.18s ease !important;
+}
+.sidebar-item a i,
+.sidebar-item a svg {
+  color: #9db2aa !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: color 0.18s ease !important;
+}
+.sidebar-item a span {
+  color: #dce7e1 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.sidebar-item a:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  transform: translateX(2px) !important;
+}
+.sidebar-item a:hover i,
+.sidebar-item a:hover svg {
+  color: #7bd0ad !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.sidebar-item a:hover span {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.sidebar-item.active a,
+.sidebar-menu .sidebar-item > a[aria-current="page"] {
+  background: linear-gradient(90deg, rgba(46, 145, 107, 0.28), rgba(46, 145, 107, 0.10)) !important;
+  color: #ffffff !important;
+  box-shadow: inset 3px 0 0 #34d399 !important;
+}
+.sidebar-item.active a i,
+.sidebar-item.active a svg,
+.sidebar-menu .sidebar-item > a[aria-current="page"] i,
+.sidebar-menu .sidebar-item > a[aria-current="page"] svg {
+  color: #4ade80 !important;
+  opacity: 1 !important;
+}
+.sidebar-item.active a span,
+.sidebar-menu .sidebar-item > a[aria-current="page"] span {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+}
+
+/* Benefits badge styling */
+.sidebar-item a .text-success {
+  color: #4ade80 !important;
+  font-weight: 700 !important;
+}
+
+/* Logout Button — High visibility styling */
+.sidebar-footer .sidebar-logout-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  background: rgba(220, 38, 38, 0.14) !important;
+  border: 1.5px solid rgba(248, 113, 113, 0.4) !important;
+  color: #fca5a5 !important;
+  font-weight: 700 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  border-radius: 10px !important;
+  padding: 0.55rem 0.75rem !important;
+  transition: all 0.15s ease !important;
+}
+.sidebar-footer .sidebar-logout-btn i,
+.sidebar-footer .sidebar-logout-btn svg,
+.sidebar-footer .sidebar-logout-btn span {
+  color: #fca5a5 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.sidebar-footer .sidebar-logout-btn:hover {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+.sidebar-footer .sidebar-logout-btn:hover i,
+.sidebar-footer .sidebar-logout-btn:hover svg,
+.sidebar-footer .sidebar-logout-btn:hover span {
+  color: #ffffff !important;
+}
+

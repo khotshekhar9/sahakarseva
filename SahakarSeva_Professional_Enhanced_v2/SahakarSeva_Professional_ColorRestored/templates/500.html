@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 — Server Error | SahakarSeva</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3.2">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <style>
+        .error-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--background-color);
+            padding: 2rem;
+        }
+        .error-card {
+            text-align: center;
+            max-width: 520px;
+        }
+        .error-code {
+            font-size: 8rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, #ef4444, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.05em;
+            animation: shake 2s ease-in-out infinite;
+        }
+        .error-illustration {
+            font-size: 5rem;
+            margin: 1rem 0;
+            animation: float 3s ease-in-out infinite;
+        }
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+        .error-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.75rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+            color: white;
+        }
+        .btn-outline-custom {
+            border: 1.5px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1.75rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            background: transparent;
+        }
+        .btn-outline-custom:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: rgba(26, 115, 232, 0.05);
+        }
+        .error-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            color: #ef4444;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+        .error-detail-box {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin: 1rem 0 1.5rem;
+            text-align: left;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+        @keyframes shake {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+        @media (max-width: 576px) {
+            .error-page { padding: 1rem; }
+            .error-code { font-size: 4.2rem; }
+            .error-illustration { font-size: 3rem; margin: 0.5rem 0; }
+            .error-title { font-size: 1.2rem; }
+            .error-subtitle { font-size: 0.82rem; margin-bottom: 1.25rem; }
+            .btn-primary-custom, .btn-outline-custom { padding: 0.5rem 1.1rem; font-size: 0.82rem; }
+            .error-detail-box { font-size: 0.72rem; padding: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="error-page">
+    <div class="error-card">
+        <div class="error-badge">
+            🤝 SahakarSeva Cooperative Platform — Server Error
+        </div>
+        <div class="error-code">500</div>
+        <div class="error-illustration">⚙️</div>
+        <h1 class="error-title">Something Went Wrong</h1>
+        <p class="error-subtitle">
+            Our server hit an unexpected error.<br>
+            Our team has been notified. Please try again in a moment.
+        </p>
+        {% if error %}
+        <div class="error-detail-box">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+        <div class="error-actions">
+            <a href="javascript:location.reload()" class="btn-outline-custom">
+                🔄 Try Again
+            </a>
+            <a href="/" class="btn-primary-custom">
+                🏠 Go to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    if (savedTheme === 'dark') document.body.classList.add('dark-mode');
+</script>
+</body>
+</html>

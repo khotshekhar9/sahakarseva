@@ -1,0 +1,3504 @@
+{% extends 'base.html' %}
+
+{% block title %}Society Admin Hub - SahakarSeva{% endblock %}
+
+{% block page_title %}Society Admin{% endblock %}
+{% block page_title_bc %}Overview{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard-shell container-fluid px-0">
+    <div class="admin-welcome-strip">
+        <div>
+            <div class="admin-eyebrow">COOPERATIVE SOCIETY</div>
+            <h1>Welcome back, {{ current_user.username|title }} 👋</h1>
+            <p>Manage bookings, workers, and society finances in one place.</p>
+        </div>
+        <div class="admin-quick-links">
+            <a href="{{ url_for('admin.bookings') }}" class="admin-quick-btn"><i data-lucide="clipboard-list"></i> <span>Bookings</span></a>
+            <a href="{{ url_for('admin.workers_page') }}" class="admin-quick-btn"><i data-lucide="users"></i> <span>Workers</span></a>
+            <a href="{{ url_for('admin.payments_page') }}" class="admin-quick-btn"><i data-lucide="wallet"></i> <span>Payments</span></a>
+            <a href="{{ url_for('admin.ai_demand_page') }}" class="admin-quick-btn"><i data-lucide="sparkles"></i> <span>AI Demand</span></a>
+        </div>
+    </div>
+    <div class="row g-3 g-md-4">
+
+    <!-- SECTION 1: OVERVIEW -->
+    <div id="section-overview" class="admin-section col-12 d-flex flex-column gap-3 gap-md-4">
+
+        <!-- Stat Cards Grid (2x2 on mobile, 4 across on desktop) -->
+        <div class="row g-2 g-md-3" id="widget-stats">
+            <!-- Card 1: Total Bookings -->
+            <div class="col-6 col-lg-3">
+                <div class="premium-card stat-card border-start border-primary border-4 h-100">
+                    <div class="stat-info">
+                        <span class="stat-label">Total Bookings</span>
+                        <h3 class="stat-value text-primary">{{ total_projects }}</h3>
+                        <small class="text-secondary">{{ active_projects }} Active, {{ delayed_projects }} Pending</small>
+                    </div>
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                        <i data-lucide="clipboard-list"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Workers on Duty -->
+            <div class="col-6 col-lg-3">
+                <div class="premium-card stat-card border-start border-success border-4 h-100">
+                    <div class="stat-info">
+                        <span class="stat-label">Workers on Duty</span>
+                        <h3 class="stat-value text-success">{{ workers_present }}</h3>
+                        <small class="text-secondary">Present today</small>
+                    </div>
+                    <div class="stat-icon bg-success bg-opacity-10 text-success">
+                        <i data-lucide="user-check"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Available Balance -->
+            <div class="col-6 col-lg-3">
+                <div class="premium-card stat-card border-start border-info border-4 h-100">
+                    <div class="stat-info">
+                        <span class="stat-label">Available Balance</span>
+                        <h3 class="stat-value text-info">₹{{ "{:,.2f}".format(net_profit) }}</h3>
+                        <small class="text-secondary">Total Received: ₹{{ "{:,.0f}".format(total_revenue) }}</small>
+                    </div>
+                    <div class="stat-icon bg-info bg-opacity-10 text-info">
+                        <i data-lucide="trending-up"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 4: Completed Work -->
+            <div class="col-6 col-lg-3">
+                <div class="premium-card stat-card border-start border-warning border-4 h-100">
+                    <div class="stat-info">
+                        <span class="stat-label">Completed Work</span>
+                        <h3 class="stat-value text-warning">{{ completed_projects }}</h3>
+                        <small class="text-secondary">Jobs finished</small>
+                    </div>
+                    <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                        <i data-lucide="check-circle-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI GIG DEMAND FORECASTING WIDGET -->
+        <div class="premium-card border-start border-4 border-primary shadow-sm" id="overview-ai-card">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1 d-flex align-items-center gap-2 text-primary">
+                        <i data-lucide="brain" style="width: 20px; height: 20px;"></i>
+                        Work Demand Forecast
+                    </h5>
+                    <span class="text-secondary small">
+                        7-day demand outlook for <strong>{{ gig_demand_forecast.city if gig_demand_forecast else 'Chembur' }}</strong>
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge bg-primary-subtle text-primary border border-primary border-opacity-25 px-2 py-1">
+                        {{ gig_demand_forecast.total_predicted_jobs if gig_demand_forecast else '32' }} Expected Bookings
+                    </span>
+                    <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-1">
+                        ● AI Active
+                    </span>
+                </div>
+            </div>
+
+            <!-- Insight Alert -->
+            <div class="alert alert-info py-2 px-3 mb-3 d-flex align-items-center gap-2 small border-0 bg-info bg-opacity-10 text-dark">
+                <i data-lucide="sparkles" class="text-info" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+                <span>{{ gig_demand_forecast.ai_insight if gig_demand_forecast else 'High demand expected in Deep Cleaning and Drivers this week.' }}</span>
+            </div>
+
+            <!-- Mobile View: Compact Trade Summary (Eliminates horizontal scrolling & vertical scrolling fatigue) -->
+            <div class="d-md-none">
+                <div class="d-flex flex-column gap-2 mb-2">
+                    {% if gig_demand_forecast and gig_demand_forecast.demand_matrix %}
+                        {% for d in gig_demand_forecast.demand_matrix[:4] %}
+                        <div class="p-2.5 rounded border small demand-forecast-item">
+                            <div class="d-flex align-items-center justify-content-between gap-2 mb-1.5 flex-nowrap">
+                                <div class="d-flex align-items-center gap-2 text-truncate" style="min-width: 0;">
+                                    <i data-lucide="{{ d.icon }}" style="width: 15px; height: 15px; color: var(--primary-color); flex-shrink: 0;"></i>
+                                    <span class="fw-semibold text-dark text-truncate">{{ d.trade }}</span>
+                                </div>
+                                <span class="badge bg-white text-dark border flex-shrink-0 fw-bold">{{ d.predicted_requests }} jobs</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between gap-2 pt-1 border-top border-light-subtle" style="font-size: 0.75rem;">
+                                <span class="text-secondary small">Outlook</span>
+                                <span class="badge {% if d.risk_level == 'High' %}bg-danger text-white{% elif d.risk_level == 'Medium' %}bg-warning text-dark{% else %}bg-success text-white{% endif %} text-nowrap">
+                                    {{ d.surge_factor }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <a href="{{ url_for('admin.ai_demand_page') }}" class="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-1 py-2 fw-semibold mt-2">
+                    <span>View All 8 Categories & Full Plan</span>
+                    <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+                </a>
+            </div>
+
+            <!-- Desktop View: Full Matrix Table -->
+            <div class="table-responsive d-none d-md-block">
+                <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Service Category</th>
+                            <th class="text-center">Estimated Jobs</th>
+                            <th class="text-center">Demand Level</th>
+                            <th class="text-center">Shortage Risk</th>
+                            <th class="text-center">Workers Available</th>
+                            <th>Recommended Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if gig_demand_forecast and gig_demand_forecast.demand_matrix %}
+                            {% for d in gig_demand_forecast.demand_matrix %}
+                            <tr>
+                                <td class="fw-semibold">
+                                    <i data-lucide="{{ d.icon }}" style="width: 14px; height: 14px; color: var(--primary-color);"></i>
+                                    {{ d.trade }}
+                                </td>
+                                <td class="text-center fw-bold text-dark">{{ d.predicted_requests }}</td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">{{ d.surge_factor }}</span></td>
+                                <td class="text-center">
+                                    <span class="badge {% if d.risk_level == 'High' %}bg-danger{% elif d.risk_level == 'Medium' %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                        {{ d.risk_level }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="fw-bold">{{ d.allocated_workers }}</span>
+                                    {% if d.gap < 0 %}
+                                        <span class="text-danger small">({{ d.gap }})</span>
+                                    {% elif d.gap > 0 %}
+                                        <span class="text-success small">(+{{ d.gap }})</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-secondary small">{{ d.action }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Revenue Trend & Quick Operations Row -->
+        <div class="row g-3 g-md-4">
+            <!-- Monthly Revenue Chart -->
+            <div class="col-12 col-lg-7" id="widget-chart">
+                <div class="premium-card chart-card-wrapper p-3 p-md-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark">Monthly Revenue & Expenses</h6>
+                            <span class="small text-secondary">Income vs. society payouts (in ₹)</span>
+                        </div>
+                        <span class="badge bg-light text-secondary border small d-none d-sm-inline">2026 Trend</span>
+                    </div>
+                    <div class="admin-chart-box" style="height: 220px; position: relative;">
+                        <canvas id="overviewFinancialChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions & Active Jobs Column -->
+            <div class="col-12 col-lg-5 d-flex flex-column gap-3">
+                <!-- Quick Actions -->
+                <div class="premium-card p-3">
+                    <h6 class="fw-bold mb-2 text-dark">Quick Actions</h6>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="{{ url_for('admin.service_requests') }}" class="btn btn-outline-primary w-100 text-start d-flex align-items-center justify-content-between py-2 small fw-semibold text-decoration-none">
+                            <span class="d-flex align-items-center gap-2">
+                                <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i>
+                                Create New Booking
+                            </span>
+                            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                        </a>
+                        <button class="btn btn-outline-success w-100 text-start d-flex align-items-center justify-content-between py-2 small fw-semibold"
+                            data-bs-toggle="modal" data-bs-target="#transferWorkerModal">
+                            <span class="d-flex align-items-center gap-2">
+                                <i data-lucide="user-check" style="width: 16px; height: 16px;"></i>
+                                Assign Worker
+                            </span>
+                            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                        </button>
+                        <button class="btn btn-outline-info w-100 text-start d-flex align-items-center justify-content-between py-2 small fw-semibold"
+                            data-bs-toggle="modal" data-bs-target="#addInvoiceModal">
+                            <span class="d-flex align-items-center gap-2">
+                                <i data-lucide="receipt" style="width: 16px; height: 16px;"></i>
+                                Generate Invoice
+                            </span>
+                            <i data-lucide="chevron-right" style="width: 14px; height: 14px;"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="premium-card p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold mb-0 text-dark">Recent Activity</h6>
+                        <a href="{{ url_for('admin.service_requests') }}" class="small text-primary text-decoration-none fw-semibold">View All</a>
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                        {% if service_requests %}
+                            {% for req in service_requests[:3] %}
+                            <div class="p-2 rounded bg-light border small">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-semibold text-truncate text-dark" style="max-width: 75%;">
+                                        #{{ req.request_id }} · {{ req.category|title if req.category else (req.title or 'Service Booking') }}
+                                    </span>
+                                    <span class="badge {% if req.status == 'Completed' %}bg-success{% elif req.status in ('In Progress', 'Assigned') %}bg-primary{% elif req.status == 'Cancelled' %}bg-danger{% else %}bg-warning text-dark{% endif %}" style="font-size: 0.7rem;">
+                                        {{ req.status }}
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center small text-secondary">
+                                    <span class="text-truncate" style="max-width: 60%;">{{ req.customer_name or 'Society Resident' }}</span>
+                                    <span>Est: ₹{{ "{:,.0f}".format(req.estimated_cost or 0) }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-secondary small py-2 text-center">No recent service activity found.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- SECTION 3: WORKER DIRECTORY -->
+<div id="section-workers" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <div class="d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0">Workers</h6>
+        <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal"
+            data-bs-target="#transferWorkerModal">
+            <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
+            Transfer/Assign Worker
+        </button>
+    </div>
+
+    <div class="row g-3">
+        {% for w in workers %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="premium-card h-100 d-flex flex-column justify-content-between gap-3">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="user-avatar" style="width: 50px; height: 50px; font-size: 1.25rem;">
+                        {{ w.user.username[:2].upper() }}
+                    </div>
+                    <div class="d-flex flex-column">
+                        <h6 class="fw-bold mb-0">{{ w.user.username }}</h6>
+                        <span class="small text-secondary">{{ w.user.email }}</span>
+                        <span
+                            class="badge mt-2 {% if w.availability_status == 'available' %}bg-success{% elif w.availability_status == 'busy' %}bg-primary{% else %}bg-warning{% endif %}"
+                            style="width: fit-content;">
+                            {{ w.availability_status }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="border-top pt-2">
+                    <div class="small mb-1 text-secondary">Skills:</div>
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        {% for skill in w.skills.split(',') %}
+                        <span class="badge bg-light text-secondary border">{{ skill.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-2 small text-secondary">
+                        <span>Experience: <strong>{{ w.experience_years }} Years</strong></span>
+                        <span>Rating: <strong class="text-warning">★ {{ w.performance_rating }}</strong></span>
+                    </div>
+                </div>
+
+                <!-- Mini GPS map checker -->
+                <div
+                    class="bg-light p-2 rounded d-flex align-items-center justify-content-between small text-secondary">
+                    <span class="d-flex align-items-center gap-1">
+                        <i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--primary-color);"></i>
+                        Lat: {{ w.gps_lat or 'N/A' }}
+                    </span>
+                    <span class="text-muted" style="font-size: 0.7rem;">Updated: {{ w.gps_last_updated.strftime('%H:%M')
+                        if w.gps_last_updated else 'N/A' }}</span>
+                </div>
+                <div class="d-flex gap-2 mt-2">
+                    <button
+                        class="btn btn-outline-primary btn-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1"
+                        onclick="openAdminChatModal('{{ w.user.id }}', '{{ w.user.username|escape }}')"
+                        title="Direct Message Worker">
+                        <i data-lucide="message-square" style="width: 14px; height: 14px;"></i> DM
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm px-2"
+                        data-info='{{ { "username": w.user.username, "email": w.user.email, "phone": w.user.phone or "", "address": w.user.address or "", "skills": w.skills or "", "experience_years": w.experience_years, "salary_rate": w.salary_rate, "performance_rating": w.performance_rating, "availability_status": w.availability_status, "emergency_contact": w.emergency_contact or "", "bank_details": w.bank_details or "" } | tojson | escape }}'
+                        onclick="openAdminEditModal('worker', '{{ w.id }}', JSON.parse(this.dataset.info))">
+                        <i data-lucide="edit" style="width: 12px; height: 12px;"></i> Edit Profile
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm px-3" onclick="deleteEntity('worker', '{{ w.id }}')"
+                        title="Archive Worker">
+                        <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- WORKER TRADE CREDENTIALS & CERTIFICATION VERIFICATION -->
+    <div class="mt-4">
+        <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
+            <i data-lucide="award" class="text-warning" style="width: 18px; height: 18px;"></i>
+            Worker Trade Credentials & Verification Center
+        </h6>
+        <div class="premium-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead>
+                        <tr>
+                            <th>Worker / Technician</th>
+                            <th>Certification Title</th>
+                            <th>Issuing Authority</th>
+                            <th>License #</th>
+                            <th>Document File</th>
+                            <th>Status</th>
+                            <th class="text-end">Verification Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cert in worker_certifications %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="user-avatar user-avatar-sm"
+                                        style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                        {{ cert.worker.user.username[:2].upper() if cert.worker and cert.worker.user
+                                        else 'WK' }}
+                                    </div>
+                                    <strong>{{ cert.worker.user.username if cert.worker and cert.worker.user else
+                                        'Worker #' ~ cert.worker_id }}</strong>
+                                </div>
+                            </td>
+                            <td><strong class="text-dark">{{ cert.cert_title }}</strong></td>
+                            <td>{{ cert.issuing_body or '-' }}</td>
+                            <td><code>{{ cert.cert_number or '-' }}</code></td>
+                            <td>
+                                {% if cert.document_file %}
+                                <a href="{{ cert.document_file }}" target="_blank"
+                                    class="btn btn-sm btn-outline-primary py-0 px-2">View Document</a>
+                                {% else %}
+                                <span class="text-muted">No File</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if cert.status == 'Verified' %}
+                                <span class="badge bg-success-subtle text-success">Verified</span>
+                                {% elif cert.status == 'Rejected' %}
+                                <span class="badge bg-danger-subtle text-danger">Rejected</span>
+                                {% else %}
+                                <span class="badge bg-warning-subtle text-dark">Pending Review</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if cert.status == 'Pending' %}
+                                <div class="d-flex justify-content-end gap-2">
+                                    <form action="{{ url_for('admin.verify_certification', cert_id=cert.id) }}"
+                                        method="POST">
+                                        <button type="submit"
+                                            class="btn btn-sm btn-success fw-bold px-3">Verify</button>
+                                    </form>
+                                    <form action="{{ url_for('admin.reject_certification', cert_id=cert.id) }}"
+                                        method="POST">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-3">Reject</button>
+                                    </form>
+                                </div>
+                                {% else %}
+                                <small class="text-muted">{{ cert.status }}</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No worker trade certifications submitted
+                                for review.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 4: CUSTOMERS -->
+<div id="section-customers" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="fw-bold mb-0">Customers</h6>
+            <small class="text-secondary">Clients who have associated projects or service requests</small>
+        </div>
+        <span class="badge bg-primary px-3 py-2 fs-6">{{ customers|length }} Associated Clients</span>
+    </div>
+    <div class="row g-3">
+        {% for c in customers %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="premium-card h-100 d-flex flex-column justify-content-between gap-3 shadow-sm">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="user-avatar bg-info bg-opacity-10 text-info" style="width: 48px; height: 48px;">
+                        <i data-lucide="building"></i>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <h6 class="fw-bold mb-0">{{ c.company_name or 'Independent Client' }}</h6>
+                        <span class="small text-secondary">User: @{{ c.user.username }}</span>
+                        <span class="small text-muted">{{ c.user.email }}</span>
+                    </div>
+                </div>
+
+                <div class="border-top pt-2 small text-secondary">
+                    <div class="mb-1"><strong>Billing Address:</strong></div>
+                    <div class="text-truncate">{{ c.billing_address or c.user.address or 'N/A' }}</div>
+                </div>
+
+                <div class="d-flex justify-content-between border-top pt-2 text-secondary small">
+                    <span>Phone: <strong>{{ c.user.phone or 'N/A' }}</strong></span>
+                    <span>Projects: <strong>{{ c.projects|length }}</strong></span>
+                </div>
+                <div class="d-flex gap-2 mt-2">
+                    <button
+                        class="btn btn-primary btn-sm flex-grow-1 d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold"
+                        onclick="openAdminChatModal('{{ c.user.id }}', '{{ c.user.username|escape }}')"
+                        title="Send Direct Message to Customer">
+                        <i data-lucide="message-square" style="width: 16px; height: 16px;"></i> DM Customer
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5 text-secondary">
+            <i data-lucide="users" style="width: 48px; height: 48px; opacity: 0.3;" class="mb-2"></i>
+            <h6>No Associated Customers Found</h6>
+            <p class="small">Customers will appear here once they request a service or create a project with your firm.
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- SECTION 5: ATTENDANCE -->
+<div id="section-attendance" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h5 class="fw-bold mb-1">Worker Attendance</h5>
+            <p class="text-secondary small mb-0">Daily check-ins, field job locations, and verified hours worked across society sites.</p>
+        </div>
+        <a href="{{ url_for('admin.attendance_page') }}" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2">
+            <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+            <span>Open Attendance Board</span>
+        </a>
+    </div>
+
+    <!-- Quick Metric Cards -->
+    <div class="row g-3">
+        <div class="col-12 col-sm-4">
+            <div class="card border shadow-sm rounded-3 p-3 bg-white">
+                <div class="text-muted small fw-semibold text-uppercase tracking-wider mb-1">Present Today</div>
+                <div class="fs-4 fw-bold text-success">{{ workers_present }} <span class="fs-6 fw-normal text-muted">Artisans</span></div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-4">
+            <div class="card border shadow-sm rounded-3 p-3 bg-white">
+                <div class="text-muted small fw-semibold text-uppercase tracking-wider mb-1">Absent Today</div>
+                <div class="fs-4 fw-bold text-secondary">{{ workers_absent }} <span class="fs-6 fw-normal text-muted">Artisans</span></div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-4">
+            <div class="card border shadow-sm rounded-3 p-3 bg-white">
+                <div class="text-muted small fw-semibold text-uppercase tracking-wider mb-1">Total Verified Logs</div>
+                <div class="fs-4 fw-bold text-primary">{{ attendance|length }} <span class="fs-6 fw-normal text-muted">Records</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="premium-card p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light text-muted small text-uppercase">
+                    <tr>
+                        <th style="min-width: 160px;">Artisan</th>
+                        <th style="min-width: 120px;">Date</th>
+                        <th style="min-width: 180px;">Location / Society Site</th>
+                        <th style="min-width: 110px;">Punch In</th>
+                        <th style="min-width: 110px;">Punch Out</th>
+                        <th style="min-width: 120px;">Verification</th>
+                        <th style="min-width: 100px;">Status</th>
+                        <th style="min-width: 90px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in attendance %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="rounded-circle bg-primary bg-opacity-10 text-primary fw-bold d-flex justify-content-center align-items-center"
+                                    style="width: 30px; height: 30px; font-size: 0.75rem;">
+                                    {{ a.worker.user.username[:2].upper() if (a.worker and a.worker.user) else 'W' }}
+                                </div>
+                                <span class="fw-semibold text-dark">{{ a.worker.user.username if (a.worker and a.worker.user) else 'Artisan' }}</span>
+                            </div>
+                        </td>
+                        <td class="text-secondary fw-medium">{{ a.date.strftime('%d %b %Y') }}</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i data-lucide="map-pin" style="width: 14px; height: 14px;" class="text-muted"></i>
+                                <span class="fw-medium text-dark">{{ a.project.location_name.split(',')[0].strip() if (a.project and a.project.location_name) else (a.project.name if a.project else 'Society Site') }}</span>
+                            </div>
+                        </td>
+                        <td>{{ a.check_in_time.strftime('%I:%M %p') if a.check_in_time else '-' }}</td>
+                        <td>
+                            {% if not a.check_out_time and a.check_in_time and a.date == now.date() %}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 rounded-pill">On Site</span>
+                            {% else %}
+                                {{ a.check_out_time.strftime('%I:%M %p') if a.check_out_time else '-' }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if a.verified_by_gps %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill d-inline-flex align-items-center gap-1">
+                                <i data-lucide="map-pin" style="width: 11px; height: 11px;"></i> GPS Verified
+                            </span>
+                            {% elif a.verified_by_qr %}
+                            <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 rounded-pill d-inline-flex align-items-center gap-1">
+                                <i data-lucide="qr-code" style="width: 11px; height: 11px;"></i> QR Code
+                            </span>
+                            {% else %}
+                            <span class="badge bg-light text-secondary border px-2 py-1 rounded-pill">
+                                Manual
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge {% if a.status in ('Present', 'Verified') %}bg-success-subtle text-success border border-success-subtle{% elif a.status == 'Late' %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% else %}bg-secondary-subtle text-secondary border{% endif %} px-2 py-1 rounded-pill">
+                                {{ a.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-primary py-1 px-2"
+                                    data-info='{{ { "date": a.date.strftime("%Y-%m-%d"), "status": a.status, "check_in_time": a.check_in_time.strftime("%H:%M:%S") if a.check_in_time else "" } | tojson | escape }}'
+                                    onclick="openAdminEditModal('attendance', '{{ a.id }}', JSON.parse(this.dataset.info))" title="Edit Record">
+                                    <i data-lucide="edit" style="width: 12px; height: 12px;"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger py-1 px-2"
+                                    onclick="deleteEntity('attendance', '{{ a.id }}')" title="Archive Record">
+                                    <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted small">
+                            No attendance records logged yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 6: MATERIALS INVENTORY -->
+<div id="section-materials" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <div class="d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0">Materials Inventory Tracker</h6>
+        <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal"
+            data-bs-target="#addMaterialModal">
+            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+            Add Material
+        </button>
+    </div>
+
+    <div class="premium-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Resource Name</th>
+                        <th>Stock Count</th>
+                        <th>Unit</th>
+                        <th>Threshold Level</th>
+                        <th>Unit Cost (₹)</th>
+                        <th>Vendor Supplier</th>
+                        <th>Alert Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in materials %}
+                    <tr>
+                        <td class="fw-semibold">{{ m.name }}</td>
+                        <td>{{ m.quantity_in_stock }}</td>
+                        <td>{{ m.unit }}</td>
+                        <td>{{ m.reorder_level }}</td>
+                        <td>₹{{ "{:,.2f}".format(m.unit_price) }}</td>
+                        <td>
+                            <div>{{ m.supplier_name }}</div>
+                            <small class="text-secondary">{{ m.supplier_contact }}</small>
+                        </td>
+                        <td>
+                            {% if m.quantity_in_stock <= m.reorder_level %} <span class="badge bg-danger">Critical
+                                Reorder</span>
+                                {% else %}
+                                <span class="badge bg-success">Healthy</span>
+                                {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-primary py-1 px-2"
+                                    data-info='{{ { "name": m.name, "stock": m.quantity_in_stock, "price": m.unit_price, "supplier": m.supplier_name or "", "min_stock": m.reorder_level, "purchase_date": m.last_restocked.strftime("%Y-%m-%d") if m.last_restocked else "" } | tojson | escape }}'
+                                    onclick="openAdminEditModal('material', '{{ m.id }}', JSON.parse(this.dataset.info))">
+                                    <i data-lucide="edit" style="width: 12px; height: 12px;"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger py-1 px-2"
+                                    onclick="deleteEntity('material', '{{ m.id }}')" title="Archive Material">
+                                    <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 7: EQUIPMENT REGISTRY -->
+<div id="section-equipment" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <div class="d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0">Heavy Machinery Registry</h6>
+        <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal"
+            data-bs-target="#addEquipmentModal">
+            <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+            Register Machinery
+        </button>
+    </div>
+
+    <div class="premium-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Equipment / Asset</th>
+                        <th>Serial Key</th>
+                        <th>Last Serviced</th>
+                        <th>Next Service</th>
+                        <th>Condition status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eq in equipment %}
+                    <tr>
+                        <td class="fw-semibold">{{ eq.name }}</td>
+                        <td><code>{{ eq.serial_number }}</code></td>
+                        <td>{{ eq.last_service_date.strftime('%b %d, %Y') if eq.last_service_date else '-' }}</td>
+                        <td>{{ eq.next_service_date.strftime('%b %d, %Y') if eq.next_service_date else '-' }}</td>
+                        <td>
+                            <span
+                                class="badge {% if eq.status == 'Available' %}bg-success{% elif eq.status == 'In Use' %}bg-primary{% elif eq.status == 'Maintenance' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ eq.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm btn-light border"
+                                    data-notes="{{ (eq.maintenance_notes or 'No current notes.')|escape }}"
+                                    onclick="alert(this.dataset.notes)">Notes</button>
+                                <button class="btn btn-sm btn-outline-primary py-1 px-2"
+                                    data-info='{{ { "name": eq.name, "serial_number": eq.serial_number or "", "status": eq.status, "last_service_date": eq.last_service_date.strftime("%Y-%m-%d") if eq.last_service_date else "", "next_service_date": eq.next_service_date.strftime("%Y-%m-%d") if eq.next_service_date else "", "assigned_worker_id": eq.assigned_worker_id or "", "maintenance_notes": eq.maintenance_notes or "" } | tojson | escape }}'
+                                    onclick="openAdminEditModal('equipment', '{{ eq.id }}', JSON.parse(this.dataset.info))">
+                                    <i data-lucide="edit" style="width: 12px; height: 12px;"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger py-1 px-2"
+                                    onclick="deleteEntity('equipment', '{{ eq.id }}')" title="Archive Equipment">
+                                    <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 8: PAYMENTS & INVOICES -->
+<div id="section-payments" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <div class="d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0">Financial Transactions & Invoice Registry</h6>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-success d-flex align-items-center gap-2 fw-semibold" data-bs-toggle="modal"
+                data-bs-target="#addInvoiceModal">
+                <i data-lucide="wallet" style="width: 16px; height: 16px;"></i> Issue Worker Payslip
+            </button>
+            <button class="btn btn-primary d-flex align-items-center gap-2 fw-semibold" data-bs-toggle="modal"
+                data-bs-target="#addInvoiceModal">
+                <i data-lucide="plus" style="width: 16px; height: 16px;"></i> Create Bill / Invoice
+            </button>
+        </div>
+    </div>
+
+    <div class="premium-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Flow Direction</th>
+                        <th>Amount (₹)</th>
+                        <th>Date</th>
+                        <th>Receiver / Client</th>
+                        <th>Status</th>
+                        <th>Exports</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments %}
+                    <tr>
+                        <td><code>{{ p.invoice_number or 'LOG-' ~ p.id }}</code></td>
+                        <td>
+                            {% if p.type == 'revenue' %}
+                            <span class="text-success"><i data-lucide="arrow-down-left"
+                                    style="width: 12px; height: 12px;"></i> Revenue (Inflow)</span>
+                            {% elif p.type == 'expense' %}
+                            <span class="text-danger"><i data-lucide="arrow-up-right"
+                                    style="width: 12px; height: 12px;"></i> Expense (Outflow)</span>
+                            {% else %}
+                            <span class="text-primary"><i data-lucide="user-check"
+                                    style="width: 12px; height: 12px;"></i> Salary (Outflow)</span>
+                            {% endif %}
+                        </td>
+                        <td class="fw-bold">₹{{ "{:,.2f}".format(p.amount) }}</td>
+                        <td>{{ p.date.strftime('%b %d, %Y') }}</td>
+                        <td>
+                            {% if p.customer_id %}
+                            {{ p.customer.company_name }}
+                            {% elif p.worker_id %}
+                            Worker @{{ p.worker.user.username }}
+                            {% else %}
+                            General Supply
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span
+                                class="badge {% if p.status == 'Paid' %}bg-success{% elif p.status == 'Pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ p.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <button
+                                    class="btn btn-sm btn-light border py-1 px-2 d-inline-flex align-items-center gap-1"
+                                    onclick="downloadInvoicePDF('{{ p.id }}')">
+                                    <i data-lucide="download" style="width: 12px; height: 12px;"></i> PDF
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary py-1 px-2"
+                                    data-info='{{ { "amount": p.amount, "status": p.status, "date": p.date.strftime("%Y-%m-%d"), "type": p.type, "invoice_number": p.invoice_number or "", "discount": p.discount or 0.0, "gst_tax": p.gst_tax or 0.0, "labor_cost": p.labor_cost or 0.0, "material_cost": p.material_cost or 0.0 } | tojson | escape }}'
+                                    onclick="openAdminEditModal('payment', '{{ p.id }}', JSON.parse(this.dataset.info))">
+                                    <i data-lucide="edit" style="width: 12px; height: 12px;"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger py-1 px-2"
+                                    onclick="deleteEntity('payment', '{{ p.id }}')" title="Archive Payment">
+                                    <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 9: REPORT GENERATOR -->
+<div id="section-reports" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <h6 class="fw-bold mb-0">PDF Report Exporter Console</h6>
+    <div class="row g-3">
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="premium-card text-center d-flex flex-column gap-3 py-4">
+                <div class="bg-primary bg-opacity-10 text-primary mx-auto rounded-circle p-3 d-inline-flex">
+                    <i data-lucide="clipboard-list" style="width: 28px; height: 28px;"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1">Attendance Audit Sheet</h6>
+                    <p class="small text-secondary mb-0">Logs coordinates and verification audits for today.</p>
+                </div>
+                <button class="btn btn-outline-primary btn-sm w-100" onclick="generateReportPDF('attendance')">Download
+                    PDF Report</button>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="premium-card text-center d-flex flex-column gap-3 py-4">
+                <div class="bg-success bg-opacity-10 text-success mx-auto rounded-circle p-3 d-inline-flex">
+                    <i data-lucide="file-check" style="width: 28px; height: 28px;"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1">Financial Budget Balance</h6>
+                    <p class="small text-secondary mb-0">Itemized lists of customer bills and vendor expenditures.</p>
+                </div>
+                <button class="btn btn-outline-success btn-sm w-100" onclick="generateReportPDF('financial')">Download
+                    PDF Report</button>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="premium-card text-center d-flex flex-column gap-3 py-4">
+                <div class="bg-warning bg-opacity-10 text-warning mx-auto rounded-circle p-3 d-inline-flex">
+                    <i data-lucide="gantt-chart-square" style="width: 28px; height: 28px;"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1">Active Projects Progress Sheet</h6>
+                    <p class="small text-secondary mb-0">Summarizes status, supervisors, and schedule delays.</p>
+                </div>
+                <button class="btn btn-outline-warning btn-sm w-100" onclick="generateReportPDF('projects')">Download
+                    PDF Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 10: INTERACTIVE ANALYTICS -->
+<div id="section-analytics" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <h6 class="fw-bold mb-0">Productivity and Resource Analytics</h6>
+    <div class="row g-4">
+        <div class="col-12 col-md-6">
+            <div class="premium-card">
+                <h6 class="fw-bold mb-3">Project Status Distribution</h6>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="analyticsProjectsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="premium-card">
+                <h6 class="fw-bold mb-3">Field Worker Attendance Yield (Weekly)</h6>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="analyticsAttendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 11: SCHEDULER CALENDAR -->
+<div id="section-calendar" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <h6 class="fw-bold mb-0">Scheduler & Deadline Calendar</h6>
+    <div class="premium-card">
+        <!-- Basic Calendar Grid -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">July 2026</h5>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary">Prev</button>
+                <button class="btn btn-outline-secondary active">Today</button>
+                <button class="btn btn-outline-secondary">Next</button>
+            </div>
+        </div>
+
+        <div class="row g-1 text-center fw-semibold text-secondary mb-2" style="font-size: 0.75rem;">
+            <div class="col">SUN</div>
+            <div class="col">MON</div>
+            <div class="col">TUE</div>
+            <div class="col">WED</div>
+            <div class="col">THU</div>
+            <div class="col">FRI</div>
+            <div class="col">SAT</div>
+        </div>
+
+        <div class="row g-1 row-cols-7" style="min-height: 280px;" id="calendarDaysGrid">
+            <!-- Populated dynamically via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 12: SETTINGS -->
+<!-- SECTION 15: ADMIN PROFILE -->
+<div id="section-profile" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <h6 class="fw-bold mb-0">Super Admin Profile</h6>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <div class="premium-card">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                    <h6 class="fw-bold mb-0">Profile Information</h6>
+                    <button type="button" class="btn btn-sm btn-outline-primary shadow-sm" id="btn-edit-admin-profile"
+                        onclick="enableAdminProfileEditMode(true)">
+                        <i data-lucide="edit" style="width: 14px; height: 14px; vertical-align: middle;"></i> Edit
+                        Profile
+                    </button>
+                </div>
+
+                <form id="adminProfileForm" onsubmit="saveAdminProfile(event)" class="d-flex flex-column gap-3"
+                    enctype="multipart/form-data">
+                    <div class="d-flex align-items-center gap-3 mb-2">
+                        <img src="{{ current_user.profile_pic or 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop' }}"
+                            id="admin-pic-preview" class="rounded-circle border shadow-sm"
+                            style="width: 80px; height: 80px; object-fit: cover;">
+                        <div>
+                            <label class="form-label text-secondary small fw-semibold">Profile Picture</label>
+                            <input type="file" class="form-control form-control-sm admin-profile-editable"
+                                name="profile_pic" accept="image/*" disabled onchange="previewAdminImage(this)">
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Username</label>
+                            <input type="text" class="form-control admin-profile-editable" name="username"
+                                value="{{ current_user.username }}" required disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Email Address</label>
+                            <input type="email" class="form-control admin-profile-editable" name="email"
+                                value="{{ current_user.email }}" required disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Phone Number</label>
+                            <input type="text" class="form-control admin-profile-editable" name="phone"
+                                value="{{ current_user.phone or '' }}" placeholder="e.g. +1 (555) 0123" disabled>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-semibold">Change Password</label>
+                            <input type="password" class="form-control admin-profile-editable" name="password"
+                                placeholder="••••••••" disabled>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-secondary small fw-semibold">Street Address</label>
+                            <textarea class="form-control admin-profile-editable" name="address" rows="2"
+                                placeholder="e.g. 123 Main St, New York, NY"
+                                disabled>{{ current_user.address or '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-none justify-content-end gap-2 mt-3" id="admin-profile-actions">
+                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                            onclick="enableAdminProfileEditMode(false)">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-primary d-flex align-items-center gap-1 shadow-sm">
+                            <span class="spinner-border spinner-border-sm d-none" id="admin-profile-spinner"></span>
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="premium-card">
+                <h6 class="fw-bold border-bottom pb-2 mb-3">Workspace Configurations</h6>
+                <div class="d-flex flex-column gap-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="switchGeofence" checked>
+                        <label class="form-check-label text-secondary small" for="switchGeofence">Enforce GPS distance
+                            checks during check-in geofences (Radius: 200m)</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="switchQr" checked>
+                        <label class="form-check-label text-secondary small" for="switchQr">Require Site-QR scans for
+                            attendance validation</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="switchAi">
+                        <label class="form-check-label text-secondary small" for="switchAi">Auto-run AI Worker Matches
+                            for newly published projects</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- SECTION 13: AI INSIGHTS -->
+<div id="section-ai" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <h6 class="fw-bold mb-0">AI Intelligence Control Board</h6>
+    <div class="row g-4">
+        <!-- AI Worker Recommendation Engine -->
+        <div class="col-lg-6">
+            <div class="premium-card h-100">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i data-lucide="brain" class="text-primary"></i>
+                    AI Worker-to-Project Proximity Matcher
+                </h6>
+                <div class="mb-3">
+                    <label class="form-label text-secondary small">Target Project Site</label>
+                    <select class="form-select" id="aiProjectSelect" onchange="fetchAiWorkerRecommendation()">
+                        <option value="">Select Project</option>
+                        {% for p in projects %}
+                        <option value="{{ p.id }}">{{ p.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="aiWorkerRecommendationResults" class="d-flex flex-column gap-2 small text-secondary">
+                    Select a project to trigger proximity and skills matching heuristics...
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Cost Estimation Engine -->
+        <div class="col-lg-6">
+            <div class="premium-card h-100">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i data-lucide="calculator" class="text-success"></i>
+                    AI Project Cost Estimator
+                </h6>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">Total Area (Sqft)</label>
+                        <input type="number" class="form-control" id="aiCostArea" value="2500">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">Material Grade</label>
+                        <select class="form-select" id="aiCostGrade">
+                            <option value="standard">Standard Grade</option>
+                            <option value="premium" selected>Premium Grade</option>
+                            <option value="luxury">Luxury Custom</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-secondary small">Timeline (Days)</label>
+                    <input type="number" class="form-control" id="aiCostDays" value="90">
+                </div>
+                <button class="btn btn-success btn-sm w-100 mb-3" onclick="calculateAiCostEstimate()">Run Estimation
+                    Algorithm</button>
+
+                <div id="aiCostEstimateResults" class="p-3 bg-light rounded border d-none small">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Business Insights -->
+        <div class="col-12">
+            <div class="premium-card">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i data-lucide="trending-up" class="text-info"></i>
+                    AI Business Optimization Insights
+                </h6>
+                <div class="d-flex flex-column gap-3 mb-2" id="aiBusinessInsightsList">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Delay Predictions -->
+        <div class="col-12 col-lg-6">
+            <div class="premium-card h-100">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i data-lucide="alert-triangle" class="text-danger"></i>
+                    AI Project Delay Predictions
+                </h6>
+                <div class="d-flex flex-column gap-3" id="aiDelayPredictionsList">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Material Forecasts -->
+        <div class="col-12 col-lg-6">
+            <div class="premium-card h-100">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i data-lucide="package-search" class="text-warning"></i>
+                    AI Material Supply Forecasts
+                </h6>
+                <div class="d-flex flex-column gap-3" id="aiMaterialForecastsList">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- MODALS -->
+
+<!-- Modal: Admin Direct Messaging / Chat -->
+<div class="modal fade" id="adminChatModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <div class="modal-header border-bottom py-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i data-lucide="message-square" style="width: 20px; height: 20px; color: var(--primary-color);"></i>
+                    <h5 class="modal-title fw-bold mb-0" id="adminChatHeader">Direct Message</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0 d-flex flex-column" style="height: 450px;">
+                <!-- Chat logs -->
+                <div class="d-flex flex-column gap-3 p-3 overflow-y-auto" id="adminChatLogsArea"
+                    style="flex: 1; background: var(--background-color);">
+                    <div class="text-center text-muted py-5 small" id="adminChatLoading">Loading conversation history...
+                    </div>
+                </div>
+                <!-- Chat input -->
+                <div class="p-3 border-top bg-white d-flex gap-2 align-items-center">
+                    <input type="hidden" id="adminChatRecipientId">
+                    <input type="text" class="form-control" id="adminChatInputField"
+                        placeholder="Type direct message to worker..."
+                        onkeydown="if(event.key==='Enter') sendAdminChatMessage()">
+                    <button class="btn btn-primary d-flex align-items-center gap-1" onclick="sendAdminChatMessage()"
+                        id="btnSendAdminMsg">
+                        <i data-lucide="send" style="width: 16px; height: 16px;"></i> Send
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Assign/Transfer Worker -->
+<div class="modal fade" id="transferWorkerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold">Allocate Field Worker</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('admin.transfer_worker') }}" method="POST">
+                <div class="modal-body d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label text-secondary small">Select Technician</label>
+                        <select class="form-select" name="worker_id" required>
+                            <option value="">Select Technician</option>
+                            {% for w in workers %}
+                            <option value="{{ w.id }}">{{ w.user.username }} ({{ w.skills }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label text-secondary small">Target Project Site</label>
+                        <select class="form-select" name="project_id" required>
+                            <option value="">Select Project Site</option>
+                            {% for p in projects %}
+                            <option value="{{ p.id }}">{{ p.name }} ({{ p.status }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Allocate/Transfer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Invoice/Payment -->
+<div class="modal fade" id="addInvoiceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold">Create Invoice / Payment Record</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('admin.add_payment') }}" method="POST">
+                <div class="modal-body d-flex flex-column gap-3">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Transaction Type</label>
+                            <select class="form-select" name="type" required>
+                                <option value="revenue" selected>Revenue Invoice (Client)</option>
+                                <option value="expense">Expense Billing (Suppliers)</option>
+                                <option value="salary">Worker Salary payout</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Amount (₹)</label>
+                            <input type="number" step="0.01" class="form-control" name="amount" placeholder="4500.00"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Project Link</label>
+                            <select class="form-select" name="project_id">
+                                <option value="">None</option>
+                                {% for p in projects %}
+                                <option value="{{ p.id }}">{{ p.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Customer Link</label>
+                            <select class="form-select" name="customer_id">
+                                <option value="">None</option>
+                                {% for c in customers %}
+                                <option value="{{ c.id }}">{{ c.company_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Worker Link</label>
+                            <select class="form-select" name="worker_id">
+                                <option value="">None</option>
+                                {% for w in workers %}
+                                <option value="{{ w.id }}">{{ w.user.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Status</label>
+                            <select class="form-select" name="status">
+                                <option value="Pending" selected>Pending</option>
+                                <option value="Paid">Paid</option>
+                                <option value="Overdue">Overdue</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label text-secondary small">Transaction Description</label>
+                        <textarea class="form-control" name="description"
+                            placeholder="Reference notes for invoicing audits" rows="2"
+                            required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Publish Ledger</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Material -->
+<div class="modal fade" id="addMaterialModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold">Add Material to Inventory</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('admin.add_material') }}" method="POST">
+                <div class="modal-body d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label text-secondary small">Material Name *</label>
+                        <input type="text" class="form-control" name="name" required placeholder="e.g. Portland Cement">
+                    </div>
+                    <div>
+                        <label class="form-label text-secondary small">Description</label>
+                        <textarea class="form-control" name="description"
+                            placeholder="Specification details..."></textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Quantity in Stock *</label>
+                            <input type="number" step="0.01" class="form-control" name="quantity_in_stock" required
+                                value="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Unit of Measure *</label>
+                            <input type="text" class="form-control" name="unit" required
+                                placeholder="e.g. bags, tons, meters">
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Reorder Threshold *</label>
+                            <input type="number" step="0.01" class="form-control" name="reorder_level" required
+                                value="10">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Unit Price (₹) *</label>
+                            <input type="number" step="0.01" class="form-control" name="unit_price" required value="0">
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Supplier Name</label>
+                            <input type="text" class="form-control" name="supplier_name" placeholder="Supplier Co">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Supplier Contact</label>
+                            <input type="text" class="form-control" name="supplier_contact" placeholder="Phone / Email">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Material</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Equipment -->
+<div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold">Register Heavy Machinery</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('admin.add_equipment') }}" method="POST">
+                <div class="modal-body d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label text-secondary small">Equipment/Machinery Name *</label>
+                        <input type="text" class="form-control" name="name" required
+                            placeholder="e.g. Caterpillar Excavator 320D">
+                    </div>
+                    <div>
+                        <label class="form-label text-secondary small">Serial Key / ID *</label>
+                        <input type="text" class="form-control" name="serial_number" required
+                            placeholder="e.g. CAT320DX-88910">
+                    </div>
+                    <div>
+                        <label class="form-label text-secondary small">Condition Status</label>
+                        <select class="form-select" name="status">
+                            <option value="Available">Available for Dispatch</option>
+                            <option value="In Use">In Active Use</option>
+                            <option value="Maintenance">Undergoing Maintenance</option>
+                            <option value="Retired">Retired / Out of Service</option>
+                        </select>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Last Serviced Date</label>
+                            <input type="date" class="form-control" name="last_service_date">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Next Service Deadline</label>
+                            <input type="date" class="form-control" name="next_service_date">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label text-secondary small">Maintenance Log Notes</label>
+                        <textarea class="form-control" name="maintenance_notes"
+                            placeholder="Service remarks..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Register Asset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 13: SYSTEM SETTINGS -->
+<div id="section-settings" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <div class="row g-4">
+        <!-- Left Side: System Configurations Form -->
+        <div class="col-12 col-xl-7 d-flex flex-column gap-4">
+            <div class="premium-card">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i data-lucide="settings-2" class="text-primary"></i>
+                    Company Profile & System Settings Configuration
+                </h6>
+                <form action="/admin/company-profile/update" method="POST" enctype="multipart/form-data"
+                    class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">Company Legal Name *</label>
+                        <input type="text" class="form-control" name="company_name"
+                            value="{{ contractor.company_name if contractor else 'Admin Construction & Builders' }}"
+                            required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">Company Contact Email *</label>
+                        <input type="email" class="form-control" name="contact_email"
+                            value="{{ contractor.contact_email if contractor else current_user.email }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">Support Helpline Phone *</label>
+                        <input type="text" class="form-control" name="contact_phone"
+                            value="{{ contractor.contact_phone if contractor else (current_user.phone or '+1 555-0100') }}"
+                            required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">Business Operating Hours *</label>
+                        <input type="text" class="form-control" name="business_hours"
+                            value="{{ contractor.business_hours if contractor else '09:00 - 18:00' }}"
+                            placeholder="e.g. 09:00 - 18:00 (Mon-Sat)">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small">GST / Tax Rate (%)</label>
+                        <input type="number" step="0.01" class="form-control" name="tax_rate" value="18.00">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small">Currency Symbol</label>
+                        <input type="text" class="form-control" name="currency" value="₹">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small">Default System Locale</label>
+                        <select class="form-select" name="language">
+                            <option value="en">English (US/UK)</option>
+                            <option value="es">Español (ES)</option>
+                            <option value="fr">Français (FR)</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label text-secondary small">Headquarters / Office Address</label>
+                        <input type="text" class="form-control" name="office_address"
+                            value="{{ contractor.office_address if contractor else (current_user.address or '') }}"
+                            placeholder="Full office address">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">Business License Number</label>
+                        <input type="text" class="form-control" name="license_number"
+                            value="{{ contractor.license_number if contractor else '' }}"
+                            placeholder="e.g. LIC-2026-B992">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">Trade Category / Specialty</label>
+                        <select class="form-select" name="business_type">
+                            <option value="General" {% if contractor and contractor.business_type=='General'
+                                %}selected{% endif %}>General Contracting</option>
+                            <option value="Electrical" {% if contractor and contractor.business_type=='Electrical'
+                                %}selected{% endif %}>Electrical & Power</option>
+                            <option value="Plumbing" {% if contractor and contractor.business_type=='Plumbing'
+                                %}selected{% endif %}>Plumbing & Sanitation</option>
+                            <option value="Civil" {% if contractor and contractor.business_type=='Civil' %}selected{%
+                                endif %}>Civil & Masonry</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label text-secondary small">Service Areas (Comma-separated cities)</label>
+                        <input type="text" class="form-control" name="service_areas"
+                            value="{{ contractor.service_areas if contractor else 'Mumbai,Pune,Nashik,Thane' }}"
+                            placeholder="e.g. Mumbai, Pune, Thane">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label text-secondary small">Company Logo Image Upload</label>
+                        {% if contractor and contractor.company_logo %}
+                        <div class="d-flex align-items-center gap-3 mb-2 p-2 bg-light rounded border">
+                            <img src="{{ contractor.company_logo }}" alt="Company Logo" class="rounded"
+                                style="height: 48px; object-fit: contain;">
+                            <span class="small text-muted">Current Logo Loaded</span>
+                        </div>
+                        {% endif %}
+                        <input type="file" class="form-control" name="logo" accept="image/*">
+                    </div>
+
+                    <hr class="my-4">
+                    <h6 class="fw-bold mb-2 text-primary small">Email SMTP Dispatch Credentials</h6>
+
+                    <div class="col-md-8">
+                        <label class="form-label text-secondary small">SMTP Server Hostname</label>
+                        <input type="text" class="form-control" name="email_smtp_host" value="smtp.gmail.com">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-secondary small">SMTP Port</label>
+                        <input type="number" class="form-control" name="email_smtp_port" value="587">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label text-secondary small">SMTP Outbound Sender Email</label>
+                        <input type="email" class="form-control" name="email_sender" value="alerts@sahakarseva.org">
+                    </div>
+
+                    <hr class="my-4">
+                    <h6 class="fw-bold mb-2 text-primary small">Outbound SMS Settings</h6>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">SMS API Provider</label>
+                        <input type="text" class="form-control" name="sms_provider" value="Twilio">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small">API Authorization Secret Token</label>
+                        <input type="password" class="form-control" name="sms_api_key" value="••••••••">
+                    </div>
+
+                    <div class="col-12 mt-4 text-end">
+                        <button type="submit"
+                            class="btn btn-primary d-flex align-items-center gap-1 ms-auto px-4 shadow-sm">
+                            <i data-lucide="save" style="width: 16px; height: 16px;"></i> Save Profile & Sync DB Backup
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Side: Database Backups & 2FA Setup -->
+        <div class="col-12 col-xl-5 d-flex flex-column gap-4">
+            <!-- Backup Configuration Card -->
+            <div class="premium-card">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i data-lucide="database" class="text-warning"></i>
+                    Database Backups & Recovery
+                </h6>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <button class="btn btn-warning btn-sm d-flex align-items-center gap-1 text-dark fw-bold"
+                        id="btnCreateBackup" onclick="triggerDbBackup(this)">
+                        <i data-lucide="plus-circle" style="width: 14px; height: 14px;"></i> Create Backup JSON
+                    </button>
+
+                    <a href="{{ url_for('admin.download_database_backup') }}"
+                        class="btn btn-outline-warning btn-sm d-flex align-items-center gap-1 text-dark fw-bold"
+                        title="Download MySQL SQL Backup">
+                        <i data-lucide="download" style="width: 14px; height: 14px;"></i> Download SQL Dump
+                    </a>
+
+                    <!-- Upload Backup Form -->
+                    <form action="/admin/api/backup/restore" method="POST" enctype="multipart/form-data"
+                        class="d-inline-block">
+                        <input type="file" name="file" id="restoreFile" accept=".json" class="d-none"
+                            onchange="this.form.submit()">
+                        <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
+                            onclick="document.getElementById('restoreFile').click()">
+                            <i data-lucide="upload-cloud" style="width: 14px; height: 14px;"></i> Restore Upload
+                        </button>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Size</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="backups-tbody">
+                            <tr>
+                                <td colspan="4" class="text-center text-secondary small py-3">Loading backup
+                                    registers...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Soft-Deleted & Archived Records Recovery Center -->
+            <div class="premium-card">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i data-lucide="archive" class="text-danger"></i>
+                    Archived Records Recovery Center
+                </h6>
+                <div class="mb-3">
+                    <label class="form-label text-secondary small">Select Record Registry</label>
+                    <select class="form-select form-select-sm" id="archiveEntitySelector"
+                        onchange="loadArchivedRecords()">
+                        <option value="project">Projects</option>
+                        <option value="worker">Workers</option>
+                        <option value="customer">Customers</option>
+                        <option value="attendance">Attendance logs</option>
+                        <option value="material">Materials Inventory</option>
+                        <option value="equipment">Heavy Machinery</option>
+                        <option value="payment">Payments ledger</option>
+                    </select>
+                </div>
+                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-hover align-middle small">
+                        <thead>
+                            <tr>
+                                <th>ID / Identifier</th>
+                                <th>Title / Name</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="archived-records-tbody">
+                            <tr>
+                                <td colspan="3" class="text-center text-secondary small py-3">Select registry above to
+                                    load.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin 2FA Setup Card -->
+            <div class="premium-card">
+                <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                    <i data-lucide="shield-check" class="text-success"></i>
+                    Two-Factor Authentication (Google Authenticator)
+                </h6>
+                <p class="text-secondary small mb-3">Secure your administrator account by activating Google
+                    Authenticator TOTP codes.</p>
+                <div class="bg-light p-3 rounded mb-3 border text-center">
+                    <span class="text-secondary small d-block mb-1">Current Account 2FA Status</span>
+                    <h6 class="fw-bold mb-0 {% if current_user.two_factor_enabled %}text-success{% else %}text-danger{% endif %}"
+                        id="twoFactorStatusBadge">
+                        {% if current_user.two_factor_enabled %}2FA Enabled & Protected{% else %}2FA Disabled{% endif %}
+                    </h6>
+                </div>
+                <div id="twoFactorConfigPanel" class="d-none mb-3">
+                    <div id="twoFactorQrContainer" class="text-center mb-3"></div>
+                    <div class="mb-3 small text-secondary text-center">
+                        Scan with Google Authenticator or enter secret key:<br>
+                        <strong class="font-monospace text-primary fs-6" id="twoFactorSecretText"></strong>
+                    </div>
+                    <div class="input-group input-group-sm mb-3">
+                        <input type="text" class="form-control text-center font-monospace" id="twoFactorCodeInput"
+                            placeholder="Enter 6-digit token">
+                        <button class="btn btn-success" type="button" onclick="verifyAndToggle2FA(true)">Verify & Enable
+                            2FA</button>
+                    </div>
+                </div>
+                {% if current_user.two_factor_enabled %}
+                <button class="btn btn-outline-danger btn-sm w-100" id="btnToggle2FA" onclick="verifyAndToggle2FA(false)">
+                    Disable 2FA / Remove Authenticator
+                </button>
+                {% else %}
+                <button class="btn btn-outline-success btn-sm w-100" id="btnToggle2FA" onclick="loadTwoFactorSetup()">
+                    Enable 2FA via Authenticator
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 15: CENTRALIZED DOCUMENT VAULT -->
+<div id="section-documents" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="fw-bold mb-1">
+                <i data-lucide="file-archive" class="text-primary me-2"></i>
+                Centralized Document Vault
+            </h5>
+            <p class="text-secondary small mb-0">Secure Repository for Contracts, Permits, Insurance Policies, and Trade
+                Certifications</p>
+        </div>
+        <button class="btn btn-primary btn-sm d-flex align-items-center gap-1 shadow-sm fw-bold px-3"
+            data-bs-toggle="modal" data-bs-target="#uploadDocModal">
+            <i data-lucide="upload-cloud" style="width: 16px; height: 16px;"></i> Upload Document
+        </button>
+    </div>
+
+    <div class="premium-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Document Title</th>
+                        <th>Category</th>
+                        <th>Associated Project / Worker</th>
+                        <th>File Size</th>
+                        <th>Uploaded Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in documents %}
+                    <tr>
+                        <td>
+                            <strong class="text-dark d-block">{{ d.title }}</strong>
+                            {% if d.notes %}<small class="text-muted">{{ d.notes }}</small>{% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary">{{ d.category }}</span>
+                        </td>
+                        <td>
+                            {% if d.project %}
+                            <small class="d-block text-primary fw-semibold"><i data-lucide="folder"
+                                    style="width:12px; height:12px;"></i> {{ d.project.name }}</small>
+                            {% endif %}
+                            {% if d.worker %}
+                            <small class="d-block text-secondary"><i data-lucide="user"
+                                    style="width:12px; height:12px;"></i> {{ d.worker.user.username if d.worker.user
+                                else 'Worker #' ~ d.worker_id }}</small>
+                            {% endif %}
+                            {% if not d.project and not d.worker %}
+                            <span class="text-muted extra-small">General Contractor Doc</span>
+                            {% endif %}
+                        </td>
+                        <td><code>{{ d.file_size or 'N/A' }}</code></td>
+                        <td><small class="text-muted">{{ d.uploaded_at.strftime('%Y-%m-%d %H:%M') if d.uploaded_at else
+                                'N/A' }}</small></td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ d.file_path }}" target="_blank" class="btn btn-sm btn-outline-info">
+                                    <i data-lucide="download" style="width: 14px; height: 14px;"></i> Download
+                                </a>
+                                <form action="{{ url_for('admin.delete_document', doc_id=d.id) }}" method="POST"
+                                    onsubmit="return confirm('Delete document from vault?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i data-lucide="folder-open" style="width: 36px; height: 36px;"
+                                class="mb-2 opacity-50 d-block mx-auto"></i>
+                            No documents in vault yet. Click "Upload Document" to add contracts, permits, or insurance
+                            policies.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- UPLOAD DOCUMENT MODAL -->
+<div class="modal fade" id="uploadDocModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold">Upload to Document Vault</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.upload_document') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label small fw-semibold text-secondary">Document Title *</label>
+                        <input type="text" class="form-control" name="title" required
+                            placeholder="e.g. Acme Warehouse Extension Contract">
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Category</label>
+                            <select class="form-select" name="category">
+                                <option value="Contract">Contract Agreement</option>
+                                <option value="Site Permit">Site Permit</option>
+                                <option value="Insurance Policy">Insurance Policy</option>
+                                <option value="Worker License">Worker Trade License</option>
+                                <option value="Safety Cert">Safety Compliance Cert</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Link to Project</label>
+                            <select class="form-select" name="project_id">
+                                <option value="">None (General Doc)</option>
+                                {% for p in projects %}
+                                <option value="{{ p.id }}">{{ p.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label small fw-semibold text-secondary">Upload File *</label>
+                        <input type="file" class="form-control" name="file" required>
+                    </div>
+                    <div>
+                        <label class="form-label small fw-semibold text-secondary">Notes / Description</label>
+                        <textarea class="form-control" name="notes" rows="2"
+                            placeholder="Optional document notes or expiration reminders..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">Upload Document</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 16: PROJECT EXPENSE TRACKER -->
+<div id="section-expenses" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="fw-bold mb-1">
+                <i data-lucide="receipt" class="text-success me-2"></i>
+                Project Expense Tracker
+            </h5>
+            <p class="text-secondary small mb-0">Log Fuel, Travel, Site Tools, Permits, and Subcontractor Expenditures
+            </p>
+        </div>
+        <button class="btn btn-success btn-sm d-flex align-items-center gap-1 shadow-sm fw-bold px-3"
+            data-bs-toggle="modal" data-bs-target="#logExpenseModal">
+            <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> Log Project Expense
+        </button>
+    </div>
+
+    <div class="premium-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Expense Title</th>
+                        <th>Category</th>
+                        <th>Project</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Receipt</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in expenses %}
+                    <tr>
+                        <td>
+                            <strong class="text-dark d-block">{{ e.title }}</strong>
+                            {% if e.description %}<small class="text-muted">{{ e.description }}</small>{% endif %}
+                        </td>
+                        <td><span class="badge bg-warning-subtle text-dark">{{ e.category }}</span></td>
+                        <td>
+                            {% if e.project %}
+                            <small class="fw-semibold text-primary"><i data-lucide="folder"
+                                    style="width:12px; height:12px;"></i> {{ e.project.name }}</small>
+                            {% else %}
+                            <span class="text-muted extra-small">General Overhead</span>
+                            {% endif %}
+                        </td>
+                        <td><strong class="text-danger">₹{{ "%.2f"|format(e.amount) }}</strong></td>
+                        <td><small class="text-muted">{{ e.date.strftime('%Y-%m-%d') if e.date else 'N/A' }}</small>
+                        </td>
+                        <td>
+                            {% if e.receipt_photo %}
+                            <a href="{{ e.receipt_photo }}" target="_blank"
+                                class="badge bg-info-subtle text-info text-decoration-none">
+                                <i data-lucide="image" style="width:11px; height:11px;"></i> Receipt
+                            </a>
+                            {% else %}
+                            <span class="text-muted extra-small">No Receipt</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <form action="{{ url_for('admin.delete_expense', exp_id=e.id) }}" method="POST"
+                                onsubmit="return confirm('Delete expense record?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i data-lucide="receipt" style="width: 36px; height: 36px;"
+                                class="mb-2 opacity-50 d-block mx-auto"></i>
+                            No expenses logged yet. Log fuel, travel, site tools, or permit expenses to calculate net
+                            profitability!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- WORKER SUBMITTED EXPENSE CLAIMS & REIMBURSEMENTS -->
+    <div class="mt-4">
+        <h6 class="fw-bold mb-3 text-dark d-flex align-items-center gap-2">
+            <i data-lucide="wallet" class="text-primary" style="width: 18px; height: 18px;"></i>
+            Worker Field Expense Claims & Reimbursement Approvals
+        </h6>
+        <div class="premium-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                    <thead>
+                        <tr>
+                            <th>Technician</th>
+                            <th>Claim Title & Category</th>
+                            <th>Project</th>
+                            <th>Claim Amount</th>
+                            <th>Receipt File</th>
+                            <th>Status</th>
+                            <th class="text-end">Reimbursement Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ec in worker_expense_claims %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="user-avatar user-avatar-sm"
+                                        style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                        {{ ec.worker.user.username[:2].upper() if ec.worker and ec.worker.user else 'WK'
+                                        }}
+                                    </div>
+                                    <div>
+                                        <strong class="text-dark d-block">{{ ec.worker.user.username if ec.worker and
+                                            ec.worker.user else 'Worker #' ~ ec.worker_id }}</strong>
+                                        <small class="text-muted">{{ ec.date.strftime('%b %d, %Y') if ec.date else ''
+                                            }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <strong class="text-dark d-block">{{ ec.title }}</strong>
+                                <span class="badge bg-secondary-subtle text-secondary">{{ ec.category }}</span>
+                            </td>
+                            <td>{{ ec.project.name if ec.project else 'General Overhead' }}</td>
+                            <td><strong class="text-success">₹{{ "%.2f"|format(ec.amount) }}</strong></td>
+                            <td>
+                                {% if ec.receipt_photo %}
+                                <a href="{{ ec.receipt_photo }}" target="_blank"
+                                    class="btn btn-sm btn-outline-primary py-0 px-2">View File</a>
+                                {% else %}
+                                <span class="text-muted">No Receipt</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if ec.status == 'Approved' %}
+                                <span class="badge bg-success-subtle text-success">Approved & Reimbursed</span>
+                                {% elif ec.status == 'Rejected' %}
+                                <span class="badge bg-danger-subtle text-danger">Rejected</span>
+                                {% else %}
+                                <span class="badge bg-warning-subtle text-dark">Pending Review</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if ec.status == 'Pending' %}
+                                <div class="d-flex justify-content-end gap-2">
+                                    <form action="{{ url_for('admin.approve_worker_expense', ec_id=ec.id) }}"
+                                        method="POST">
+                                        <button type="submit" class="btn btn-sm btn-success fw-bold px-3">
+                                            <i data-lucide="check" style="width: 14px; height: 14px;"></i> Approve
+                                            Reimbursement
+                                        </button>
+                                    </form>
+                                    <form action="{{ url_for('admin.reject_worker_expense', ec_id=ec.id) }}"
+                                        method="POST">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-3">Reject</button>
+                                    </form>
+                                </div>
+                                {% else %}
+                                <small class="text-muted">{{ ec.admin_notes or ec.status }}</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No worker field expense claims
+                                submitted.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LOG EXPENSE MODAL -->
+<div class="modal fade" id="logExpenseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold">Log Project Expense</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('admin.create_expense') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label small fw-semibold text-secondary">Expense Title *</label>
+                        <input type="text" class="form-control" name="title" required
+                            placeholder="e.g. Fuel for Caterpillar Excavator">
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Expense Category</label>
+                            <select class="form-select" name="category">
+                                <option value="Fuel & Travel">Fuel & Travel</option>
+                                <option value="Tool Rental">Equipment & Tool Rental</option>
+                                <option value="Permit Fee">Permit & Inspection Fee</option>
+                                <option value="Safety Gear">Safety Gear & Supplies</option>
+                                <option value="Subcontractor">Subcontractor Fee</option>
+                                <option value="Miscellaneous">Miscellaneous</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-secondary">Amount (₹) *</label>
+                            <input type="number" step="0.01" class="form-control" name="amount" required
+                                placeholder="e.g. 150.00">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label small fw-semibold text-secondary">Link to Project</label>
+                        <select class="form-select" name="project_id">
+                            <option value="">General Overhead</option>
+                            {% for p in projects %}
+                            <option value="{{ p.id }}">{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label small fw-semibold text-secondary">Receipt Upload (Photo / Bill
+                            PDF)</label>
+                        <input type="file" class="form-control" name="receipt" accept="image/*,application/pdf">
+                    </div>
+                    <div>
+                        <label class="form-label small fw-semibold text-secondary">Description</label>
+                        <textarea class="form-control" name="description" rows="2"
+                            placeholder="Optional details about vendor or transaction..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4">Log Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 14: ACTIVITY LOGS HISTORY -->
+<div id="section-activity" class="admin-section col-12 d-flex flex-column gap-4" style="display: none !important;">
+    <div class="d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0">System Audit / Activity logs history</h6>
+        <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
+            onclick="refreshActivityLogs()">
+            <i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> Refresh logs
+        </button>
+    </div>
+
+    <div class="premium-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Timestamp</th>
+                        <th>Staff Member</th>
+                        <th>Operation Target</th>
+                        <th>IP Address</th>
+                        <th>Modifications Log Details</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="activity-logs-tbody">
+                    <tr>
+                        <td colspan="6" class="text-center text-secondary small py-4">Click refresh to load audit log
+                            ledger.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- UNIFIED ADMIN EDIT MODAL -->
+<div class="modal fade" id="adminEditModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold" id="adminEditModalTitle">Edit Entity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="adminEditForm" onsubmit="saveAdminEditForm(event)">
+                <div class="modal-body d-flex flex-column gap-3">
+                    <div id="admin-edit-fields-container" class="row g-3">
+                        <!-- Filled dynamically by JavaScript depending on entity type -->
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success d-flex align-items-center gap-1">
+                        <span class="spinner-border spinner-border-sm d-none" id="admin-edit-save-spinner"></span>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+</div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 1. Client-side SPA tab switcher via hash routing
+    function handleSectionRouting() {
+        const hash = window.location.hash || '#overview';
+        const sectionId = 'section-' + hash.substring(1);
+
+        // Hide all sections
+        const sections = document.querySelectorAll('.admin-section');
+        sections.forEach(s => {
+            s.style.setProperty('display', 'none', 'important');
+        });
+
+        // Show target section
+        let targetSection = document.getElementById(sectionId);
+        if (!targetSection) {
+            targetSection = document.getElementById('section-overview');
+            if (window.location.hash && window.location.hash !== '#overview') {
+                history.replaceState(null, null, '#overview');
+            }
+        }
+        if (targetSection) {
+            targetSection.style.setProperty('display', 'flex', 'important');
+        }
+
+        // Update header page title depending on section
+        const tabInfoMap = {
+            '#overview': { title: 'Executive Overview', bc: 'Executive Hub', sub: null },
+            '#workers': { title: 'Workers Registry', bc: 'Artisans Roster', sub: 'Verification & Tiers' },
+            '#customers': { title: 'Customer Directory', bc: 'Citizen Registry', sub: 'Active Residents' },
+            '#attendance': { title: 'Daily Attendance log', bc: 'Daily Attendance', sub: 'GPS Shift Check-ins' },
+            '#materials': { title: 'Materials Inventory', bc: 'Materials & Stock', sub: 'Supply Inventory' },
+            '#equipment': { title: 'Heavy Machinery Registry', bc: 'Machinery & Tools', sub: 'Equipment Fleet' },
+            '#payments': { title: 'Payments Ledgers', bc: 'Finance & Payments', sub: 'Escrow & Wages' },
+            '#reports': { title: 'Report Generator Console', bc: 'Audit & Reports', sub: 'Statutory Reports' },
+            '#analytics': { title: 'Performance Analytics', bc: 'Analytics Console', sub: 'SLA & Metrics' },
+            '#calendar': { title: 'Deadline Scheduler', bc: 'Deadline Scheduler', sub: 'Site Milestones' },
+            '#documents': { title: 'Centralized Document Vault', bc: 'Document Vault', sub: 'Compliance Records' },
+            '#expenses': { title: 'Project Expense Tracker', bc: 'Expense Tracker', sub: 'Disbursements' },
+            '#settings': { title: 'System Settings', bc: 'Society Configuration', sub: 'Security & 2FA' },
+            '#activity': { title: 'System Activity History Logs', bc: 'Activity Audit', sub: 'Audit Trail' },
+            '#profile': { title: 'Super Admin Profile Settings', bc: 'Admin Profile', sub: 'Society Secretary' }
+        };
+        const currentTab = tabInfoMap[hash] || { title: 'Admin Control Center', bc: 'Executive Hub', sub: null };
+        document.getElementById('header-page-title').innerText = currentTab.title;
+
+        if (typeof window.updateBreadcrumb === 'function') {
+            window.updateBreadcrumb(currentTab.bc, currentTab.sub);
+        } else {
+            const bcEl = document.querySelector('.bc-current');
+            if (bcEl) bcEl.innerText = currentTab.bc;
+        }
+
+        // Update active class on sidebar items
+        const menuItems = document.querySelectorAll('.sidebar-item');
+        menuItems.forEach(item => {
+            item.classList.remove('active');
+            const link = item.querySelector('a');
+            if (link && link.getAttribute('href').endsWith(hash)) {
+                item.classList.add('active');
+            }
+        });
+
+        // Custom triggers on tab activation
+        if (hash === '#calendar') {
+            renderCalendarGrid();
+        }
+        if (hash === '#activity') {
+            refreshActivityLogs();
+        }
+        if (hash === '#settings') {
+            refreshBackupsList();
+            checkTwoFactorStatus();
+            loadArchivedRecords();
+        }
+    }
+
+    window.addEventListener('hashchange', handleSectionRouting);
+    window.addEventListener('load', handleSectionRouting);
+
+    // 4. Calendar Renderer
+    function renderCalendarGrid() {
+        const grid = document.getElementById('calendarDaysGrid');
+        grid.innerHTML = '';
+
+        // Days generator for July 2026 (Starts on Wed=3)
+        const startDayOffset = 3;
+        const totalDays = 31;
+
+        // Blank slots for previous month
+        for (let i = 0; i < startDayOffset; i++) {
+            const blank = document.createElement('div');
+            blank.className = 'col p-3 border bg-light bg-opacity-25 text-muted small';
+            blank.innerText = '';
+            grid.appendChild(blank);
+        }
+
+        // Deadlines mapping
+        const events = {
+            5: { name: 'Acme Mat Delivery', type: 'bg-warning text-dark' },
+            15: { name: 'Greenwood Deadline', type: 'bg-danger text-white' },
+            20: { name: 'Apex Phase 1 Inspection', type: 'bg-primary text-white' },
+            28: { name: 'Equipment service check', type: 'bg-info text-dark' }
+        };
+
+        for (let d = 1; d <= totalDays; d++) {
+            const cell = document.createElement('div');
+            cell.className = 'col p-2 border bg-surface d-flex flex-column justify-content-between text-start small position-relative';
+            cell.style.minHeight = '65px';
+
+            let html = `<span class="fw-bold">${d}</span>`;
+            if (events[d]) {
+                html += `<span class="badge ${events[d].type} text-wrap mt-1" style="font-size: 0.6rem; padding: 2px;">${events[d].name}</span>`;
+            }
+            cell.innerHTML = html;
+            grid.appendChild(cell);
+        }
+    }
+
+    // 5. Chart.js setups
+    let financialChartInstance = null;
+    let projectsChartInstance = null;
+    let attendanceChartInstance = null;
+
+    function buildCharts() {
+        // Theme Colors
+        const isDark = document.body.classList.contains('dark-mode');
+        const textColor = isDark ? '#cbd5e1' : '#475569';
+        const gridColor = isDark ? '#334155' : '#f1f5f9';
+
+        // Destroy old instances
+        if (financialChartInstance) financialChartInstance.destroy();
+        if (projectsChartInstance) projectsChartInstance.destroy();
+        if (attendanceChartInstance) attendanceChartInstance.destroy();
+
+        // 5.1 Overview Financial
+        const ctxFinancial = document.getElementById('overviewFinancialChart').getContext('2d');
+        const totRev = Number("{{ total_revenue or 0 }}") || 472150;
+        const totExp = Number("{{ (total_expenses or 0) + (total_salaries or 0) }}") || 185000;
+        const revPoints = [
+            Math.round(totRev * 0.12),
+            Math.round(totRev * 0.14),
+            Math.round(totRev * 0.16),
+            Math.round(totRev * 0.18),
+            Math.round(totRev * 0.20),
+            Math.round(totRev * 0.22)
+        ];
+        const expPoints = [
+            Math.round(totExp * 0.11),
+            Math.round(totExp * 0.13),
+            Math.round(totExp * 0.15),
+            Math.round(totExp * 0.17),
+            Math.round(totExp * 0.20),
+            Math.round(totExp * 0.24)
+        ];
+
+        financialChartInstance = new Chart(ctxFinancial, {
+            type: 'line',
+            data: {
+                labels: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                datasets: [{
+                    label: 'Income (₹)',
+                    data: revPoints,
+                    borderColor: '#17352f',
+                    backgroundColor: 'rgba(23, 53, 47, 0.08)',
+                    fill: true,
+                    tension: 0.35,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }, {
+                    label: 'Expenses (₹)',
+                    data: expPoints,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.35,
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: window.innerWidth < 576 ? 'center' : 'end',
+                        labels: {
+                            boxWidth: window.innerWidth < 576 ? 10 : 12,
+                            padding: window.innerWidth < 576 ? 6 : 8,
+                            font: { size: window.innerWidth < 576 ? 10 : 11, family: 'Inter, system-ui' },
+                            color: textColor
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ctx.dataset.label + ': ₹' + Number(ctx.parsed.y).toLocaleString('en-IN');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: textColor, font: { size: 11 } }
+                    },
+                    y: {
+                        grid: { color: gridColor },
+                        ticks: {
+                            color: textColor,
+                            font: { size: 11 },
+                            callback: function(val) {
+                                if (val >= 100000) return '₹' + (val / 100000).toFixed(1) + 'L';
+                                if (val >= 1000) return '₹' + Math.round(val / 1000) + 'k';
+                                return '₹' + val;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 5.2 Projects status
+        const ctxProjects = document.getElementById('analyticsProjectsChart').getContext('2d');
+        projectsChartInstance = new Chart(ctxProjects, {
+            type: 'doughnut',
+            data: {
+                labels: ['Active', 'Planning', 'Completed', 'Delayed'],
+                datasets: [{
+                    data: [Number("{{ active_projects or 0 }}"), Number("{{ (total_projects or 0) - (active_projects or 0) - (completed_projects or 0) - (delayed_projects or 0) }}"), Number("{{ completed_projects or 0 }}"), Number("{{ delayed_projects or 0 }}")],
+                    backgroundColor: ['#17352f', '#64748b', '#10b981', '#ef4444']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: textColor } }
+                }
+            }
+        });
+
+        // 5.3 Attendance
+        const ctxAttendance = document.getElementById('analyticsAttendanceChart').getContext('2d');
+        attendanceChartInstance = new Chart(ctxAttendance, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+                datasets: [{
+                    label: 'Present Count',
+                    data: [4, 5, 4, 3, 5],
+                    backgroundColor: '#10b981'
+                }, {
+                    label: 'Late Count',
+                    data: [1, 0, 1, 2, 0],
+                    backgroundColor: '#f59e0b'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: textColor } }
+                },
+                scales: {
+                    x: { grid: { color: gridColor }, ticks: { color: textColor } },
+                    y: { grid: { color: gridColor }, ticks: { color: textColor } }
+                }
+            }
+        });
+    }
+
+    // Run build charts on load
+    window.addEventListener('load', buildCharts);
+    window.addEventListener('theme-changed', buildCharts);
+
+    // PDF exporters handlers
+    function downloadInvoicePDF(id) {
+        alert("Preparing report connection...\n\nTriggering PDF rendering via ReportLab (services/pdf_service.py) on Ledger payout ID #" + id);
+        window.open("/api/pdf/invoice/" + id);
+    }
+
+    function generateReportPDF(type) {
+        alert("Querying aggregates and compiling ReportLab elements for " + type + " summary sheet...");
+        window.open("/api/pdf/report/" + type);
+    }
+
+    // AI Insights Dynamic Loaders
+    async function fetchAiWorkerRecommendation() {
+        const projId = document.getElementById('aiProjectSelect').value;
+        const container = document.getElementById('aiWorkerRecommendationResults');
+        if (!projId) {
+            container.innerHTML = "Select a project to trigger proximity and skills matching heuristics...";
+            return;
+        }
+
+        container.innerHTML = `<div class="spinner-border spinner-border-sm text-primary" role="status"></div> Assessing field technicians...`;
+
+        try {
+            const response = await fetch('/admin/api/ai/recommend-workers?project_id=' + projId);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.length === 0) {
+                    container.innerHTML = "No available workers found.";
+                    return;
+                }
+                let html = '<div class="list-group d-flex flex-column gap-2">';
+                data.forEach((w, index) => {
+                    const badgeClass = index === 0 ? 'bg-success' : 'bg-primary';
+                    html += `
+                        <div class="list-group-item rounded border d-flex justify-content-between align-items-center p-3">
+                            <div>
+                                <strong class="text-dark">@${w.username}</strong> <span class="badge ${badgeClass}">${index === 0 ? 'Best Match' : 'Alternative'}</span><br>
+                                <span style="font-size: 0.75rem;">Skills: ${w.skills}</span><br>
+                                <small class="text-secondary">Proximity: ${w.distance_km} km away | Rating: ★ ${w.rating}</small>
+                            </div>
+                            <span class="badge bg-light text-dark border">Score: ${w.score}</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = "Failed to run matcher.";
+            }
+        } catch (e) {
+            container.innerHTML = "Connection error.";
+        }
+    }
+
+    async function calculateAiCostEstimate() {
+        const area = document.getElementById('aiCostArea').value;
+        const grade = document.getElementById('aiCostGrade').value;
+        const days = document.getElementById('aiCostDays').value;
+
+        const results = document.getElementById('aiCostEstimateResults');
+        results.classList.remove('d-none');
+        results.innerHTML = `<div class="spinner-border spinner-border-sm text-success" role="status"></div> Running estimation formulas...`;
+
+        try {
+            const response = await fetch(`/admin/api/ai/cost-estimate?area=${area}&grade=${grade}&days=${days}`);
+            if (response.ok) {
+                const d = await response.json();
+                results.innerHTML = `
+                    <div class="d-flex flex-column gap-2 text-secondary">
+                        <div class="d-flex justify-content-between text-dark fw-bold border-bottom pb-2 mb-2">
+                            <span>Predicted Total Cost:</span>
+                            <span class="text-success">$${d.total_estimate.toLocaleString()}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Materials Allocation (45%):</span>
+                            <span>$${d.materials.toLocaleString()}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Labor Allocation (35% + schedule):</span>
+                            <span>$${d.labor.toLocaleString()}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Machinery/Equipment (12%):</span>
+                            <span>$${d.equipment.toLocaleString()}</span>
+                        </div>
+                        <div class="d-flex justify-content-between border-top pt-2">
+                            <span>Overhead Margin (8%):</span>
+                            <span>$${d.margin.toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                results.innerHTML = "Estimation failed.";
+            }
+        } catch (e) {
+            results.innerHTML = "Error connecting to AI service.";
+        }
+    }
+
+    async function fetchAiBusinessInsights() {
+        const container = document.getElementById('aiBusinessInsightsList');
+        container.innerHTML = `<div class="spinner-border spinner-border-sm text-info" role="status"></div> Scanning ledgers...`;
+
+        try {
+            const response = await fetch('/admin/api/ai/business-insights');
+            if (response.ok) {
+                const data = await response.json();
+                container.innerHTML = '';
+                data.forEach(insight => {
+                    const div = document.createElement('div');
+                    div.className = 'p-3 rounded bg-info bg-opacity-5 border border-info border-opacity-10 text-secondary small d-flex align-items-center gap-2';
+                    div.innerHTML = `<i data-lucide="sparkles" style="width: 16px; height: 16px; color: var(--primary-color);"></i> <span>${insight}</span>`;
+                    container.appendChild(div);
+                });
+                lucide.createIcons();
+            } else {
+                container.innerHTML = "Failed to load insights.";
+            }
+        } catch (e) {
+            container.innerHTML = "Error loading AI insights.";
+        }
+    }
+
+    async function fetchAiDelayPredictions() {
+        const container = document.getElementById('aiDelayPredictionsList');
+        container.innerHTML = `<div class="spinner-border spinner-border-sm text-danger" role="status"></div> Assessing schedule risks...`;
+
+        try {
+            const response = await fetch('/admin/api/ai/delay-predictions');
+            if (response.ok) {
+                const data = await response.json();
+                container.innerHTML = '';
+                if (data.length === 0) {
+                    container.innerHTML = `<div class="text-secondary small">No active projects found.</div>`;
+                    return;
+                }
+                data.forEach(p => {
+                    let riskBadge = '';
+                    if (p.risk_level === 'High') riskBadge = 'bg-danger text-white';
+                    else if (p.risk_level === 'Medium') riskBadge = 'bg-warning text-dark';
+                    else riskBadge = 'bg-success text-white';
+
+                    const div = document.createElement('div');
+                    div.className = 'p-3 rounded border bg-light bg-opacity-25 small';
+                    div.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong class="text-dark">${p.name}</strong>
+                            <span class="badge ${riskBadge}">${p.risk_level} Risk</span>
+                        </div>
+                        <div class="text-secondary mb-1">
+                            Delay probability: <strong class="text-dark">${p.delay_percentage}%</strong> 
+                            (${p.expected_delay_days} expected delay days)
+                        </div>
+                        <div class="text-secondary mb-2" style="font-size:0.75rem;"><em>Reason: ${p.reason}</em></div>
+                        <div class="bg-white p-2 rounded border small text-primary" style="font-size:0.75rem;">
+                            <strong>Suggested Action:</strong> ${p.suggested_actions}
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+                lucide.createIcons();
+            } else {
+                container.innerHTML = "Failed to load predictions.";
+            }
+        } catch (e) {
+            container.innerHTML = "Error loading predictions.";
+        }
+    }
+
+    async function fetchAiMaterialForecasts() {
+        const container = document.getElementById('aiMaterialForecastsList');
+        container.innerHTML = `<div class="spinner-border spinner-border-sm text-warning" role="status"></div> Computing inventory depletion...`;
+
+        try {
+            const response = await fetch('/admin/api/ai/material-forecasts');
+            if (response.ok) {
+                const data = await response.json();
+                container.innerHTML = '';
+                if (data.length === 0) {
+                    container.innerHTML = `<div class="text-secondary small">No materials registered in inventory.</div>`;
+                    return;
+                }
+                data.forEach(m => {
+                    let alertClass = '';
+                    let badgeClass = '';
+                    if (m.alert_level === 'Critical') {
+                        alertClass = 'border-danger bg-danger bg-opacity-5';
+                        badgeClass = 'bg-danger text-white';
+                    } else if (m.alert_level === 'Medium') {
+                        alertClass = 'border-warning bg-warning bg-opacity-5';
+                        badgeClass = 'bg-warning text-dark';
+                    } else {
+                        alertClass = 'border-light bg-light bg-opacity-25';
+                        badgeClass = 'bg-success text-white';
+                    }
+
+                    const div = document.createElement('div');
+                    div.className = `p-3 rounded border ${alertClass} small d-flex justify-content-between align-items-center flex-wrap gap-2`;
+                    div.innerHTML = `
+                        <div>
+                            <strong class="text-dark">${m.name}</strong> <span class="badge ${badgeClass}">${m.alert_level}</span><br>
+                            <span class="text-secondary" style="font-size:0.75rem;">Current Stock: ${m.stock} ${m.unit}</span> | 
+                            <span class="text-secondary" style="font-size:0.75rem;">Est. Days Left: <strong>${m.days_remaining} days</strong></span><br>
+                            <span class="text-secondary" style="font-size:0.7rem;">Supplier recommendation: <strong>${m.supplier}</strong></span>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-secondary d-block" style="font-size:0.7rem;">Recommended Purchase:</small>
+                            <strong class="text-primary">${m.recommended_qty} ${m.unit}</strong>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+                lucide.createIcons();
+            } else {
+                container.innerHTML = "Failed to load forecasts.";
+            }
+        } catch (e) {
+            container.innerHTML = "Error loading forecasts.";
+        }
+    }
+
+    // Wrap the routing function to trigger AI updates when #ai is active
+    const originalSectionRouting = handleSectionRouting;
+    handleSectionRouting = function () {
+        originalSectionRouting();
+        if (window.location.hash === '#ai') {
+            fetchAiBusinessInsights();
+            fetchAiDelayPredictions();
+            fetchAiMaterialForecasts();
+        }
+    };
+
+    // 9. Admin Unified Editing and Audit Logs
+    const getSystemWorkers = () => Array.from(document.querySelectorAll('#transferWorkerModal select[name="worker_id"] option')).map(opt => ({ id: opt.value, name: opt.text })).filter(o => o.id);
+
+    let adminEditModalObj = null;
+
+    function openAdminEditModal(entityType, entityId, data) {
+        document.getElementById('adminEditModalTitle').innerText = `Edit ${entityType.toUpperCase()} Details (ID: ${entityId})`;
+
+        const container = document.getElementById('admin-edit-fields-container');
+        container.innerHTML = '';
+
+        let fieldsHtml = `
+            <input type="hidden" name="_entity_type" value="${entityType}">
+            <input type="hidden" name="_entity_id" value="${entityId}">
+        `;
+
+        if (entityType === 'customer') {
+            fieldsHtml += `
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Username *</label>
+                    <input type="text" class="form-control" name="username" value="${data.username || ''}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Email Address *</label>
+                    <input type="email" class="form-control" name="email" value="${data.email || ''}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Phone Number</label>
+                    <input type="text" class="form-control" name="phone" value="${data.phone || ''}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Company Name</label>
+                    <input type="text" class="form-control" name="company_name" value="${data.company_name || ''}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Emergency Contact Info</label>
+                    <input type="text" class="form-control" name="emergency_contact" value="${data.emergency_contact || ''}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Update Password (leave blank to keep current)</label>
+                    <input type="password" class="form-control" name="password" placeholder="••••••••">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label text-secondary small">Billing Address</label>
+                    <textarea class="form-control" name="address" rows="2">${data.address || ''}</textarea>
+                </div>
+            `;
+        } else if (entityType === 'worker') {
+            fieldsHtml += `
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Username *</label>
+                    <input type="text" class="form-control" name="username" value="${data.username || ''}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Email Address *</label>
+                    <input type="email" class="form-control" name="email" value="${data.email || ''}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Phone Number</label>
+                    <input type="text" class="form-control" name="phone" value="${data.phone || ''}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Home Address</label>
+                    <input type="text" class="form-control" name="address" value="${data.address || ''}">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label text-secondary small">Skills (comma-separated)</label>
+                    <input type="text" class="form-control" name="skills" value="${data.skills || ''}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small">Years of Experience</label>
+                    <input type="number" class="form-control" name="experience_years" value="${data.experience_years || 0}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small">Hourly Rate ($)</label>
+                    <input type="number" step="0.01" class="form-control" name="salary_rate" value="${data.salary_rate || 0.0}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small">Availability Status</label>
+                    <select class="form-select" name="availability_status">
+                        <option value="available" ${data.availability_status === 'available' ? 'selected' : ''}>available</option>
+                        <option value="busy" ${data.availability_status === 'busy' ? 'selected' : ''}>busy</option>
+                        <option value="offline" ${data.availability_status === 'offline' ? 'selected' : ''}>offline</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Emergency Contact Info</label>
+                    <input type="text" class="form-control" name="emergency_contact" value="${data.emergency_contact || ''}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Bank Details</label>
+                    <input type="text" class="form-control" name="bank_details" value="${data.bank_details || ''}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Update Password (leave blank to keep current)</label>
+                    <input type="password" class="form-control" name="password" placeholder="••••••••">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Compliance Documents File</label>
+                    <input type="file" class="form-control" name="documents" multiple>
+                </div>
+            `;
+        } else if (entityType === 'attendance') {
+            fieldsHtml += `
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Attendance Date *</label>
+                    <input type="date" class="form-control" name="date" value="${data.date || ''}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Check-In Time</label>
+                    <input type="text" class="form-control" name="check_in_time" value="${data.check_in_time || ''}" placeholder="HH:MM:SS">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Attendance Status</label>
+                    <select class="form-select" name="status">
+                        <option value="Present" ${data.status === 'Present' ? 'selected' : ''}>Present</option>
+                        <option value="Late" ${data.status === 'Late' ? 'selected' : ''}>Late</option>
+                        <option value="Absent" ${data.status === 'Absent' ? 'selected' : ''}>Absent</option>
+                    </select>
+                </div>
+            `;
+        } else if (entityType === 'material') {
+            fieldsHtml += `
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Material/Resource Name *</label>
+                    <input type="text" class="form-control" name="name" value="${data.name || ''}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Stock Count *</label>
+                    <input type="number" class="form-control" name="stock" value="${data.stock || 0}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Threshold Alert Level *</label>
+                    <input type="number" class="form-control" name="min_stock" value="${data.min_stock || 0}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Unit price ($) *</label>
+                    <input type="number" step="0.01" class="form-control" name="price" value="${data.price || 0.0}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Vendor Supplier Name</label>
+                    <input type="text" class="form-control" name="supplier" value="${data.supplier || ''}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Purchase Restock Date</label>
+                    <input type="date" class="form-control" name="purchase_date" value="${data.purchase_date || ''}">
+                </div>
+            `;
+        } else if (entityType === 'equipment') {
+            let workerOptions = '<option value="">Select Technician</option>';
+            systemWorkers.forEach(w => {
+                workerOptions += `<option value="${w.id}" ${String(data.assigned_worker_id) === String(w.id) ? 'selected' : ''}>${w.name}</option>`;
+            });
+
+            fieldsHtml += `
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Machinery Name *</label>
+                    <input type="text" class="form-control" name="name" value="${data.name || ''}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Serial Key Number *</label>
+                    <input type="text" class="form-control" name="serial_number" value="${data.serial_number || ''}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Asset Condition Status</label>
+                    <select class="form-select" name="status">
+                        <option value="Available" ${data.status === 'Available' ? 'selected' : ''}>Available</option>
+                        <option value="In Use" ${data.status === 'In Use' ? 'selected' : ''}>In Use</option>
+                        <option value="Maintenance" ${data.status === 'Maintenance' ? 'selected' : ''}>Maintenance</option>
+                        <option value="Down" ${data.status === 'Down' ? 'selected' : ''}>Down</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Assigned Operator Technician</label>
+                    <select class="form-select" name="assigned_worker_id">${workerOptions}</select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Last Serviced Date</label>
+                    <input type="date" class="form-control" name="last_service_date" value="${data.last_service_date || ''}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Next Scheduled Service</label>
+                    <input type="date" class="form-control" name="next_service_date" value="${data.next_service_date || ''}">
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label text-secondary small">Machinery Maintenance Notes</label>
+                    <textarea class="form-control" name="maintenance_notes" rows="2">${data.maintenance_notes || ''}</textarea>
+                </div>
+            `;
+        } else if (entityType === 'payment') {
+            fieldsHtml += `
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Transaction Date *</label>
+                    <input type="date" class="form-control" name="date" value="${data.date || ''}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Invoice / Receipt Code</label>
+                    <input type="text" class="form-control" name="invoice_number" value="${data.invoice_number || ''}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Ledger Type</label>
+                    <select class="form-select" name="type">
+                        <option value="revenue" ${data.type === 'revenue' ? 'selected' : ''}>Revenue (Inflow)</option>
+                        <option value="expense" ${data.type === 'expense' ? 'selected' : ''}>Expense (Outflow)</option>
+                        <option value="salary" ${data.type === 'salary' ? 'selected' : ''}>Salary (Outflow)</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Amount ($) *</label>
+                    <input type="number" step="0.01" class="form-control" name="amount" value="${data.amount || 0.0}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Invoice discount ($)</label>
+                    <input type="number" step="0.01" class="form-control" name="discount" value="${data.discount || 0.0}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">GST / Tax Applied ($)</label>
+                    <input type="number" step="0.01" class="form-control" name="gst_tax" value="${data.gst_tax || 0.0}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Labour Cost components ($)</label>
+                    <input type="number" step="0.01" class="form-control" name="labor_cost" value="${data.labor_cost || 0.0}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Material Cost components ($)</label>
+                    <input type="number" step="0.01" class="form-control" name="material_cost" value="${data.material_cost || 0.0}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label text-secondary small">Transaction Status</label>
+                    <select class="form-select" name="status">
+                        <option value="Paid" ${data.status === 'Paid' ? 'selected' : ''}>Paid</option>
+                        <option value="Pending" ${data.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Failed" ${data.status === 'Failed' ? 'selected' : ''}>Failed</option>
+                    </select>
+                </div>
+            `;
+        }
+
+        container.innerHTML = fieldsHtml;
+
+        adminEditModalObj = new bootstrap.Modal(document.getElementById('adminEditModal'));
+        adminEditModalObj.show();
+    }
+
+    async function saveAdminEditForm(event) {
+        event.preventDefault();
+        if (!confirm("Are you sure you want to update this entity registration?")) return;
+
+        const spinner = document.getElementById('admin-edit-save-spinner');
+        spinner.classList.remove('d-none');
+
+        const form = document.getElementById('adminEditForm');
+        const fd = new FormData(form);
+        const entityType = fd.get('_entity_type');
+        const entityId = fd.get('_entity_id');
+
+        try {
+            const r = await fetch(`/admin/api/update/${entityType}/${entityId}`, {
+                method: 'POST',
+                body: fd
+            });
+            const res = await r.json();
+            if (res.status === 'success') {
+                alert("Success: " + res.message);
+                adminEditModalObj.hide();
+                window.location.reload();
+            } else {
+                alert("Error: " + res.message);
+            }
+        } catch (e) {
+            alert("Failed to synchronize changes with system DB. Check connections.");
+        } finally {
+            spinner.classList.add('d-none');
+        }
+    }
+
+    async function refreshActivityLogs() {
+        const tbody = document.getElementById('activity-logs-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary small py-4"><div class="spinner-border spinner-border-sm" role="status"></div> Loading audit log ledger...</td></tr>';
+
+        try {
+            const r = await fetch('/admin/api/activity-logs?_t=' + Date.now());
+            const data = await r.json();
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-secondary small py-4">No audit entries found in ledger.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            data.forEach((log, index) => {
+                let revertBtn = '';
+                if (log.old_value && log.old_value !== '{}') {
+                    revertBtn = `<button class="btn btn-xs btn-outline-danger py-0 px-2 fw-semibold" style="font-size:0.7rem;" onclick="revertActivityLog(${log.id})"><i data-lucide="undo-2" style="width:10px; height:10px; vertical-align:middle;"></i> Revert</button>`;
+                }
+
+                html += `
+                    <tr>
+                        <td><code>#${log.seq_id || (index + 1)}</code></td>
+                        <td style="font-size:0.75rem;">${log.date} ${log.time}</td>
+                        <td>
+                            <span class="badge bg-light text-dark border">@${log.username || 'System'}</span>
+                        </td>
+                        <td class="fw-semibold text-primary small">${log.action}</td>
+                        <td><code>${log.ip_address}</code></td>
+                        <td style="max-width:350px; font-size:0.75rem;" class="text-secondary">
+                            <div>${log.details}</div>
+                            ${log.old_value ? '<div class="text-danger mt-1"><strong>Old:</strong> <code>' + log.old_value + '</code></div>' : ''}
+                            ${log.new_value ? '<div class="text-success"><strong>New:</strong> <code>' + log.new_value + '</code></div>' : ''}
+                        </td>
+                        <td>${revertBtn}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+            lucide.createIcons();
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger small py-4">Error loading audit log ledger. Check connection.</td></tr>';
+        }
+    }
+
+    async function revertActivityLog(logId) {
+        cfConfirm("Are you sure you want to revert this action? This will roll back the record to its prior state.", async () => {
+            try {
+                const r = await fetch(`/admin/api/audit/revert/${logId}`, { method: 'POST' });
+                const res = await r.json();
+                if (res.status === 'success') {
+                    showToast("Action reverted successfully!", "success");
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast("Error: " + res.message, "danger");
+                }
+            } catch (e) {
+                showToast("Network error: Failed to execute audit revert.", "danger");
+            }
+        }, "Revert Action", true);
+    }
+
+    // =====================================================================
+    // BACKUPS MANAGER
+    // =====================================================================
+    async function refreshBackupsList() {
+        const tbody = document.getElementById('backups-tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-3"><div class="spinner-border spinner-border-sm" role="status"></div> Loading backups...</td></tr>';
+        try {
+            const r = await fetch('/admin/api/backup/list?_t=' + Date.now());
+            const data = await r.json();
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary py-3">No system backups found.</td></tr>';
+                return;
+            }
+            let html = '';
+            data.forEach(b => {
+                html += `
+                    <tr>
+                        <td class="font-monospace text-truncate" style="max-width: 150px;" title="${b.filename}">${b.filename}</td>
+                        <td>${b.size}</td>
+                        <td style="font-size:0.75rem;">${b.created_at}</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="/admin/api/backup/download/${b.filename}" class="btn btn-xs btn-outline-primary py-0 px-1" title="Download Backup">
+                                    <i data-lucide="download" style="width: 12px; height: 12px;"></i>
+                                </a>
+                                <button onclick="triggerRestoreBackup('${b.filename}')" class="btn btn-xs btn-outline-warning py-0 px-1" title="Restore Data">
+                                    <i data-lucide="rotate-ccw" style="width: 12px; height: 12px;"></i>
+                                </button>
+                                <button onclick="deleteBackupFile('${b.filename}')" class="btn btn-xs btn-outline-danger py-0 px-1" title="Delete Backup File">
+                                    <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+            lucide.createIcons();
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-3">Failed to load backups list.</td></tr>';
+        }
+    }
+
+    async function triggerDbBackup(btn) {
+        const createBtn = btn || document.getElementById('btnCreateBackup');
+        const origHtml = createBtn ? createBtn.innerHTML : '';
+        if (createBtn) {
+            createBtn.disabled = true;
+            createBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Creating...';
+        }
+        try {
+            const r = await fetch('/admin/api/backup/create', { method: 'POST' });
+            const res = await r.json();
+            if (res.status === 'success') {
+                if (typeof showToast === 'function') showToast(res.message || "Backup created successfully.", 'success');
+                else alert(res.message || "Backup created successfully.");
+                refreshBackupsList();
+            } else {
+                if (typeof showToast === 'function') showToast("Error: " + (res.message || "Failed to create backup."), 'danger');
+                else alert("Error: " + (res.message || "Failed to create backup."));
+            }
+        } catch (e) {
+            if (typeof showToast === 'function') showToast("Backup failed. Check network connection.", 'danger');
+            else alert("Backup failed. Check connection.");
+        } finally {
+            if (createBtn) {
+                createBtn.disabled = false;
+                createBtn.innerHTML = origHtml;
+                if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+            }
+        }
+    }
+
+    async function triggerRestoreBackup(filename) {
+        if (!confirm("Are you sure you want to restore the database from " + filename + "? Current data will be replaced!")) return;
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/admin/api/backup/restore';
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'filename';
+        input.value = filename;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    async function deleteBackupFile(filename) {
+        if (!confirm("Are you sure you want to permanently delete the backup file '" + filename + "'?")) return;
+        try {
+            const r = await fetch(`/admin/api/backup/delete/${filename}`, { method: 'POST' });
+            const res = await r.json();
+            if (res.status === 'success') {
+                if (typeof showToast === 'function') showToast(res.message, 'success');
+                else alert("Success: " + res.message);
+                refreshBackupsList();
+            } else {
+                if (typeof showToast === 'function') showToast(res.message || 'Failed to delete backup.', 'danger');
+                else alert("Error: " + res.message);
+            }
+        } catch (e) {
+            alert("Failed to delete backup file.");
+        }
+    }
+
+    // =====================================================================
+    // TWO-FACTOR AUTHENTICATION
+    // =====================================================================
+    async function checkTwoFactorStatus() {
+        const badge = document.getElementById('twoFactorStatusBadge');
+        const btn = document.getElementById('btnToggle2FA');
+        const configPanel = document.getElementById('twoFactorConfigPanel');
+        if (!badge) return;
+        try {
+            const r = await fetch('/api/2fa/setup');
+            const data = await r.json();
+            if (data.enabled) {
+                badge.innerText = "2FA Enabled & Protected";
+                badge.className = "fw-bold mb-0 text-success";
+                btn.innerText = "Disable 2FA / Remove Authenticator";
+                btn.className = "btn btn-outline-danger btn-sm w-100";
+                btn.onclick = () => verifyAndToggle2FA(false);
+                configPanel.classList.add('d-none');
+            } else {
+                badge.innerText = "2FA Disabled";
+                badge.className = "fw-bold mb-0 text-danger";
+                btn.innerText = "Enable 2FA via Authenticator";
+                btn.className = "btn btn-outline-success btn-sm w-100";
+                btn.onclick = () => loadTwoFactorSetup();
+            }
+        } catch (e) { }
+    }
+
+    async function loadTwoFactorSetup() {
+        const configPanel = document.getElementById('twoFactorConfigPanel');
+        try {
+            const r = await fetch('/api/2fa/setup');
+            const data = await r.json();
+            document.getElementById('twoFactorSecretText').innerText = data.secret;
+            configPanel.classList.remove('d-none');
+        } catch (e) {
+            alert("Could not initialize 2FA credentials.");
+        }
+    }
+
+    async function verifyAndToggle2FA(enable) {
+        const codeInput = document.getElementById('twoFactorCodeInput');
+        const code = codeInput ? codeInput.value.trim() : '';
+        if (enable && !code) {
+            alert("Please enter a verification code.");
+            return;
+        }
+        try {
+            const r = await fetch('/api/2fa/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enable: enable, code: code })
+            });
+            const res = await r.json();
+            if (res.status === 'success') {
+                alert("Success: " + res.message);
+                if (codeInput) codeInput.value = '';
+                checkTwoFactorStatus();
+            } else {
+                alert("Error: " + res.message);
+            }
+        } catch (e) {
+            alert("Verification timed out. Try again.");
+        }
+    }
+
+
+
+    // =====================================================================
+    // DASHBOARD PERSONALIZATION MODULES
+    // =====================================================================
+    function applyWidgetPersonalization() {
+        const layout = JSON.parse(localStorage.getItem('admin_dashboard_widget_layout') || '{}');
+        const widgets = ['widget-stats', 'widget-chart', 'widget-weather', 'widget-ai'];
+
+        widgets.forEach(wId => {
+            const el = document.getElementById(wId);
+            if (!el) return;
+            const wConf = layout[wId] || { visible: true };
+
+            if (wConf.visible === false) {
+                el.classList.add('d-none');
+                const sw = document.getElementById('switch-' + wId.split('-')[1]);
+                if (sw) sw.checked = false;
+            } else {
+                el.classList.remove('d-none');
+                const sw = document.getElementById('switch-' + wId.split('-')[1]);
+                if (sw) sw.checked = true;
+            }
+        });
+    }
+
+    function toggleWidgetVisibility(wId, visible) {
+        let layout = JSON.parse(localStorage.getItem('admin_dashboard_widget_layout') || '{}');
+        if (!layout[wId]) layout[wId] = {};
+        layout[wId].visible = visible;
+        localStorage.setItem('admin_dashboard_widget_layout', JSON.stringify(layout));
+        applyWidgetPersonalization();
+    }
+
+    // Load configurations on page initialization
+    document.addEventListener('DOMContentLoaded', () => {
+        applyWidgetPersonalization();
+    });
+
+    async function deleteEntity(entityType, entityId) {
+        if (!confirm("Are you sure you want to archive this " + entityType + "? It will be soft-deleted.")) return;
+        try {
+            const r = await fetch(`/admin/api/delete/${entityType}/${entityId}`, { method: 'POST' });
+            const res = await r.json();
+            if (res.status === 'success') {
+                alert("Success: " + res.message);
+                window.location.reload();
+            } else {
+                alert("Error: " + res.message);
+            }
+        } catch (e) {
+            alert("Network error: Failed to archive record.");
+        }
+    }
+
+    async function loadArchivedRecords() {
+        const selector = document.getElementById('archiveEntitySelector');
+        const tbody = document.getElementById('archived-records-tbody');
+        if (!selector || !tbody) return;
+
+        const entityType = selector.value;
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-secondary py-3"><div class="spinner-border spinner-border-sm" role="status"></div> Loading...</td></tr>';
+
+        try {
+            const r = await fetch(`/admin/api/list/${entityType}?show_archived=true&_t=` + Date.now());
+            const data = await r.json();
+
+            if (!data.items || data.items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-secondary py-3">No archived records found.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            data.items.forEach(item => {
+                let name = item.name || item.company_name || item.username || item.invoice_number || `Record #${item.id}`;
+                html += `
+                    <tr>
+                        <td><code>#${item.id}</code></td>
+                        <td>${name}</td>
+                        <td class="text-end">
+                            <button class="btn btn-xs btn-success py-0 px-2 fw-semibold" style="font-size:0.7rem;" onclick="restoreEntity('${entityType}', ${item.id})">
+                                <i data-lucide="rotate-ccw" style="width: 10px; height: 10px; vertical-align:middle;"></i> Restore
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+            lucide.createIcons();
+        } catch (e) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger py-3">Failed to load archived records.</td></tr>';
+        }
+    }
+
+    async function restoreEntity(entityType, entityId) {
+        cfConfirm("Are you sure you want to restore this " + entityType + " record?", async () => {
+            try {
+                const r = await fetch(`/admin/api/restore/${entityType}/${entityId}`, { method: 'POST' });
+                const res = await r.json();
+                if (res.status === 'success') {
+                    showToast("Record restored successfully!", "success");
+                    loadArchivedRecords();
+                } else {
+                    showToast("Error: " + res.message, "danger");
+                }
+            } catch (e) {
+                showToast("Network error: Failed to restore record.", "danger");
+            }
+        }, "Restore Record", false);
+    }
+
+    // =====================================================================
+    // ADMIN PROFILE SETTINGS HELPERS
+    // =====================================================================
+    function enableAdminProfileEditMode(enable) {
+        const fields = document.querySelectorAll('.admin-profile-editable');
+        const actions = document.getElementById('admin-profile-actions');
+        const editBtn = document.getElementById('btn-edit-admin-profile');
+
+        fields.forEach(f => f.disabled = !enable);
+        if (enable) {
+            actions.classList.remove('d-none');
+            actions.classList.add('d-flex');
+            editBtn.classList.add('d-none');
+        } else {
+            actions.classList.remove('d-flex');
+            actions.classList.add('d-none');
+            editBtn.classList.remove('d-none');
+            document.getElementById('adminProfileForm').reset();
+            document.getElementById('admin-pic-preview').src = "{{ current_user.profile_pic or 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop' }}";
+        }
+    }
+
+    function previewAdminImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('admin-pic-preview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    async function saveAdminProfile(event) {
+        event.preventDefault();
+
+        cfConfirm("Are you sure you want to update your profile details?", async () => {
+            const spinner = document.getElementById('admin-profile-spinner');
+            const form = document.getElementById('adminProfileForm');
+            const formData = new FormData(form);
+
+            spinner.classList.remove('d-none');
+
+            try {
+                const r = await fetch('/admin/api/profile/update', {
+                    method: 'POST',
+                    body: formData
+                });
+                const res = await r.json();
+                if (res.status === 'success') {
+                    showToast('Profile updated successfully!', 'success');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    showToast(res.message || 'Failed to update profile.', 'danger');
+                }
+            } catch (e) {
+                showToast('Network error: Failed to save profile details.', 'danger');
+            } finally {
+                spinner.classList.add('d-none');
+            }
+        }, "Update Profile", false);
+    }
+
+    // ADMIN DIRECT MESSAGING JS
+    let currentAdminChatRecipientId = null;
+    let adminChatPollTimer = null;
+    let lastAdminMsgCount = -1;
+
+    async function openAdminChatModal(targetUserId, username) {
+        currentAdminChatRecipientId = targetUserId;
+        lastAdminMsgCount = -1;
+        document.getElementById('adminChatRecipientId').value = targetUserId;
+        document.getElementById('adminChatHeader').innerText = `Direct Message with @${username}`;
+
+        const logsArea = document.getElementById('adminChatLogsArea');
+        logsArea.innerHTML = `<div class="text-center text-muted py-5 small"><div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div><br>Loading messages...</div>`;
+
+        const modalElem = document.getElementById('adminChatModal');
+        const modalObj = new bootstrap.Modal(modalElem);
+        modalObj.show();
+
+        loadAdminConversation(targetUserId);
+        startAdminChatPolling(targetUserId);
+    }
+
+    function startAdminChatPolling(targetUserId) {
+        stopAdminChatPolling();
+        adminChatPollTimer = setInterval(() => {
+            if (currentAdminChatRecipientId) {
+                loadAdminConversation(currentAdminChatRecipientId, true);
+            }
+        }, 2500);
+    }
+
+    function stopAdminChatPolling() {
+        if (adminChatPollTimer) {
+            clearInterval(adminChatPollTimer);
+            adminChatPollTimer = null;
+        }
+    }
+
+    // Stop polling when modal is closed & initialize progress bar widths
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.progress-bar[data-progress]').forEach(el => {
+            el.style.width = el.dataset.progress + '%';
+        });
+        const modalElem = document.getElementById('adminChatModal');
+        if (modalElem) {
+            modalElem.addEventListener('hidden.bs.modal', () => {
+                stopAdminChatPolling();
+                currentAdminChatRecipientId = null;
+            });
+        }
+    });
+
+    async function loadAdminConversation(targetUserId, isSilent = false) {
+        const logsArea = document.getElementById('adminChatLogsArea');
+        const currentUserId = parseInt("{{ current_user.id }}") || 1;
+        try {
+            const r = await fetch(`/admin/api/messages/${targetUserId}`);
+            if (r.ok) {
+                const res = await r.json();
+                if (res.status === 'success') {
+                    if (res.messages.length !== lastAdminMsgCount) {
+                        lastAdminMsgCount = res.messages.length;
+                        if (res.messages.length === 0) {
+                            logsArea.innerHTML = `<div class="text-center text-muted py-5 small">No previous messages. Type below to send a direct message.</div>`;
+                            return;
+                        }
+                        let html = '';
+                        res.messages.forEach(m => {
+                            const isMe = (m.sender_id === currentUserId);
+                            if (isMe) {
+                                html += `
+                                    <div class="align-self-end bg-primary text-white p-3 rounded shadow-sm" style="max-width: 75%; border-radius: 12px 12px 0 12px !important;">
+                                        <p class="mb-1 small">${m.message_text}</p>
+                                        <span class="text-white-50 float-end" style="font-size: 0.65rem;">${m.timestamp}</span>
+                                    </div>
+                                `;
+                            } else {
+                                html += `
+                                    <div class="align-self-start bg-white p-3 rounded border shadow-sm" style="max-width: 75%; border-radius: 12px 12px 12px 0 !important;">
+                                        <strong class="small text-primary mb-1 d-block">@${m.sender_name}</strong>
+                                        <p class="mb-1 small text-dark">${m.message_text}</p>
+                                        <span class="text-muted float-end" style="font-size: 0.65rem;">${m.timestamp}</span>
+                                    </div>
+                                `;
+                            }
+                        });
+                        logsArea.innerHTML = html;
+                        logsArea.scrollTop = logsArea.scrollHeight;
+                    }
+                }
+            }
+        } catch (e) {
+            if (!isSilent) {
+                logsArea.innerHTML = `<div class="text-center text-danger py-4 small">Failed to load conversation.</div>`;
+            }
+        }
+    }
+
+    async function sendAdminChatMessage() {
+        const input = document.getElementById('adminChatInputField');
+        const text = input.value.trim();
+        const recipientId = document.getElementById('adminChatRecipientId').value;
+        if (!text || !recipientId) return;
+
+        const formData = new FormData();
+        formData.append('receiver_id', recipientId);
+        formData.append('message_text', text);
+
+        try {
+            const r = await fetch('/admin/api/messages/send', {
+                method: 'POST',
+                body: formData
+            });
+            const res = await r.json();
+            if (res.status === 'success') {
+                input.value = '';
+                loadAdminConversation(recipientId);
+                if (typeof showToast === 'function') showToast('Message sent to worker!', 'success');
+            } else {
+                if (typeof showToast === 'function') showToast(res.message || 'Failed to send message.', 'danger');
+            }
+        } catch (e) {
+            if (typeof showToast === 'function') showToast('Network error sending message.', 'danger');
+        }
+    }
+
+    // Google Authenticator 2FA Setup & Verification JS
+    async function loadTwoFactorSetup() {
+        try {
+            const res = await fetch('/api/2fa/setup');
+            const data = await res.json();
+            if (data.status === 'success') {
+                document.getElementById('twoFactorConfigPanel').classList.remove('d-none');
+                document.getElementById('twoFactorSecretText').innerText = data.secret;
+                const badge = document.getElementById('twoFactorStatusBadge');
+                const toggleBtn = document.getElementById('btnToggle2FA');
+
+                if (data.qr_code) {
+                    const qrContainer = document.getElementById('twoFactorQrContainer');
+                    if (qrContainer) {
+                        qrContainer.innerHTML = `<img src="${data.qr_code}" alt="Google Authenticator QR Code" class="img-fluid rounded border p-2 bg-white shadow-sm" style="max-width: 180px;"><div class="extra-small text-muted mt-2">Scan QR Code using <strong>Google Authenticator</strong> or <strong>Authy</strong></div>`;
+                    }
+                }
+
+                if (data.enabled) {
+                    badge.innerText = 'Enabled & Protected';
+                    badge.className = 'fw-bold mb-0 text-success';
+                    toggleBtn.innerText = 'Disable 2FA Verification';
+                    toggleBtn.className = 'btn btn-outline-danger btn-sm w-100';
+                    toggleBtn.onclick = () => verifyAndToggle2FA(false);
+                } else {
+                    badge.innerText = 'Disabled';
+                    badge.className = 'fw-bold mb-0 text-danger';
+                }
+            }
+        } catch (e) {
+            if (typeof showToast === 'function') showToast('Error initializing 2FA setup.', 'danger');
+        }
+    }
+
+    async function verifyAndToggle2FA(enable) {
+        const codeInput = document.getElementById('twoFactorCodeInput');
+        const code = codeInput ? codeInput.value.trim() : '';
+
+        if (enable && !code) {
+            if (typeof showToast === 'function') showToast('Please enter the 6-digit code from Google Authenticator.', 'warning');
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/2fa/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enable: enable, code: code })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                if (typeof showToast === 'function') showToast(data.message, 'success');
+                setTimeout(() => window.location.reload(), 1200);
+            } else {
+                if (typeof showToast === 'function') showToast(data.message || 'Verification failed.', 'danger');
+            }
+        } catch (e) {
+            if (typeof showToast === 'function') showToast('Failed to toggle 2FA.', 'danger');
+        }
+    }
+</script>
+{% endblock %}

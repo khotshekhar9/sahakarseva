@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+
+{% block title %}Emergency Dispatch SOS - SahakarSeva{% endblock %}
+{% block page_title %}Emergency Service Dispatch{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0" style="max-width: 960px; margin: 0 auto;">
+  <!-- Header Alert Banner -->
+  <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 50%, #dc2626 100%); color: white; border-radius: 14px;">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="badge bg-warning text-dark fw-bold px-3 py-1 text-uppercase font-monospace" style="letter-spacing: 0.05em;">
+              ⚡ Sub-Second Live Dispatch
+            </span>
+            <span class="badge bg-white text-danger fw-bold px-2 py-1">24x7 Cooperative SOS</span>
+          </div>
+          <h1 class="h3 fw-bold mb-1 text-white">Instant Emergency Artisan Dispatch</h1>
+          <p class="text-white-50 mb-0 small">
+            Bypasses quotation bidding with statutory pre-approved cooperative rate cards. Broadcasts immediately to all verified, nearby trade artisans within your locality.
+          </p>
+        </div>
+        <div class="text-end d-none d-md-block">
+          <div class="small text-white-50">Cooperative Wage Protection</div>
+          <div class="fw-bold fs-5 text-warning">88% Direct Artisan Payout</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form id="emergencySosRequestForm" onsubmit="submitEmergencyRequest(event)">
+    <!-- Category Selection Grid -->
+    <div class="card border-0 shadow-sm rounded-3 bg-white p-4 mb-4">
+      <h2 class="h5 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+        <i data-lucide="zap" class="text-danger" style="width:20px;height:20px;"></i>
+        1. Select Emergency Service Trade
+      </h2>
+      <p class="text-secondary small mb-3">Pre-approved statutory tariff rates fixed by Primary Labour Cooperative Societies.</p>
+
+      <div class="row g-3" id="rateCardsContainer">
+        {% for cat_key, info in rate_cards.items() %}
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 emergency-category-card border {% if loop.first %}border-danger border-2 selected-card{% else %}border-light-subtle{% endif %} shadow-sm p-3 cursor-pointer" 
+                 data-category="{{ cat_key }}"
+                 data-rate="{{ info.rate }}"
+                 style="cursor: pointer; transition: all 0.2s ease; border-radius: 12px;">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge {% if cat_key == 'Electrical' %}bg-danger text-white{% elif cat_key == 'Plumbing' %}bg-primary text-white{% else %}bg-dark text-white{% endif %} fw-bold px-2 py-1">
+                  {{ cat_key }}
+                </span>
+                <div class="text-end">
+                  <div class="fs-5 fw-bold text-dark font-monospace">₹{{ '{:,.0f}'.format(info.rate) }}</div>
+                  <div class="text-muted small" style="font-size: 0.72rem;">Fixed Tariff</div>
+                </div>
+              </div>
+              <h3 class="h6 fw-bold text-dark mb-1" style="font-size: 0.95rem;">{{ info.title }}</h3>
+              <p class="text-secondary small mb-2" style="font-size: 0.8rem; line-height: 1.35;">{{ info.description }}</p>
+              <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center small">
+                <span class="text-success fw-semibold"><i class="fas fa-coins me-1"></i>Earn ₹{{ '{:,.0f}'.format(info.rate * 0.88) }} (88%)</span>
+                <span class="text-primary font-monospace small"><i class="fas fa-bolt text-warning me-1"></i>Instant</span>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="category" id="selectedCategory" value="Electrical">
+      <input type="hidden" name="severity" id="selectedSeverity" value="Critical">
+    </div>
+
+    <!-- Location & Incident Details -->
+    <div class="card border-0 shadow-sm rounded-3 bg-white p-4 mb-4">
+      <h2 class="h5 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+        <i data-lucide="map-pin" class="text-danger" style="width:20px;height:20px;"></i>
+        2. Incident Location & Navigation
+      </h2>
+      <p class="text-secondary small mb-3">Your GPS coordinates guide the dispatched artisan directly to your doorstep.</p>
+
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+            <div>
+              <strong class="text-dark small d-block">Live GPS Detection:</strong>
+              <span id="gpsStatusText" class="text-secondary small">Click button to fetch exact coordinates for highest dispatch priority.</span>
+            </div>
+            <button type="button" class="btn btn-outline-danger btn-sm fw-bold d-inline-flex align-items-center gap-1" onclick="detectGPSLocation()">
+              <i data-lucide="crosshair" style="width:14px;height:14px;"></i>
+              <span>Detect Current GPS</span>
+            </button>
+          </div>
+          <label class="form-label fw-semibold text-dark small">Service Address / Landmark <span class="text-danger">*</span></label>
+          <textarea class="form-control" name="address" id="emergencyAddress" rows="2" placeholder="House/Flat No., Building, Street Landmark, Pincode" required>{{ current_user.address or 'Sindhi Society, Chembur Central, Mumbai - 400071' }}</textarea>
+          <input type="hidden" name="latitude" id="emergencyLat" value="18.5204">
+          <input type="hidden" name="longitude" id="emergencyLng" value="73.8567">
+          <input type="hidden" name="is_current_location" id="isCurrentLocation" value="0">
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-dark small">Urgency Severity</label>
+          <select class="form-select" id="severitySelect" onchange="document.getElementById('selectedSeverity').value = this.value">
+            <option value="Critical" selected>🚨 Critical (Immediate hazard / smoke / major leak)</option>
+            <option value="Urgent">⚡ Urgent (Requires resolution within 60 mins)</option>
+            <option value="Priority">⏱ Priority (Same-day rapid visit)</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="form-label fw-semibold text-dark small">Search Proximity Radius</label>
+          <select class="form-select" name="radius_km">
+            <option value="5.0" selected>5 km (Recommended for quick response)</option>
+            <option value="10.0">10 km (Expanded society radius)</option>
+            <option value="15.0">15 km (Suburban municipal area)</option>
+          </select>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label fw-semibold text-dark small">Short Hazard Description (Optional)</label>
+          <input type="text" class="form-control" name="description" id="emergencyDescription" placeholder="e.g., Sparking MCB box in kitchen, main switch tripped">
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Button -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+      <a href="{{ url_for('customer.dashboard') }}" class="btn btn-light border">
+        Cancel
+      </a>
+      <button type="submit" class="btn btn-danger btn-lg px-4 py-3 fw-bold shadow-lg d-inline-flex align-items-center gap-2" id="submitSosBtn">
+        <span class="spinner-grow spinner-grow-sm text-warning" style="width: 12px; height: 12px;"></span>
+        <span>BROADCAST EMERGENCY SOS NOW</span>
+        <i data-lucide="send" style="width: 18px; height: 18px;"></i>
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+.emergency-category-card:hover {
+  transform: translateY(-2px);
+  border-color: #dc2626 !important;
+}
+.selected-card {
+  background-color: #fef2f2 !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15) !important;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function selectEmergencyCategory(category, rate, element) {
+  document.getElementById('selectedCategory').value = category;
+  document.querySelectorAll('.emergency-category-card').forEach(function(el) {
+    el.classList.remove('selected-card', 'border-danger', 'border-2');
+    el.classList.add('border-light-subtle');
+  });
+  element.classList.remove('border-light-subtle');
+  element.classList.add('selected-card', 'border-danger', 'border-2');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.emergency-category-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      var cat = this.getAttribute('data-category');
+      var rate = parseFloat(this.getAttribute('data-rate') || '0');
+      selectEmergencyCategory(cat, rate, this);
+    });
+  });
+});
+
+function detectGPSLocation() {
+  const status = document.getElementById('gpsStatusText');
+  if (!navigator.geolocation) {
+    status.innerText = 'Geolocation not supported by this browser.';
+    return;
+  }
+  status.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Locating current GPS coordinates...';
+  navigator.geolocation.getCurrentPosition(
+    async function(pos) {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      document.getElementById('emergencyLat').value = lat;
+      document.getElementById('emergencyLng').value = lng;
+      document.getElementById('isCurrentLocation').value = '1';
+      status.innerHTML = `<span class="text-success fw-bold">✓ High-Accuracy GPS Acquired (${lat.toFixed(4)}, ${lng.toFixed(4)})</span>`;
+      
+      try {
+        const resp = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
+          headers: { 'User-Agent': 'SahakarSevaEmergency/1.0' }
+        });
+        if (resp.ok) {
+          const d = await resp.json();
+          if (d && d.display_name) {
+            document.getElementById('emergencyAddress').value = d.display_name;
+          }
+        }
+      } catch(e) {}
+    },
+    function(err) {
+      status.innerHTML = '<span class="text-warning">Could not acquire GPS. Using address entered below.</span>';
+    },
+    { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+  );
+}
+
+async function submitEmergencyRequest(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submitSosBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Broadcasting Emergency SOS to Artisans...';
+
+  const form = document.getElementById('emergencySosRequestForm');
+  const fd = new FormData(form);
+  const payload = {};
+  fd.forEach((val, key) => { payload[key] = val; });
+
+  try {
+    const res = await fetch('/customer/emergency-dispatch', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (result.status === 'success') {
+      const bookingId = result.data ? (result.data.id || result.data.request_id) : null;
+      if (bookingId) {
+        window.location.href = `/customer/booking/${bookingId}`;
+      } else {
+        window.location.href = '/customer/bookings';
+      }
+    } else {
+      alert(result.message || 'Could not broadcast emergency dispatch. Please call society hotline.');
+      btn.disabled = false;
+      btn.innerHTML = '<span>BROADCAST EMERGENCY SOS NOW</span>';
+    }
+  } catch(err) {
+    alert('Network error broadcasting emergency dispatch. Please check connection.');
+    btn.disabled = false;
+    btn.innerHTML = '<span>BROADCAST EMERGENCY SOS NOW</span>';
+  }
+}
+</script>
+{% endblock %}

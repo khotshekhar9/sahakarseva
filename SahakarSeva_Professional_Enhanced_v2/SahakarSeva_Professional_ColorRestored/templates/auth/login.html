@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Sign In — SahakarSeva Cooperative Platform</title>
+    <meta name="description"
+        content="Sign in to your SahakarSeva portal for citizen requests, artisan jobs, or society administration.">
+
+    <!-- Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --auth-bg: #f8fafc;
+            --auth-card-bg: #ffffff;
+            --auth-text-main: #0f172a;
+            --auth-text-muted: #64748b;
+            --auth-border: #e2e8f0;
+            --auth-primary: #0d6efd;
+            --auth-primary-hover: #1d4ed8;
+            --auth-radius: 20px;
+            --auth-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--auth-bg);
+            color: var(--auth-text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 1.5rem 1rem;
+            position: relative;
+        }
+
+        /* Subtle civic background glow */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1100px;
+            height: 380px;
+            background: radial-gradient(ellipse at center, rgba(13, 110, 253, 0.07) 0%, rgba(5, 150, 105, 0.04) 45%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-card {
+            background: var(--auth-card-bg);
+            border: 1px solid var(--auth-border);
+            border-radius: var(--auth-radius);
+            box-shadow: var(--auth-shadow);
+            padding: clamp(1.75rem, 4vw, 2.5rem);
+        }
+
+        .brand-emblem {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0d6efd 0%, #059669 100%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.35rem;
+            box-shadow: 0 6px 16px rgba(13, 110, 253, 0.25);
+            margin-bottom: 0.75rem;
+        }
+
+        .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.55rem;
+            color: var(--auth-text-main);
+            letter-spacing: -0.03em;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .auth-heading {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: var(--auth-text-main);
+            letter-spacing: -0.02em;
+            margin-top: 1rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .auth-subheading {
+            font-size: 0.9rem;
+            color: var(--auth-text-muted);
+            line-height: 1.5;
+            margin-bottom: 1.75rem;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control {
+            border: 1px solid var(--auth-border);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            color: var(--auth-text-main);
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+            background-color: #ffffff;
+        }
+
+        .password-toggle-btn {
+            border: 1px solid var(--auth-border);
+            border-left: 0;
+            background: #ffffff;
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+            color: #64748b;
+            padding: 0 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.15s ease;
+        }
+
+        .password-toggle-btn:hover {
+            color: var(--auth-primary);
+            background: #f8fafc;
+        }
+
+        .btn-submit {
+            background-color: var(--auth-primary);
+            color: #ffffff;
+            border: 1px solid var(--auth-primary);
+            border-radius: 12px;
+            font-weight: 700;
+            padding: 0.8rem 1.25rem;
+            font-size: 1rem;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--auth-primary-hover);
+            border-color: var(--auth-primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(13, 110, 253, 0.28);
+            color: #ffffff;
+        }
+
+        /* 1-Click Demo Logins Panel */
+        .demo-panel {
+            background: #f8fafc;
+            border: 1px solid var(--auth-border);
+            border-radius: 14px;
+            padding: 1.15rem;
+            margin-top: 1.5rem;
+        }
+
+        .demo-title {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .demo-pill {
+            background: #ffffff;
+            border: 1px solid var(--auth-border);
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #1e293b;
+            padding: 0.42rem 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            text-decoration: none;
+            user-select: none;
+        }
+
+        .demo-pill:hover {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+        }
+
+        .demo-pill:active {
+            transform: translateY(0);
+        }
+
+        .auth-footer-links {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.88rem;
+            color: var(--auth-text-muted);
+        }
+
+        .auth-footer-links a {
+            color: var(--auth-primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .auth-footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        .back-home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            color: var(--auth-text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            transition: color 0.15s ease;
+        }
+
+        .back-home-link:hover {
+            color: var(--auth-primary);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="auth-container">
+
+        <!-- Back to Landing Link -->
+        <a href="{{ url_for('public.index') }}" class="back-home-link">
+            <i class="fas fa-arrow-left"></i> <span>Back to SahakarSeva</span>
+        </a>
+
+        <!-- Main Centered Authentication Card -->
+        <div class="auth-card">
+
+            <!-- Flashed Alerts -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, msg in messages %}
+            <div class="alert alert-{{ 'danger' if category in ('danger', 'error') else 'success' if category == 'success' else 'primary' }} alert-dismissible fade show py-2 px-3 small rounded-3 mb-3"
+                role="alert">
+                <i
+                    class="fas {{ 'fa-circle-exclamation' if category in ('danger', 'error') else 'fa-circle-check' if category == 'success' else 'fa-info-circle' }} me-1"></i>
+                {{ msg }}
+                <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <!-- Centered Brand Logo -->
+            <div class="text-center">
+                <div class="brand-emblem">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <div>
+                    <a href="{{ url_for('public.index') }}" class="brand-title">SahakarSeva</a>
+                </div>
+                <h1 class="auth-heading">Sign In</h1>
+                <p class="auth-subheading">Access your cooperative dashboard or community services portal.</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="auth-login-form" action="{{ url_for('auth.login') }}" method="POST">
+
+                <!-- Username or Email Input -->
+                <div class="mb-3">
+                    <label for="floatingUsername" class="form-label">Username or Email Address</label>
+                    <input type="text" class="form-control" id="floatingUsername" name="username"
+                        placeholder="e.g. publisher, admin, jdoe, anita" required autocomplete="username" autofocus>
+                </div>
+
+                <!-- Password Input with Show/Hide Toggle -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label for="floatingPassword" class="form-label mb-0">Password</label>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="floatingPassword" name="password"
+                            placeholder="••••••••" required autocomplete="current-password"
+                            style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                        <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility()"
+                            aria-label="Toggle password visibility">
+                            <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="btn btn-submit mt-2">
+                    <span>Sign In</span> <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <!-- Footer Links -->
+            <div class="auth-footer-links">
+                Don't have an account?
+                <a href="{{ url_for('auth.register') }}">Create an account</a>
+                <span class="text-muted mx-1">·</span>
+                <a href="{{ url_for('auth.register_contractor') }}" class="text-success fw-bold">Register Society</a>
+            </div>
+
+        </div>
+
+        <!-- Statutory Notice -->
+        <div class="text-center mt-3 text-muted small" style="font-size: 0.78rem;">
+            Statutory Cooperative Gig Platform · Regulated Under Maharashtra Cooperative Societies Act
+        </div>
+
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Toggle password visibility
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('floatingPassword');
+            const icon = document.getElementById('passwordToggleIcon');
+            if (!passwordInput || !icon) return;
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // 1-Click Demo Login auto-fill & auto-submit
+        function trigger1ClickDemo(username, password) {
+            const uInput = document.getElementById('floatingUsername');
+            const pInput = document.getElementById('floatingPassword');
+            const form = document.getElementById('auth-login-form');
+
+            if (uInput && pInput && form) {
+                uInput.value = username;
+                pInput.value = password;
+
+                // Show visual feedback on submit button
+                const btn = document.getElementById('submitBtn');
+                if (btn) {
+                    btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Authenticating ${username}...`;
+                    btn.disabled = true;
+                }
+
+                // Auto-submit immediately
+                form.submit();
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,10 @@
+Flask>=3.0,<4
+Flask-Login>=0.6,<1
+Flask-SQLAlchemy>=3.1,<4
+Flask-SocketIO>=5.3,<6
+SQLAlchemy>=2.0,<3
+PyOTP>=2.9,<3
+qrcode>=8,<9
+mysql-connector-python>=9,<10
+requests>=2.31,<3
+reportlab>=4,<5

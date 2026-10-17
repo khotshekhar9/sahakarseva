@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}{{ contractor.company_name }} - Labour Cooperative Profile - SahakarSeva{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <div class="mb-3">
+        <a href="{{ url_for('customer.marketplace') }}" class="text-decoration-none text-secondary small">
+            <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Back to Cooperative Directory
+        </a>
+    </div>
+
+    <!-- Cooperative Society Header Profile Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-8 d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3">
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success fw-bold d-flex align-items-center justify-content-center border border-success border-opacity-25 flex-shrink-0" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                        {{ contractor.company_name[0] | upper if contractor.company_name else 'C' }}
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                            <h3 class="fw-bold text-dark mb-0">{{ contractor.company_name }}</h3>
+                            <i data-lucide="shield-check" class="text-success fill-success" style="width: 18px; height: 18px;" title="Certified Labour Cooperative"></i>
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Certified Cooperative</span>
+                        </div>
+                        <p class="text-secondary small mb-2">
+                            {% if contractor.cooperative_reg_no %}
+                                <span class="badge bg-light text-dark border me-1">Reg: {{ contractor.cooperative_reg_no }}</span>
+                            {% endif %}
+                            {% if contractor.federation_name %}
+                                <span class="text-primary fw-semibold me-1">&bull; {{ contractor.federation_name }}</span>
+                            {% endif %}
+                            <i data-lucide="map-pin" style="width: 13px; height: 13px;"></i> {{ contractor.service_areas or contractor.office_address or 'City Area' }}
+                        </p>
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                            <span class="badge bg-warning text-dark fw-bold px-2 py-1">★ {{ "%.1f" | format(rating_avg) }}</span>
+                            <span class="small text-secondary"><strong>{{ reviews | length }}</strong> Reviews</span>
+                            <span class="small text-secondary"><strong>{{ projects | length }}</strong> Contracts</span>
+                            <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25">88% Direct to Worker</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0 w-100 w-md-auto">
+                    <a href="{{ url_for('customer.book_service') }}?contractor_id={{ contractor.id }}" class="btn btn-success d-flex align-items-center justify-content-center gap-1 shadow-sm w-100 w-md-auto">
+                        <i data-lucide="calendar" class="me-1"></i> Book Cooperative Service
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid: Info + Reviews -->
+    <div class="row g-4 mb-5">
+        <!-- Left Pane: About & Portfolio -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-3">About {{ contractor.company_name }}</h5>
+                    <p class="text-secondary mb-4">
+                        {{ contractor.description or 'Licensed contractor providing commercial, residential, electrical, and general construction services. Committed to high safety standards, transparent billing, and top quality craftsmanship.' }}
+                    </p>
+
+                    <h6 class="fw-bold text-dark mb-2">Primary Service Capabilities</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <span class="badge bg-light text-dark border p-2"><i data-lucide="check" class="text-success me-1" style="width: 12px; height: 12px;"></i> Electrical Infrastructure</span>
+                        <span class="badge bg-light text-dark border p-2"><i data-lucide="check" class="text-success me-1" style="width: 12px; height: 12px;"></i> Plumbing & Piping</span>
+                        <span class="badge bg-light text-dark border p-2"><i data-lucide="check" class="text-success me-1" style="width: 12px; height: 12px;"></i> HVAC Maintenance</span>
+                        <span class="badge bg-light text-dark border p-2"><i data-lucide="check" class="text-success me-1" style="width: 12px; height: 12px;"></i> General Remodeling</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active / Completed Projects Portfolio -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold text-dark mb-3">Project Portfolio & Ongoing Site Work</h5>
+                    {% if projects %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for p in projects %}
+                                <div class="p-3 border rounded bg-light bg-opacity-50">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="fw-bold text-dark mb-0">{{ p.name }}</h6>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary">{{ p.status }}</span>
+                                    </div>
+                                    <p class="small text-secondary mb-2">{{ p.description or 'Site construction and maintenance project.' }}</p>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="--w: {{ p.progress or 0 }}%; width: var(--w);"></div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-secondary small mb-0">No active public projects listed at this time.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Customer Reviews & Ratings -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-dark mb-0">Client Reviews</h5>
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#leaveReviewModal">
+                            <i data-lucide="star" style="width: 14px; height: 14px;"></i> Write Review
+                        </button>
+                    </div>
+
+                    {% if reviews %}
+                        <div class="d-flex flex-column gap-3">
+                            {% for r in reviews %}
+                                <div class="p-3 border rounded bg-white shadow-xs">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <strong class="text-dark small">Customer Review</strong>
+                                        <div class="text-warning small">
+                                            {% for i in range(r.rating) %}★{% endfor %}
+                                        </div>
+                                    </div>
+                                    <p class="small text-secondary mb-1">{{ r.review_text or 'Great service and clear communication.' }}</p>
+                                    <small class="text-muted text-xs d-block">{{ r.created_at.strftime('%b %d, %Y') if r.created_at else 'Recent' }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4 bg-light rounded border">
+                            <i data-lucide="message-square" class="text-secondary mb-2" style="width: 32px; height: 32px;"></i>
+                            <p class="small text-secondary mb-2">No client reviews logged yet.</p>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#leaveReviewModal">Be First to Write Review</button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Write Review -->
+<div class="modal fade" id="leaveReviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ url_for('customer.submit_review') }}" method="POST">
+                <input type="hidden" name="contractor_id" value="{{ contractor.id }}">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Leave Rating & Review</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Star Rating *</label>
+                        <select name="rating" class="form-select" required>
+                            <option value="5">5 Stars - Excellent Service</option>
+                            <option value="4">4 Stars - Good Experience</option>
+                            <option value="3">3 Stars - Satisfactory</option>
+                            <option value="2">2 Stars - Needs Improvement</option>
+                            <option value="1">1 Star - Unsatisfactory</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Review Feedback</label>
+                        <textarea name="review_text" class="form-control" rows="3" placeholder="Share your experience working with this contractor..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

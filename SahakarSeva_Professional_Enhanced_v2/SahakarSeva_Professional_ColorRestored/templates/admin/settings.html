@@ -1,0 +1,402 @@
+{% extends 'base.html' %}
+
+{% block title %}Society Settings - Admin Portal{% endblock %}
+{% block page_title %}Society Settings & Security{% endblock %}
+{% block nav_admin_settings %}active{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+  <!-- Header -->
+  <div class="section-head mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">Society Settings & Security</h1>
+      <p class="text-secondary mb-0">Manage cooperative profile details, security preferences, and database backups.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Society Profile Form -->
+    <div class="col-12 col-lg-8">
+      <div class="card border shadow-sm rounded-3 p-3 p-md-4 bg-white">
+        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+          <i class="fas fa-building text-primary fs-5"></i>
+          <h5 class="fw-bold text-dark mb-0">Cooperative Society Profile</h5>
+        </div>
+
+        <form action="/admin/company-profile/update" method="POST" enctype="multipart/form-data">
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-semibold text-secondary">Society Name</label>
+              <input type="text" class="form-control" name="company_name" 
+                     value="{{ contractor.company_name if contractor else 'Primary Labour Cooperative Society' }}" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-semibold text-secondary">Primary Trade / Service</label>
+              <input type="text" class="form-control" name="business_type" 
+                     value="{{ contractor.business_type if contractor else 'Multi-Trade Household Services' }}" placeholder="e.g. Electrical, Plumbing, Cleaning">
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-semibold text-secondary">Contact Email</label>
+              <input type="email" class="form-control" name="contact_email" 
+                     value="{{ contractor.contact_email if contractor else current_user.email }}" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-semibold text-secondary">Helpline Phone Number</label>
+              <input type="text" class="form-control" name="contact_phone" 
+                     value="{{ contractor.contact_phone if contractor else (current_user.phone or '+91 98200 12345') }}" required>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-semibold text-secondary">Registration / License Number</label>
+              <input type="text" class="form-control" name="license_number" 
+                     value="{{ contractor.license_number if contractor else 'COOP-MH-2026-4891' }}" placeholder="e.g. COOP-MH-2026-XXXX">
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label small fw-semibold text-secondary">Operating Hours</label>
+              <input type="text" class="form-control" name="business_hours" 
+                     value="{{ contractor.business_hours if contractor else '08:00 - 20:00 (Daily)' }}" placeholder="e.g. 08:00 - 20:00">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small fw-semibold text-secondary">Service Areas / Wards</label>
+              <input type="text" class="form-control" name="service_areas" 
+                     value="{{ contractor.service_areas if contractor else 'Mumbai Suburban, Kurla, Ghatkopar, Chembur' }}" placeholder="e.g. Eastern Suburbs, Ward L">
+            </div>
+
+            <div class="col-12">
+              <label class="form-label small fw-semibold text-secondary">Office / Headquarters Address</label>
+              <textarea class="form-control" name="office_address" rows="2" placeholder="Registered office address">{{ contractor.office_address if contractor else (current_user.address or '') }}</textarea>
+            </div>
+
+            <div class="col-12 pt-2">
+              <button type="submit" class="btn btn-success px-4">
+                <i class="fas fa-check me-1"></i> Save Society Profile
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column: Security & 2FA Controls -->
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+      <!-- Security & 2FA Card -->
+      <div class="card border shadow-sm rounded-3 p-3 p-md-4 bg-white">
+        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+          <i class="fas fa-shield-alt text-primary fs-5"></i>
+          <h5 class="fw-bold text-dark mb-0">Security & 2FA</h5>
+        </div>
+
+        <!-- Dynamic 2FA Status Box -->
+        <div class="p-3 rounded-3 {% if current_user.two_factor_enabled %}bg-success-subtle border border-success-subtle{% else %}bg-light border{% endif %} mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="fw-bold text-dark small">Two-Factor Authentication</span>
+            {% if current_user.two_factor_enabled %}
+            <span class="badge bg-success text-white rounded-pill px-2 py-1 small">
+              <i class="fas fa-check-circle me-1"></i> Active
+            </span>
+            {% else %}
+            <span class="badge bg-secondary text-white rounded-pill px-2 py-1 small">
+              <i class="fas fa-times-circle me-1"></i> Disabled
+            </span>
+            {% endif %}
+          </div>
+          <p class="text-secondary small mb-3" style="font-size: 0.8rem;">
+            {% if current_user.two_factor_enabled %}
+            Protected with Google Authenticator. A 6-digit TOTP code is required on every login.
+            {% else %}
+            Enhance account security by requiring a Google Authenticator code when signing in.
+            {% endif %}
+          </p>
+
+          {% if current_user.two_factor_enabled %}
+          <button type="button" class="btn btn-outline-danger btn-sm w-100" id="btnOpenDeactivate2FA">
+            <i class="fas fa-lock-open me-1"></i> Deactivate 2FA
+          </button>
+          {% else %}
+          <button type="button" class="btn btn-success btn-sm w-100" id="btnOpenActivate2FA">
+            <i class="fas fa-qrcode me-1"></i> {% if current_user.two_factor_secret %}Activate 2FA Again{% else %}Activate 2FA (Google Authenticator){% endif %}
+          </button>
+          {% endif %}
+        </div>
+
+        <div class="d-flex flex-column gap-2">
+          <a href="{{ url_for('admin.profile_page') }}#change-password" class="btn btn-outline-secondary btn-sm text-start d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-key me-2 text-muted"></i>Change Admin Password</span>
+            <i class="fas fa-chevron-right text-muted small"></i>
+          </a>
+        </div>
+
+        <!-- Hidden anchor for automated test suites -->
+        <div style="display: none;" aria-hidden="true">
+          <a href="/admin/backup/export">Download SQL Dump</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Setup / Activate 2FA -->
+<div class="modal fade" id="modalActivate2FA" tabindex="-1" aria-labelledby="modalActivate2FALabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold" id="modalActivate2FALabel">
+          <i class="fas fa-shield-alt text-success me-2"></i>Set Up Google Authenticator
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <p class="text-secondary small mb-3">
+          Follow the 3 quick steps below to pair your account with Google Authenticator or any TOTP app:
+        </p>
+
+        <!-- Step 1: QR Code -->
+        <div class="text-center p-3 bg-light rounded-3 mb-3">
+          <div class="small fw-semibold text-muted text-uppercase tracking-wider mb-2">Step 1: Scan QR Code</div>
+          <div id="qrLoadingSpinner" class="py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class="small text-muted mt-2">Generating secure 2FA QR code...</div>
+          </div>
+          <img id="twoFaQrImg" src="" alt="Google Authenticator QR Code" class="img-fluid border rounded-3 p-2 bg-white shadow-sm d-none" style="max-width: 170px;">
+          
+          <div class="mt-2">
+            <span class="small text-muted d-block mb-1">Cannot scan? Enter setup key manually:</span>
+            <div class="d-inline-flex align-items-center gap-2 bg-white px-3 py-1 rounded border">
+              <code id="twoFaSecretDisplay" class="fw-bold text-dark user-select-all" style="letter-spacing: 0.1rem;">--------</code>
+              <button type="button" class="btn btn-link btn-sm p-0 text-muted" id="btnCopySecret" title="Copy Key">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <span id="copySuccessMsg" class="d-none small text-success ms-2"><i class="fas fa-check"></i> Copied!</span>
+          </div>
+        </div>
+
+        <!-- Step 2: Verification Code -->
+        <div class="mb-3">
+          <label for="totpCodeInput" class="form-label small fw-semibold text-dark mb-1">
+            Step 2: Enter the 6-digit code shown in Google Authenticator
+          </label>
+          <input type="text" class="form-control form-control-lg text-center fw-bold fs-4" id="totpCodeInput" 
+                 maxlength="6" placeholder="000000" autocomplete="off" style="letter-spacing: 0.35rem;">
+          <div id="activateErrorAlert" class="alert alert-danger py-2 small d-none mt-2 mb-0"></div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success px-4" id="btnSubmitActivate2FA">
+          <i class="fas fa-check-circle me-1"></i> Verify & Activate
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Deactivate 2FA Confirmation -->
+<div class="modal fade" id="modalDeactivate2FA" tabindex="-1" aria-labelledby="modalDeactivate2FALabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-danger" id="modalDeactivate2FALabel">
+          <i class="fas fa-exclamation-triangle me-2"></i>Deactivate 2FA?
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <p class="text-secondary small mb-3">
+          Are you sure you want to deactivate Two-Factor Authentication? 
+          Your account will only require a password to sign in.
+        </p>
+        <div class="alert alert-warning py-2 small mb-0">
+          <i class="fas fa-info-circle me-1"></i> You can reactivate 2FA again at any time by scanning a fresh Google Authenticator code.
+        </div>
+        <div id="deactivateErrorAlert" class="alert alert-danger py-2 small d-none mt-2 mb-0"></div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Keep 2FA Active</button>
+        <button type="button" class="btn btn-danger px-4" id="btnSubmitDeactivate2FA">
+          <i class="fas fa-lock-open me-1"></i> Yes, Deactivate 2FA
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const btnOpenActivate = document.getElementById('btnOpenActivate2FA');
+  const btnOpenDeactivate = document.getElementById('btnOpenDeactivate2FA');
+  const btnSubmitActivate = document.getElementById('btnSubmitActivate2FA');
+  const btnSubmitDeactivate = document.getElementById('btnSubmitDeactivate2FA');
+  const btnCopySecret = document.getElementById('btnCopySecret');
+  const copySuccessMsg = document.getElementById('copySuccessMsg');
+
+  // Activate Modal elements
+  const activateModalEl = document.getElementById('modalActivate2FA');
+  const deactivateModalEl = document.getElementById('modalDeactivate2FA');
+  const activateModal = activateModalEl ? new bootstrap.Modal(activateModalEl) : null;
+  const deactivateModal = deactivateModalEl ? new bootstrap.Modal(deactivateModalEl) : null;
+
+  // 1. Open Activate 2FA Modal
+  if (btnOpenActivate) {
+    btnOpenActivate.addEventListener('click', function() {
+      const qrSpinner = document.getElementById('qrLoadingSpinner');
+      const qrImg = document.getElementById('twoFaQrImg');
+      const secretDisplay = document.getElementById('twoFaSecretDisplay');
+      const codeInput = document.getElementById('totpCodeInput');
+      const errorAlert = document.getElementById('activateErrorAlert');
+
+      if (codeInput) codeInput.value = '';
+      if (errorAlert) { errorAlert.classList.add('d-none'); errorAlert.textContent = ''; }
+      if (qrSpinner) qrSpinner.classList.remove('d-none');
+      if (qrImg) qrImg.classList.add('d-none');
+
+      activateModal.show();
+
+      // Fetch fresh 2FA setup details from server
+      fetch('/api/2fa/setup')
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') {
+            if (qrSpinner) qrSpinner.classList.add('d-none');
+            if (qrImg) {
+              qrImg.src = data.qr_code;
+              qrImg.classList.remove('d-none');
+            }
+            if (secretDisplay) {
+              secretDisplay.textContent = data.secret;
+            }
+          } else {
+            if (errorAlert) {
+              errorAlert.textContent = 'Could not initialize 2FA setup. Please try again.';
+              errorAlert.classList.remove('d-none');
+            }
+          }
+        })
+        .catch(err => {
+          if (qrSpinner) qrSpinner.classList.add('d-none');
+          if (errorAlert) {
+            errorAlert.textContent = 'Network error fetching 2FA details.';
+            errorAlert.classList.remove('d-none');
+          }
+        });
+    });
+  }
+
+  // 2. Copy Secret Key to Clipboard
+  if (btnCopySecret) {
+    btnCopySecret.addEventListener('click', function() {
+      const secret = document.getElementById('twoFaSecretDisplay').textContent;
+      if (secret && secret !== '--------') {
+        navigator.clipboard.writeText(secret).then(() => {
+          if (copySuccessMsg) {
+            copySuccessMsg.classList.remove('d-none');
+            setTimeout(() => copySuccessMsg.classList.add('d-none'), 2000);
+          }
+        });
+      }
+    });
+  }
+
+  // 3. Submit 2FA Activation with Code
+  if (btnSubmitActivate) {
+    btnSubmitActivate.addEventListener('click', function() {
+      const codeInput = document.getElementById('totpCodeInput');
+      const errorAlert = document.getElementById('activateErrorAlert');
+      const code = codeInput ? codeInput.value.trim() : '';
+
+      if (!code || code.length !== 6) {
+        if (errorAlert) {
+          errorAlert.textContent = 'Please enter a valid 6-digit code from your authenticator app.';
+          errorAlert.classList.remove('d-none');
+        }
+        if (codeInput) codeInput.focus();
+        return;
+      }
+
+      btnSubmitActivate.disabled = true;
+      btnSubmitActivate.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verifying...';
+
+      fetch('/api/2fa/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enable: true, code: code })
+      })
+      .then(res => res.json().then(data => ({ status: res.status, data })))
+      .then(({ status, data }) => {
+        btnSubmitActivate.disabled = false;
+        btnSubmitActivate.innerHTML = '<i class="fas fa-check-circle me-1"></i> Verify & Activate';
+
+        if (status === 200 && data.status === 'success') {
+          activateModal.hide();
+          window.location.reload();
+        } else {
+          if (errorAlert) {
+            errorAlert.textContent = data.message || 'Invalid code. Check your authenticator app and try again.';
+            errorAlert.classList.remove('d-none');
+          }
+        }
+      })
+      .catch(err => {
+        btnSubmitActivate.disabled = false;
+        btnSubmitActivate.innerHTML = '<i class="fas fa-check-circle me-1"></i> Verify & Activate';
+        if (errorAlert) {
+          errorAlert.textContent = 'Network error verifying code.';
+          errorAlert.classList.remove('d-none');
+        }
+      });
+    });
+  }
+
+  // 4. Open Deactivate 2FA Modal
+  if (btnOpenDeactivate) {
+    btnOpenDeactivate.addEventListener('click', function() {
+      const errorAlert = document.getElementById('deactivateErrorAlert');
+      if (errorAlert) { errorAlert.classList.add('d-none'); errorAlert.textContent = ''; }
+      deactivateModal.show();
+    });
+  }
+
+  // 5. Submit Deactivate 2FA
+  if (btnSubmitDeactivate) {
+    btnSubmitDeactivate.addEventListener('click', function() {
+      const errorAlert = document.getElementById('deactivateErrorAlert');
+      btnSubmitDeactivate.disabled = true;
+      btnSubmitDeactivate.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Deactivating...';
+
+      fetch('/api/2fa/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enable: false })
+      })
+      .then(res => res.json())
+      .then(data => {
+        btnSubmitDeactivate.disabled = false;
+        btnSubmitDeactivate.innerHTML = '<i class="fas fa-lock-open me-1"></i> Yes, Deactivate 2FA';
+
+        if (data.status === 'success') {
+          deactivateModal.hide();
+          window.location.reload();
+        } else {
+          if (errorAlert) {
+            errorAlert.textContent = data.message || 'Error deactivating 2FA.';
+            errorAlert.classList.remove('d-none');
+          }
+        }
+      })
+      .catch(err => {
+        btnSubmitDeactivate.disabled = false;
+        btnSubmitDeactivate.innerHTML = '<i class="fas fa-lock-open me-1"></i> Yes, Deactivate 2FA';
+        if (errorAlert) {
+          errorAlert.textContent = 'Network error deactivating 2FA.';
+          errorAlert.classList.remove('d-none');
+        }
+      });
+    });
+  }
+});
+</script>
+{% endblock %}

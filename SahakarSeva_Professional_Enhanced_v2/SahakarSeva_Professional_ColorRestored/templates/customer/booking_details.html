@@ -1,0 +1,936 @@
+{% extends 'base.html' %}
+{% block title %}Tracking {{ booking.request_id }} - SahakarSeva{% endblock %}
+{% block page_title %}Service Status{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+  <!-- Top Navigation & Breadcrumb -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <a class="btn btn-sm btn-light border d-inline-flex align-items-center gap-1" href="{{ url_for('customer.bookings_page') }}">
+      <i data-lucide="arrow-left" style="width:16px;height:16px;"></i>
+      <span>Back to My Bookings</span>
+    </a>
+    <div class="d-flex align-items-center gap-2">
+      <span class="text-muted small">Reference:</span>
+      <code class="fw-bold fs-6 px-2 py-1 rounded bg-light border text-dark">{{ booking.request_id }}</code>
+    </div>
+  </div>
+
+  <!-- Service Header Card -->
+  <div class="simple-list-card mb-4 p-4 shadow-sm border rounded-3 bg-white">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+          <span class="badge bg-primary-subtle text-primary border px-2 py-1">{{ booking.category }}</span>
+          {% if booking.priority in ['Urgent', 'Emergency'] %}
+            <span class="badge bg-danger text-white px-2 py-1">🚨 {{ booking.priority }}</span>
+          {% endif %}
+          <span id="booking-status-chip-container">
+          {% if is_cancelled %}
+            <span class="status-chip" style="background:#fee2e2;color:#991b1b;">Cancelled</span>
+          {% elif booking.status in ['Completed', 'Closed', 'Paid'] %}
+            <span class="status-chip success">Completed</span>
+          {% elif booking.status in ['Travelling', 'In Progress'] %}
+            <span class="status-chip" style="background:#e0f2fe;color:#0369a1;">{{ booking.status }}</span>
+          {% else %}
+            <span class="status-chip">{{ booking.status|replace('_',' ') }}</span>
+          {% endif %}
+          </span>
+        </div>
+        <h1 class="h3 fw-bold mb-2 text-dark">{{ booking.title }}</h1>
+        <p class="text-secondary mb-0 small">
+          <i data-lucide="map-pin" class="d-inline-block align-middle me-1" style="width:15px;height:15px;"></i>
+          {{ booking.address }}
+        </p>
+      </div>
+
+      <div class="text-md-end">
+        <div class="text-muted small">Scheduled Timeline</div>
+        <div class="fw-bold text-dark fs-5">
+          {{ booking.visit_date.strftime('%d %b %Y') if booking.visit_date else 'To be scheduled' }}
+        </div>
+        {% if booking.preferred_time %}
+          <div class="text-secondary small">{{ booking.preferred_time }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if is_cancelled %}
+    <!-- Cancelled Notice Banner -->
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+      <i data-lucide="alert-circle" style="width:20px;height:20px;"></i>
+      <div>
+        <strong>This booking has been cancelled.</strong> No further technician visits or charges will occur. If you still require service, please create a new booking.
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Operational Checkpoint Stepper (Tracking Timeline) -->
+  <div class="simple-list-card mb-4 p-4 shadow-sm border rounded-3 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+      <div>
+        <h2 class="h5 fw-bold mb-1 d-flex align-items-center gap-2">
+          <i data-lucide="activity" class="text-primary" style="width:20px;height:20px;"></i>
+          Live Service Tracking
+        </h2>
+        <p class="text-secondary small mb-0">Operational milestones from artisan dispatch to completion.</p>
+      </div>
+      <span class="badge bg-light text-muted border">Cooperative Dispatch System</span>
+    </div>
+
+    <!-- Stepper Container -->
+    <div class="tracking-stepper position-relative ps-3 ps-md-4" id="tracking-stepper-container">
+      {% for cp in checkpoints %}
+        <div class="checkpoint-item position-relative pb-4 d-flex gap-3 {% if not loop.last %}border-start border-2 {% if cp.state == 'completed' %}border-success{% else %}border-secondary border-opacity-25{% endif %} ps-3 ps-md-4{% else %}ps-3 ps-md-4{% endif %}" id="checkpoint-item-{{ cp.key }}">
+          
+          <!-- Node Dot / Icon -->
+          <div class="checkpoint-node position-absolute d-flex align-items-center justify-content-center rounded-circle shadow-sm
+                      {% if cp.state == 'completed' %}checkpoint-node--completed text-white
+                      {% elif cp.state == 'current' %}checkpoint-node--current
+                      {% elif cp.state == 'cancelled' %}checkpoint-node--cancelled
+                      {% else %}checkpoint-node--pending{% endif %}" id="checkpoint-node-{{ cp.key }}">
+            {% if cp.state == 'completed' %}
+              <i data-lucide="check" class="text-white" style="width:18px;height:18px;"></i>
+            {% elif cp.state == 'current' %}
+              <i data-lucide="{{ cp.icon }}" style="width:18px;height:18px;"></i>
+            {% elif cp.state == 'cancelled' %}
+              <i data-lucide="x" style="width:18px;height:18px;"></i>
+            {% else %}
+              <i data-lucide="{{ cp.icon }}" style="width:16px;height:16px;"></i>
+            {% endif %}
+          </div>
+
+          <!-- Checkpoint Content -->
+          <div class="checkpoint-body flex-grow-1 ms-2">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <h3 class="h6 fw-bold mb-0 {% if cp.state == 'completed' %}text-dark{% elif cp.state == 'current' %}text-primary{% else %}text-muted{% endif %}" id="checkpoint-title-{{ cp.key }}">
+                {{ cp.title }}
+              </h3>
+              <span id="checkpoint-status-badge-{{ cp.key }}">
+              {% if cp.state == 'completed' %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0 small d-inline-flex align-items-center gap-1"><i data-lucide="check" style="width:12px;height:12px;"></i> Completed</span>
+              {% elif cp.state == 'current' %}
+                <span class="badge bg-primary text-white px-2 py-0 small d-inline-flex align-items-center gap-1"><i data-lucide="activity" style="width:12px;height:12px;"></i> Active Now</span>
+              {% elif cp.state == 'cancelled' %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0 small">Skipped</span>
+              {% else %}
+                <span class="badge bg-light text-muted border px-2 py-0 small">Pending</span>
+              {% endif %}
+              </span>
+            </div>
+            <p class="small text-secondary mt-1 mb-0" id="checkpoint-desc-{{ cp.key }}">{{ cp.description }}</p>
+            {% if cp.time %}
+              <span class="text-muted" style="font-size: 0.76rem;">{{ cp.time }}</span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Artisan Details & Security OTP Gate -->
+    <div class="col-12 col-lg-6">
+      <!-- Artisan Card -->
+      <div class="simple-list-card p-4 shadow-sm border rounded-3 bg-white mb-4 h-100">
+        <h2 class="h5 fw-bold mb-3 d-flex align-items-center gap-2">
+          <i data-lucide="user-check" class="text-primary" style="width:20px;height:20px;"></i>
+          Assigned Cooperative Artisan
+        </h2>
+
+        <div id="artisan-section-wrapper">
+        {% if booking.assigned_worker and booking.assigned_worker.user %}
+          {% set worker_user = booking.assigned_worker.user %}
+          {% set worker_tier = booking.assigned_worker.tier or 'Apprentice' %}
+          <div class="d-flex align-items-center gap-3 mb-3 p-3 bg-light rounded-3 border">
+            <div class="avatar-lg rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fs-4 fw-bold" style="width:54px;height:54px;">
+              {{ worker_user.username[:2]|upper }}
+            </div>
+            <div>
+              <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                <strong class="fs-5 text-dark">{{ worker_user.username|title }}</strong>
+                <span class="text-secondary">&bull;</span>
+                {% if worker_tier == 'Master Artisan' %}
+                  <span class="badge bg-purple-subtle text-purple border border-purple-subtle px-3 py-1 rounded-pill"><i class="fas fa-crown text-warning me-1"></i> Master Artisan</span>
+                {% elif worker_tier == 'Skilled Craftsman' %}
+                  <span class="badge bg-primary-subtle text-primary border px-3 py-1 rounded-pill"><i class="fas fa-tools me-1"></i> Skilled Craftsman</span>
+                {% else %}
+                  <span class="badge bg-secondary-subtle text-secondary border px-3 py-1 rounded-pill"><i class="fas fa-user-graduate me-1"></i> Apprentice</span>
+                {% endif %}
+                <span class="text-warning fw-semibold small">★ {{ '%.2f'|format(booking.assigned_worker.performance_rating|float) if booking.assigned_worker.performance_rating else '5.00' }} / 5.0</span>
+              </div>
+              <div class="text-secondary small">{{ booking.assigned_worker.skills or booking.category }} Specialist &bull; <span class="text-success fw-medium"><i class="fas fa-shield-alt me-1"></i>Verified Member</span></div>
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            {% if worker_user.phone %}
+              <a class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1" href="tel:{{ worker_user.phone }}">
+                <i data-lucide="phone" style="width:14px;height:14px;"></i>
+                <span>Call Artisan ({{ worker_user.phone }})</span>
+              </a>
+            {% endif %}
+            <a class="btn btn-light border btn-sm d-inline-flex align-items-center gap-1" href="{{ url_for('customer.messages_page') }}">
+              <i data-lucide="message-square" style="width:14px;height:14px;"></i>
+              <span>Send Message</span>
+            </a>
+          </div>
+        {% else %}
+          <div class="text-center py-4 bg-light rounded-3 border" id="artisan-unassigned-box">
+            <i data-lucide="clock" class="text-muted mb-2" style="width:36px;height:36px;"></i>
+            <h3 class="h6 fw-bold text-dark">Artisan Assignment In Progress</h3>
+            <p class="small text-secondary mb-0 px-3">
+              The Cooperative Primary Society coordinator is matching certified trade artisans with your job schedule. You will receive an SMS and push alert as soon as an artisan claims this order.
+            </p>
+          </div>
+        {% endif %}
+        </div>
+
+        <!-- Arrival Verification OTP Gate -->
+        <div id="arrival-otp-gate-container">
+        {% if booking.otp and not booking.otp_verified and not is_cancelled %}
+          <div class="mt-4 p-3 rounded-3 border border-warning" style="background: #fffbeb;">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-bold text-warning-emphasis small text-uppercase" style="letter-spacing: 0.05em;">
+                <i data-lucide="shield-check" class="d-inline-block align-middle me-1" style="width:16px;height:16px;"></i>
+                Arrival Verification Gate
+              </span>
+              <span class="badge bg-warning text-dark px-2 py-0 small">Required for Start</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between gap-3 mt-2">
+              <div>
+                <p class="small text-secondary mb-0">Share this code with your artisan only upon their arrival at your location:</p>
+              </div>
+              <div class="px-3 py-2 bg-white rounded-3 border border-warning-subtle text-center shadow-sm">
+                <span class="fs-4 fw-bold font-monospace text-dark letter-spacing-1" id="arrival-otp-code">{{ booking.otp }}</span>
+              </div>
+            </div>
+          </div>
+        {% elif booking.otp_verified %}
+          <div class="mt-4 p-3 rounded-3 bg-success-subtle border border-success-subtle text-success d-flex align-items-center gap-2">
+            <i data-lucide="check-circle-2" style="width:20px;height:20px;"></i>
+            <span class="small fw-semibold">Arrival OTP successfully verified. Work is certified on site.</span>
+          </div>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Quotation, Payments & Actions -->
+    <div class="col-12 col-lg-6">
+      <!-- Quotation Review Box (if exists) -->
+      {% if quotation %}
+        <div id="quotation" class="simple-list-card p-4 shadow-sm border rounded-3 bg-white mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 fw-bold mb-0 d-flex align-items-center gap-2">
+              <i data-lucide="file-text" class="text-primary" style="width:20px;height:20px;"></i>
+              Quotation Review
+            </h2>
+            <span class="badge {% if quotation.status == 'Approved' %}bg-success text-white{% elif quotation.status == 'Rejected' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}">
+              {{ quotation.status }}
+            </span>
+          </div>
+
+          <div class="p-3 bg-light rounded-3 border mb-3">
+            <div class="d-flex justify-content-between small text-secondary py-1 border-bottom">
+              <span>Quotation Number</span>
+              <strong class="text-dark">{{ quotation.quotation_number }}</strong>
+            </div>
+            <div class="d-flex justify-content-between small text-secondary py-1 border-bottom">
+              <span>Labour & Craftsmanship</span>
+              <span class="text-dark">₹{{ '%.2f'|format(quotation.labour_cost|float) }}</span>
+            </div>
+            {% if quotation.equipment_charges and quotation.equipment_charges > 0 %}
+              <div class="d-flex justify-content-between small text-secondary py-1 border-bottom">
+                <span>Equipment & Tooling</span>
+                <span class="text-dark">₹{{ '%.2f'|format(quotation.equipment_charges|float) }}</span>
+              </div>
+            {% endif %}
+            {% if quotation.gst and quotation.gst > 0 %}
+              <div class="d-flex justify-content-between small text-secondary py-1 border-bottom">
+                <span>Applicable GST / Taxes</span>
+                <span class="text-dark">₹{{ '%.2f'|format(quotation.gst|float) }}</span>
+              </div>
+            {% endif %}
+            <div class="d-flex justify-content-between fw-bold fs-5 text-dark pt-2">
+              <span>Total Quotation</span>
+              <span class="text-success">₹{{ '%.2f'|format(quotation.grand_total|float) }}</span>
+            </div>
+          </div>
+
+          {% if quotation.status == 'Pending' or booking.status == 'Quotation Sent' %}
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <form method="POST" action="{{ url_for('customer.respond_quotation', quote_id=quotation.id) }}" class="d-inline">
+                <input type="hidden" name="action" value="approve">
+                <button type="submit" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1 px-3">
+                  <i data-lucide="check" style="width:15px;height:15px;"></i>
+                  <span>Approve Quotation</span>
+                </button>
+              </form>
+              <form method="POST" action="{{ url_for('customer.respond_quotation', quote_id=quotation.id) }}" class="d-inline">
+                <input type="hidden" name="action" value="reject">
+                <button type="submit" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1 px-3" onclick="return confirm('Are you sure you want to reject this quote?')">
+                  <i data-lucide="x" style="width:15px;height:15px;"></i>
+                  <span>Reject</span>
+                </button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <!-- Billing & Payment Card -->
+      {% set active_inv = invoice or payment or (booking.payment if (booking.payment and booking.payment.amount) else None) %}
+      <div class="simple-list-card p-4 shadow-sm border rounded-3 bg-white mb-4" id="invoicing-payment-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="h5 fw-bold mb-0 d-flex align-items-center gap-2">
+            <i data-lucide="credit-card" class="text-primary" style="width:20px;height:20px;"></i>
+            <span>Invoicing & Payment</span>
+          </h2>
+          {% if active_inv and active_inv.amount %}
+            <span class="badge {% if active_inv.status == 'Paid' %}bg-success text-white{% elif active_inv.status in ['Pending Payment', 'Pending'] %}bg-warning text-dark{% else %}bg-secondary text-white{% endif %} px-2 py-1">
+              {{ active_inv.status }}
+            </span>
+          {% endif %}
+        </div>
+
+        {% if active_inv and active_inv.amount %}
+          <!-- Active Invoice Box -->
+          <div class="p-3 bg-light rounded-3 border mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-secondary small fw-semibold">
+                Invoice #{{ active_inv.invoice_number or ('INV-' ~ booking.id) }}
+              </span>
+              <span class="text-muted small">
+                {{ active_inv.date.strftime('%d %b %Y') if active_inv.date else 'Today' }}
+              </span>
+            </div>
+            
+            <div class="d-flex align-items-baseline gap-2 mb-1">
+              <span class="fs-3 fw-bold text-dark">₹{{ '%.2f'|format(active_inv.amount|float) }}</span>
+              {% if active_inv.quotation_number %}
+                <span class="badge bg-secondary-subtle text-secondary small">Quote: {{ active_inv.quotation_number }}</span>
+              {% elif booking.is_emergency %}
+                <span class="badge bg-danger-subtle text-danger small">Emergency Tariff</span>
+              {% endif %}
+            </div>
+            <div class="text-secondary small mb-3">{{ active_inv.description or 'Cooperative gig service charge' }}</div>
+
+            <!-- Transparent Cooperative Wage Breakdown -->
+            <div class="border-top pt-2">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="small fw-bold text-dark d-flex align-items-center gap-1">
+                  <i data-lucide="scale" style="width:14px;height:14px;" class="text-primary"></i>
+                  Statutory 88/8/4 Cooperative Wage Distribution
+                </span>
+                <span class="badge bg-light text-muted border small" style="font-size: 0.72rem;">Zero Aggregator Cut</span>
+              </div>
+
+              {% set w_payout = active_inv.worker_payout|float if (active_inv.worker_payout and active_inv.worker_payout|float > 0) else (active_inv.amount|float * 0.88) %}
+              {% set s_fee = active_inv.society_admin_fee|float if (active_inv.society_admin_fee and active_inv.society_admin_fee|float > 0) else (active_inv.amount|float * 0.08) %}
+              {% set w_cess = active_inv.welfare_cess|float if (active_inv.welfare_cess and active_inv.welfare_cess|float > 0) else (active_inv.amount|float * 0.04) %}
+
+              <!-- Progress bar showing distribution -->
+              <div class="progress mb-2" style="height: 6px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: 88%" title="Worker Payout (88%)"></div>
+                <div class="progress-bar bg-info" role="progressbar" style="width: 8%" title="Society Operations (8%)"></div>
+                <div class="progress-bar bg-warning" role="progressbar" style="width: 4%" title="Welfare & Insurance (4%)"></div>
+              </div>
+
+              <div class="row g-2 text-center small" style="font-size: 0.78rem;">
+                <div class="col-4">
+                  <div class="p-1 bg-white border rounded">
+                    <span class="text-muted d-block" style="font-size:0.7rem;">Artisan Wage (88%)</span>
+                    <strong class="text-success">₹{{ '%.2f'|format(w_payout) }}</strong>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="p-1 bg-white border rounded">
+                    <span class="text-muted d-block" style="font-size:0.7rem;">Society Ops (8%)</span>
+                    <strong class="text-dark">₹{{ '%.2f'|format(s_fee) }}</strong>
+                  </div>
+                </div>
+                <div class="col-4">
+                  <div class="p-1 bg-white border rounded">
+                    <span class="text-muted d-block" style="font-size:0.7rem;">Suraksha Nidhi (4%)</span>
+                    <strong class="text-warning">₹{{ '%.2f'|format(w_cess) }}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Call-to-Action Buttons -->
+          {% if active_inv.status != 'Paid' %}
+            <div class="d-flex flex-column gap-2">
+              {% if active_inv.id %}
+              <form method="POST" action="{{ url_for('customer.pay_invoice', payment_id=active_inv.id) }}">
+                <button type="submit" class="btn btn-success w-100 py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm">
+                  <i data-lucide="shield-check" style="width:18px;height:18px;"></i>
+                  <span>Pay ₹{{ '%.2f'|format(active_inv.amount|float) }} via UPI / Card</span>
+                </button>
+              </form>
+              {% else %}
+              <a href="{{ url_for('customer.payments_page') }}" class="btn btn-success w-100 py-2 d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-sm">
+                <i data-lucide="shield-check" style="width:18px;height:18px;"></i>
+                <span>Pay ₹{{ '%.2f'|format(active_inv.amount|float) }} via UPI / Card</span>
+              </a>
+              {% endif %}
+
+              <div class="d-flex justify-content-between align-items-center px-1">
+                <span class="small text-muted">
+                  <i data-lucide="info" style="width:12px;height:12px;" class="me-1"></i>
+                  Or <strong>Pay on Completion</strong> directly to artisan
+                </span>
+                <a href="{{ url_for('customer.payments_page') }}" class="small text-primary text-decoration-none">
+                  Billing Ledger &rarr;
+                </a>
+              </div>
+            </div>
+          {% else %}
+            <div class="alert alert-success py-2 px-3 mb-2 small d-flex align-items-center gap-2">
+              <i data-lucide="check-circle" style="width:16px;height:16px;" class="text-success flex-shrink-0"></i>
+              <div>
+                <strong>Payment Complete:</strong> ₹{{ '%.2f'|format(active_inv.amount|float) }} settled. 88% direct artisan wage & 4% Suraksha Nidhi welfare credited.
+              </div>
+            </div>
+            <a href="{{ url_for('customer.payments_page') }}" class="btn btn-sm btn-outline-secondary w-100 d-inline-flex align-items-center justify-content-center gap-1">
+              <i data-lucide="file-text" style="width:14px;height:14px;"></i>
+              <span>View Invoices & Receipts</span>
+            </a>
+          {% endif %}
+        {% else %}
+          <!-- Fallback placeholder: rendered only if quotation is truly pending review -->
+          <div class="text-center py-4 bg-light rounded-3 border">
+            <i data-lucide="receipt" class="text-muted mb-2" style="width:32px;height:32px;"></i>
+            <h3 class="h6 fw-bold text-dark">No Invoices Issued Yet</h3>
+            <p class="small text-secondary mb-0 px-3">
+              Billing statement and transparent 4-tier cooperative wage ledger will be generated upon job completion or quotation approval.
+            </p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="simple-list-card p-4 shadow-sm border rounded-3 bg-white">
+        <h2 class="h6 fw-bold text-muted text-uppercase mb-3" style="letter-spacing: 0.04em;">Booking Actions</h2>
+          <div id="rating-action-container-{{ booking.id }}" class="d-inline-flex align-items-center">
+            {% if booking.status in ['Completed', 'Paid', 'Work Completed', 'Work Approved', 'Closed'] %}
+              {% if not booking.rating %}
+                <button class="btn btn-warning btn-sm d-inline-flex align-items-center gap-1 text-dark fw-semibold"
+                        type="button"
+                        id="rate-btn-{{ booking.id }}"
+                        data-action="rate-service"
+                        data-booking-id="{{ booking.id }}"
+                        data-worker-name="{{ booking.assigned_worker.user.username|title if (booking.assigned_worker and booking.assigned_worker.user) else 'Artisan' }}">
+                  <i class="fas fa-star me-1"></i>
+                  <span>Rate Service</span>
+                </button>
+              {% else %}
+                <span class="badge bg-light text-dark border px-2 py-1 small d-inline-flex align-items-center" id="rating-badge-{{ booking.id }}">
+                  <i class="fas fa-star text-warning me-1"></i> {{ booking.rating }} / 5
+                </span>
+              {% endif %}
+            {% endif %}
+          </div>
+          {% if booking.status in ['Pending Review', 'Pending', 'Scheduled'] and not booking.assigned_worker_id %}
+            <a class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1" href="{{ url_for('customer.edit_booking_page', request_id=booking.id) }}">
+              <i data-lucide="edit-3" style="width:14px;height:14px;"></i>
+              <span>Edit Details</span>
+            </a>
+          {% endif %}
+          <a class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1" href="{{ url_for('customer.messages_page') }}">
+            <i data-lucide="life-buoy" style="width:14px;height:14px;"></i>
+            <span>Cooperative Help Desk</span>
+          </a>
+          <a class="btn btn-light border btn-sm d-inline-flex align-items-center gap-1" href="{{ url_for('customer.bookings_page') }}">
+            <span>All Bookings</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clean 5-Star Review Modal (<25 words, glanceable, accessible) -->
+  <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content border-0 shadow-lg rounded-4 text-center p-3">
+        <div class="modal-header border-0 pb-0 justify-content-center position-relative">
+          <h5 class="modal-title fw-bold fs-5 text-dark" id="reviewModalLabel">Rate Your Service</h5>
+          <button type="button" class="btn-close position-absolute end-0 top-0 m-2" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body py-2">
+          <p class="text-secondary small mb-3" id="reviewModalSubheadline">How was your experience with <span id="reviewModalWorkerName" class="fw-semibold text-dark">Artisan</span>?</p>
+          
+          <!-- Interactive 5 Stars -->
+          <div class="star-rating-group d-flex justify-content-center gap-2 mb-3" id="starRatingGroup" role="radiogroup" aria-label="Rating out of 5 stars">
+            <i class="fas fa-star star-item active" data-value="1" role="button" tabindex="0" aria-label="1 star"></i>
+            <i class="fas fa-star star-item active" data-value="2" role="button" tabindex="0" aria-label="2 stars"></i>
+            <i class="fas fa-star star-item active" data-value="3" role="button" tabindex="0" aria-label="3 stars"></i>
+            <i class="fas fa-star star-item active" data-value="4" role="button" tabindex="0" aria-label="4 stars"></i>
+            <i class="fas fa-star star-item active" data-value="5" role="button" tabindex="0" aria-label="5 stars"></i>
+          </div>
+          <input type="hidden" id="reviewRatingInput" value="5">
+          <input type="hidden" id="reviewBookingIdInput" value="">
+
+          <!-- Feedback Box -->
+          <div class="mb-3">
+            <textarea class="form-control rounded-3 text-secondary small" id="reviewTextInput" rows="2" placeholder="Write a quick note (optional)..." style="resize:none; font-size:0.875rem;"></textarea>
+          </div>
+
+          <!-- Buttons -->
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-light border text-secondary w-50 py-2 rounded-3" data-bs-dismiss="modal">Skip</button>
+            <button type="button" class="btn btn-warning text-dark fw-semibold w-50 py-2 rounded-3 shadow-sm" id="submitReviewBtn">Submit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.5); }
+    70% { box-shadow: 0 0 0 10px rgba(2, 132, 199, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+  }
+  .checkpoint-item:last-child {
+    border-left: none !important;
+  }
+  .star-rating-group .star-item {
+    font-size: 1.85rem;
+    color: #e2e8f0;
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.15s ease;
+  }
+  .star-rating-group .star-item.active {
+    color: #f59e0b;
+  }
+  .star-rating-group .star-item:hover {
+    transform: scale(1.15);
+  }
+</style>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<div id="booking-tracking-meta" data-booking-id="{{ booking.id }}" style="display:none;"></div>
+<script>
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+
+  // Star Rating Interaction & Async Submission
+  (function() {
+    var starGroup = document.getElementById('starRatingGroup');
+    var ratingInput = document.getElementById('reviewRatingInput');
+    var bookingIdInput = document.getElementById('reviewBookingIdInput');
+    var workerNameSpan = document.getElementById('reviewModalWorkerName');
+    var reviewTextInput = document.getElementById('reviewTextInput');
+    var submitBtn = document.getElementById('submitReviewBtn');
+
+    function updateStars(val) {
+      if (!starGroup) return;
+      var stars = starGroup.querySelectorAll('.star-item');
+      stars.forEach(function(s) {
+        var sVal = parseInt(s.dataset.value, 10);
+        if (sVal <= val) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+    }
+
+    if (starGroup) {
+      var stars = starGroup.querySelectorAll('.star-item');
+      stars.forEach(function(star) {
+        star.addEventListener('mouseenter', function() {
+          var val = parseInt(this.dataset.value, 10);
+          updateStars(val);
+        });
+        star.addEventListener('click', function() {
+          var val = parseInt(this.dataset.value, 10);
+          ratingInput.value = val;
+          updateStars(val);
+        });
+        star.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            var val = parseInt(this.dataset.value, 10);
+            ratingInput.value = val;
+            updateStars(val);
+          }
+        });
+      });
+
+      starGroup.addEventListener('mouseleave', function() {
+        var currentVal = parseInt(ratingInput.value || 5, 10);
+        updateStars(currentVal);
+      });
+    }
+
+    // Modal Trigger Delegated Listener
+    document.addEventListener('click', function(e) {
+      var rateBtn = e.target.closest('[data-action="rate-service"]');
+      if (rateBtn) {
+        var bookingId = rateBtn.dataset.bookingId;
+        var workerName = rateBtn.dataset.workerName || 'Artisan';
+        if (bookingIdInput) bookingIdInput.value = bookingId;
+        if (workerNameSpan) workerNameSpan.textContent = workerName;
+        if (ratingInput) ratingInput.value = '5';
+        if (reviewTextInput) reviewTextInput.value = '';
+        updateStars(5);
+
+        var modalEl = document.getElementById('reviewModal');
+        if (modalEl && window.bootstrap) {
+          var modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+          modalInstance.show();
+        }
+      }
+    });
+
+    // Submit Review AJAX Handler
+    if (submitBtn) {
+      submitBtn.addEventListener('click', function() {
+        var bookingId = bookingIdInput ? bookingIdInput.value : null;
+        var rating = ratingInput ? parseInt(ratingInput.value, 10) : 5;
+        var reviewText = reviewTextInput ? reviewTextInput.value.trim() : '';
+
+        if (!bookingId) return;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Sending...';
+
+        fetch('/customer/review/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: JSON.stringify({
+            service_request_id: parseInt(bookingId, 10),
+            rating: rating,
+            review_text: reviewText
+          })
+        })
+        .then(function(res) {
+          return res.json();
+        })
+        .then(function(data) {
+          if (data.status === 'success') {
+            var modalEl = document.getElementById('reviewModal');
+            if (modalEl && window.bootstrap) {
+              var inst = bootstrap.Modal.getInstance(modalEl);
+              if (inst) inst.hide();
+            }
+            if (typeof showToast === 'function') {
+              showToast(data.message || 'Thank you! Review submitted.', 'success');
+            }
+            // Seamlessly swap the "Rate Service" button with the gold star rating badge
+            var actionContainer = document.getElementById('rating-action-container-' + bookingId);
+            if (actionContainer) {
+              actionContainer.innerHTML = '<span class="badge bg-light text-dark border px-2 py-1 small d-inline-flex align-items-center" id="rating-badge-' + bookingId + '"><i class="fas fa-star text-warning me-1"></i> ' + rating + ' / 5</span>';
+            }
+          } else {
+            if (typeof showToast === 'function') {
+              showToast(data.message || 'Error submitting review.', 'danger');
+            }
+          }
+        })
+        .catch(function(err) {
+          if (typeof showToast === 'function') {
+            showToast('Unable to submit review. Please try again.', 'danger');
+          }
+        })
+        .finally(function() {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit';
+        });
+      });
+    }
+  })();
+
+  // ─── REAL-TIME CUSTOMER EMERGENCY TRACKING WEBSOCKET ─────────────
+  (function() {
+    var metaEl = document.getElementById('booking-tracking-meta');
+    var bookingId = metaEl ? parseInt(metaEl.getAttribute('data-booking-id') || '0', 10) : 0;
+    if (!bookingId) return;
+
+    var customerSocket = null;
+    var customerAttempts = 0;
+    var fallbackInterval = null;
+
+    function initCustomerTrackingSocket() {
+      if (typeof io === 'undefined') {
+        console.warn('[Customer WebSocket] Socket.IO library not loaded, using polling fallback.');
+        startPassivePollingFallback();
+        return;
+      }
+
+      try {
+        customerSocket = io({
+          reconnection: true,
+          reconnectionAttempts: 3,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+          timeout: 7000
+        });
+
+        customerSocket.on('connect', function() {
+          console.log('[Customer WebSocket] Connected to booking room: booking_' + bookingId);
+          customerAttempts = 0;
+          if (fallbackInterval) {
+            clearInterval(fallbackInterval);
+            fallbackInterval = null;
+          }
+          customerSocket.emit('track_booking_room', { booking_id: bookingId });
+        });
+
+        customerSocket.on('connect_error', function(err) {
+          customerAttempts++;
+          console.warn('[Customer WebSocket] Connection error (' + customerAttempts + '/3):', err.message);
+          if (customerAttempts >= 3 && !fallbackInterval) {
+            console.warn('[Customer WebSocket] Reached 3 attempts. Activating passive 15s REST polling fallback.');
+            startPassivePollingFallback();
+          }
+        });
+
+        customerSocket.on('emergency_status_update', function(data) {
+          console.log('[Customer WebSocket] ⚡ LIVE EMERGENCY STATUS UPDATE:', data);
+          if (!data || data.booking_id != bookingId) return;
+          applyEmergencyStatusUpdate(data);
+        });
+      } catch(e) {
+        console.error('[Customer WebSocket] Init error:', e);
+        startPassivePollingFallback();
+      }
+    }
+
+    function applyEmergencyStatusUpdate(data) {
+      // 1. Top Status Badge
+      var statusContainer = document.getElementById('booking-status-chip-container');
+      if (statusContainer) {
+        statusContainer.innerHTML = '<span class="status-chip" style="background:#e0f2fe;color:#0369a1;font-weight:700;"><i class="fas fa-truck-fast me-1"></i> ' + (data.status_label || 'Artisan Dispatched & En Route') + '</span>';
+      }
+
+      // 2. Stepper Checkpoints Progression
+      // Checkpoint 1: Assigned -> Completed
+      var nodeAssigned = document.getElementById('checkpoint-node-assigned');
+      if (nodeAssigned) {
+        nodeAssigned.className = 'checkpoint-node position-absolute d-flex align-items-center justify-content-center rounded-circle shadow-sm checkpoint-node--completed text-white';
+        nodeAssigned.innerHTML = '<i data-lucide="check" class="text-white" style="width:18px;height:18px;"></i>';
+      }
+      var badgeAssigned = document.getElementById('checkpoint-status-badge-assigned');
+      if (badgeAssigned) {
+        badgeAssigned.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-0 small d-inline-flex align-items-center gap-1';
+        badgeAssigned.innerHTML = '<i data-lucide="check" style="width:12px;height:12px;"></i> Completed';
+      }
+      var descAssigned = document.getElementById('checkpoint-desc-assigned');
+      if (descAssigned) {
+        descAssigned.textContent = 'Artisan ' + (data.worker_name || 'Artisan') + ' assigned from Primary Society';
+      }
+      var itemAssigned = document.getElementById('checkpoint-item-assigned');
+      if (itemAssigned) {
+        itemAssigned.classList.remove('border-secondary', 'border-opacity-25');
+        itemAssigned.classList.add('border-success');
+      }
+
+      // Checkpoints 2, 3, 4 progression handlers
+      var nodeDispatched = document.getElementById('checkpoint-node-dispatched');
+      var badgeDispatched = document.getElementById('checkpoint-status-badge-dispatched');
+      var descDispatched = document.getElementById('checkpoint-desc-dispatched');
+
+      var nodeInProgress = document.getElementById('checkpoint-node-in_progress');
+      var badgeInProgress = document.getElementById('checkpoint-status-badge-in_progress');
+      var descInProgress = document.getElementById('checkpoint-desc-in_progress');
+
+      var nodeCompleted = document.getElementById('checkpoint-node-completed');
+      var badgeCompleted = document.getElementById('checkpoint-status-badge-completed');
+
+      if (data.status === 'In Progress' || data.otp_verified) {
+        if (nodeDispatched) {
+          nodeDispatched.className = 'checkpoint-node position-absolute d-flex align-items-center justify-content-center rounded-circle shadow-sm checkpoint-node--completed text-white';
+          nodeDispatched.innerHTML = '<i data-lucide="check" class="text-white" style="width:18px;height:18px;"></i>';
+        }
+        if (badgeDispatched) {
+          badgeDispatched.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-0 small d-inline-flex align-items-center gap-1';
+          badgeDispatched.innerHTML = '<i data-lucide="check" style="width:12px;height:12px;"></i> Completed';
+        }
+        if (descDispatched) {
+          descDispatched.textContent = 'Artisan arrived at job site (Arrival verified)';
+        }
+        if (nodeInProgress) {
+          nodeInProgress.className = 'checkpoint-node position-absolute d-flex align-items-center justify-content-center rounded-circle shadow-sm checkpoint-node--current';
+          nodeInProgress.innerHTML = '<i data-lucide="wrench" style="width:18px;height:18px;"></i>';
+        }
+        if (badgeInProgress) {
+          badgeInProgress.className = 'badge bg-primary text-white px-2 py-0 small d-inline-flex align-items-center gap-1';
+          badgeInProgress.innerHTML = '<i data-lucide="activity" style="width:12px;height:12px;"></i> Active Now';
+        }
+        if (descInProgress) {
+          descInProgress.textContent = 'Artisan actively servicing site (In Progress)';
+        }
+        var otpGate = document.getElementById('arrival-otp-gate-container');
+        if (otpGate) {
+          otpGate.style.display = 'none';
+        }
+      } else if (data.status === 'Work Completed' || data.status === 'Completed') {
+        if (nodeDispatched) {
+          nodeDispatched.className = 'checkpoint-node position-absolute d-flex align-items-center justify-content-center rounded-circle shadow-sm checkpoint-node--completed text-white';
+          nodeDispatched.innerHTML = '<i data-lucide="check" class="text-white" style="width:18px;height:18px;"></i>';
+        }
+        if (badgeDispatched) {
+          badgeDispatched.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-0 small d-inline-flex align-items-center gap-1';
+          badgeDispatched.innerHTML = '<i data-lucide="check" style="width:12px;height:12px;"></i> Completed';
+        }
+        if (nodeInProgress) {
+          nodeInProgress.className = 'checkpoint-node position-absolute d-flex align-items-center justify-content-center rounded-circle shadow-sm checkpoint-node--completed text-white';
+          nodeInProgress.innerHTML = '<i data-lucide="check" class="text-white" style="width:18px;height:18px;"></i>';
+        }
+        if (badgeInProgress) {
+          badgeInProgress.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-0 small d-inline-flex align-items-center gap-1';
+          badgeInProgress.innerHTML = '<i data-lucide="check" style="width:12px;height:12px;"></i> Completed';
+        }
+        if (nodeCompleted) {
+          nodeCompleted.className = 'checkpoint-node position-absolute d-flex align-items-center justify-content-center rounded-circle shadow-sm checkpoint-node--completed text-white';
+          nodeCompleted.innerHTML = '<i data-lucide="check" class="text-white" style="width:18px;height:18px;"></i>';
+        }
+        if (badgeCompleted) {
+          badgeCompleted.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-0 small d-inline-flex align-items-center gap-1';
+          badgeCompleted.innerHTML = '<i data-lucide="check" style="width:12px;height:12px;"></i> Completed';
+        }
+        var actionContainer = document.getElementById('rating-action-container-' + bookingId);
+        if (actionContainer && !actionContainer.innerHTML.includes('rating-badge-')) {
+          actionContainer.innerHTML = '<button class="btn btn-warning btn-sm d-inline-flex align-items-center gap-1 text-dark fw-semibold" type="button" id="rate-btn-' + bookingId + '" data-action="rate-service" data-booking-id="' + bookingId + '" data-worker-name="' + (data.worker_name || 'Artisan') + '"><i class="fas fa-star me-1"></i><span>Rate Service</span></button>';
+        }
+      } else {
+        if (nodeDispatched) {
+          nodeDispatched.className = 'checkpoint-node position-absolute d-flex align-items-center justify-content-center rounded-circle shadow-sm checkpoint-node--current';
+          nodeDispatched.innerHTML = '<i data-lucide="truck" style="width:18px;height:18px;"></i>';
+        }
+        if (badgeDispatched) {
+          badgeDispatched.className = 'badge bg-primary text-white px-2 py-0 small d-inline-flex align-items-center gap-1';
+          badgeDispatched.innerHTML = '<i data-lucide="activity" style="width:12px;height:12px;"></i> Active Now';
+        }
+        if (descDispatched) {
+          descDispatched.textContent = 'Artisan is on the way to your location (En Route)';
+        }
+        if (descInProgress && data.arrival_otp) {
+          descInProgress.textContent = 'Awaiting start ' + 'verification (OTP: ' + data.arrival_otp + ')';
+        }
+      }
+
+      // 3. Assigned Cooperative Artisan Profile Box
+      var artisanContainer = document.getElementById('artisan-section-wrapper');
+      if (artisanContainer) {
+        var workerName = data.worker_name || 'Artisan';
+        var workerInitials = workerName.substring(0, 2).toUpperCase();
+        var tier = data.worker_tier || 'Skilled Craftsman';
+        var tierBadge = '<span class="badge bg-primary-subtle text-primary border px-3 py-1 rounded-pill"><i class="fas fa-tools me-1"></i> Skilled Craftsman</span>';
+        if (tier === 'Master Artisan') {
+          tierBadge = '<span class="badge bg-purple-subtle text-purple border border-purple-subtle px-3 py-1 rounded-pill"><i class="fas fa-crown text-warning me-1"></i> Master Artisan</span>';
+        } else if (tier === 'Apprentice') {
+          tierBadge = '<span class="badge bg-secondary-subtle text-secondary border px-3 py-1 rounded-pill"><i class="fas fa-user-graduate me-1"></i> Apprentice</span>';
+        }
+
+        var phone = data.worker_phone || '9822000000';
+        var rating = typeof data.worker_rating === 'number' ? data.worker_rating.toFixed(2) : '5.00';
+
+        artisanContainer.innerHTML = [
+          '<div class="d-flex align-items-center gap-3 mb-3 p-3 bg-light rounded-3 border animate__animated animate__fadeIn">',
+            '<div class="avatar-lg rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fs-4 fw-bold" style="width:54px;height:54px;">',
+              workerInitials,
+            '</div>',
+            '<div>',
+              '<div class="d-flex align-items-center flex-wrap gap-2 mb-1">',
+                '<strong class="fs-5 text-dark">' + workerName + '</strong>',
+                '<span class="text-secondary">&bull;</span>',
+                tierBadge,
+                '<span class="text-warning fw-semibold small">★ ' + rating + ' / 5.0</span>',
+              '</div>',
+              '<div class="text-secondary small">Verified Cooperative Member &bull; <span class="text-success fw-medium"><i class="fas fa-shield-alt me-1"></i>En Route to Site</span></div>',
+            '</div>',
+          '</div>',
+          '<div class="d-flex flex-wrap gap-2 mb-3">',
+            '<a class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1" href="tel:' + phone + '">',
+              '<i data-lucide="phone" style="width:14px;height:14px;"></i>',
+              '<span>Call Artisan (' + phone + ')</span>',
+            '</a>',
+            '<a class="btn btn-light border btn-sm d-inline-flex align-items-center gap-1" href="/customer/messages">',
+              '<i data-lucide="message-square" style="width:14px;height:14px;"></i>',
+              '<span>Send Message</span>',
+            '</a>',
+          '</div>'
+        ].join('');
+      }
+
+      // 4. Arrival Verification Gate Reveal
+      var otpContainer = document.getElementById('arrival-otp-gate-container');
+      if (otpContainer && data.arrival_otp) {
+        otpContainer.innerHTML = [
+          '<div class="mt-3 p-3 rounded-3 border border-warning animate__animated animate__pulse" style="background: #fffbeb;">',
+            '<div class="d-flex justify-content-between align-items-center mb-1">',
+              '<span class="fw-bold text-warning-emphasis small text-uppercase" style="letter-spacing: 0.05em;">',
+                '<i data-lucide="shield-check" class="d-inline-block align-middle me-1" style="width:16px;height:16px;"></i>',
+                'Arrival Verification Gate',
+              '</span>',
+              '<span class="badge bg-warning text-dark px-2 py-0 small">Required for Start</span>',
+            '</div>',
+            '<div class="d-flex align-items-center justify-content-between gap-3 mt-2">',
+              '<div>',
+                '<p class="small text-secondary mb-0">Share this code with your artisan only upon their arrival at your location:</p>',
+              '</div>',
+              '<div class="px-3 py-2 bg-white rounded-3 border border-warning-subtle text-center shadow-sm">',
+                '<span class="fs-4 fw-bold font-monospace text-dark letter-spacing-1" id="arrival-otp-code">' + data.arrival_otp + '</span>',
+              '</div>',
+            '</div>',
+          '</div>'
+        ].join('');
+      }
+
+      // 5. Toast notification & re-render icons
+      if (typeof showToast === 'function') {
+        showToast('🚀 Artisan ' + (data.worker_name || '') + ' has claimed your request and is en route!', 'success');
+      }
+      if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+      }
+    }
+
+    function startPassivePollingFallback() {
+      if (fallbackInterval) return;
+      fallbackInterval = setInterval(async function() {
+        try {
+          var resp = await fetch('/customer/emergency-status/' + bookingId);
+          if (resp.ok) {
+            var json = await resp.json();
+            if (json.status === 'success' && json.data) {
+              var d = json.data;
+              if (d.broadcast_status === 'Claimed' || d.status === 'Travelling' || d.status === 'In Progress') {
+                applyEmergencyStatusUpdate({
+                  booking_id: d.id,
+                  status: d.status,
+                  status_label: d.status === 'Travelling' ? 'Artisan Dispatched & En Route' : d.status,
+                  worker_name: d.assigned_worker ? d.assigned_worker.username : 'Artisan',
+                  worker_phone: d.assigned_worker ? d.assigned_worker.phone : '9822000000',
+                  worker_rating: d.assigned_worker ? d.assigned_worker.rating : 5.0,
+                  worker_tier: 'Skilled Craftsman',
+                  arrival_otp: d.otp
+                });
+              }
+            }
+          }
+        } catch(err) {
+          console.debug('Passive polling fallback check error:', err);
+        }
+      }, 15000);
+    }
+
+    window.addEventListener('load', function() {
+      initCustomerTrackingSocket();
+    });
+  })();
+</script>
+{% endblock %}

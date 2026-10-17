@@ -1,0 +1,67 @@
+/* SahakarSeva Premium Login — preserves split-pane UX, removes visual glitches */
+:root{
+  --auth-green:#0d6efd;
+  --auth-green-2:#198754;
+  --auth-ink:#13233f;
+  --auth-muted:#667085;
+  --auth-line:#dfe5ee;
+  --auth-cream:#f8fafc;
+}
+
+body.auth-page{margin:0;min-height:100svh;display:flex;align-items:center;justify-content:center;background:var(--auth-cream);color:var(--auth-ink);overflow-x:hidden}
+.auth-banner-pane{display:none!important}
+.auth-banner-pane:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.09) 0 1px,transparent 1.5px);background-size:26px 26px;opacity:.35!important}
+.auth-banner-pane:after{content:"";position:absolute;width:420px;height:420px;right:-180px;bottom:-170px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.15),transparent 68%);filter:blur(2px)}
+.auth-banner-content{position:relative;z-index:2;width:min(620px,100%);padding:0!important}
+.auth-banner-logo{display:inline-flex;align-items:center;gap:12px;color:#fff!important;font-size:1.2rem!important;font-weight:900!important;letter-spacing:-.02em!important;text-decoration:none!important;margin-bottom:clamp(36px,7vh,74px)!important}
+.login-brand-mark{width:44px;height:44px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);box-shadow:0 10px 24px rgba(0,0,0,.12)}
+.auth-banner-content h1{max-width:620px;color:#fff!important;font-size:clamp(2.9rem,5.1vw,5.4rem)!important;line-height:.98!important;letter-spacing:-.06em!important;margin-bottom:22px!important}
+.auth-banner-content>p{max-width:600px;color:rgba(255,255,255,.88)!important;font-size:1rem!important;line-height:1.7!important;margin-bottom:28px!important}
+.auth-feature{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:18px;border:1px solid rgba(255,255,255,.15)!important;background:rgba(255,255,255,.10)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.07);backdrop-filter:blur(10px);transition:transform .18s ease,background .18s ease}
+.auth-feature:hover{transform:translateX(4px);background:rgba(255,255,255,.18)!important}
+.auth-feature-icon{width:44px!important;height:44px!important;border-radius:14px!important;background:rgba(255,255,255,.15)!important;color:#f2faf5!important;border:1px solid rgba(255,255,255,.15);display:inline-flex;align-items:center;justify-content:center}
+.auth-feature strong{color:#fff!important;font-size:.92rem!important;font-weight:800!important}.auth-feature small{color:rgba(255,255,255,.80)!important;font-size:.75rem!important;line-height:1.42!important}
+
+.auth-form-pane{display:flex!important;align-items:center!important;justify-content:center!important;min-height:100svh;padding:clamp(24px,5vw,60px)!important;background:linear-gradient(180deg,#f8fafc 0%,#fff 46%,#f7f9fc 100%)!important}
+.auth-card{width:min(500px,100%)!important;max-width:none!important;gap:18px!important;padding:clamp(24px,3vw,34px)!important;border:1px solid var(--auth-line)!important;border-radius:28px!important;background:rgba(255,255,255,.95)!important;box-shadow:0 24px 70px rgba(17,34,28,.11)!important}
+.auth-header:before{content:none!important}.auth-header{text-align:left!important}.auth-title{font-size:clamp(2rem,3.1vw,2.45rem)!important;line-height:1!important;font-weight:900!important;color:var(--auth-ink)!important;letter-spacing:-.05em!important;margin-bottom:7px!important}.auth-subtitle{color:var(--auth-muted)!important;font-size:.9rem!important;line-height:1.55!important}
+.auth-tabs{display:grid!important;grid-template-columns:1fr 1fr;background:#f1f4f0!important;border:1px solid #e1e7e2!important;border-radius:15px!important;padding:4px!important}
+.auth-tab-btn{padding:.75rem!important;border-radius:11px!important;color:#6a7771!important;font-weight:800!important;border:0;background:transparent;transition:all .15s ease}
+.auth-tab-btn:hover:not(.active){color:#0d6efd!important;background:rgba(255,255,255,.5)!important}
+.auth-tab-btn.active{background:#fff!important;color:#0d6efd!important;box-shadow:0 5px 14px rgba(17,40,31,.08)!important}
+
+.auth-page .form-control,.auth-page .form-select{min-height:58px!important;border:1px solid #dbe3de!important;background:#fff!important;border-radius:13px!important;color:var(--auth-ink)!important}
+.auth-page .form-control:focus,.auth-page .form-select:focus{border-color:#86b7fe!important;box-shadow:0 0 0 4px rgba(13,110,253,.10)!important}
+.auth-page .form-floating>label{color:#7a867f!important}.auth-page .form-floating>.form-control:focus~label{color:#0d6efd!important}
+.auth-password-wrap{position:relative}.auth-password-wrap .form-floating{min-width:0}.auth-password-wrap .form-control{border-top-right-radius:13px!important;border-bottom-right-radius:13px!important}
+.auth-show-password{width:52px!important;flex:0 0 52px!important;margin-left:8px;border:1px solid #dbe3de!important;background:#f8faf8!important;border-radius:13px!important;color:#547064!important;display:inline-flex!important;align-items:center!important;justify-content:center!important}
+.auth-show-password:hover{background:#eaf2ff!important;color:#0d6efd!important}
+
+.auth-page .btn-primary{
+  min-height:54px!important;
+  border-radius:14px!important;
+  background:#0d6efd!important;
+  border-color:#0d6efd!important;
+  font-size:1rem!important;
+  font-weight:900!important;
+  box-shadow:0 13px 26px rgba(13,110,253,.20)!important;
+  color:#fff!important;
+}
+.auth-page .btn-primary:hover{
+  background:#0b5ed7!important;
+  border-color:#0a58ca!important;
+  transform:translateY(-1px)!important;
+  color:#fff!important;
+}
+
+.auth-demo-panel{padding:14px!important;border:1px solid #e0e7e2!important;background:#fafbf9!important;border-radius:16px!important}
+.auth-demo-panel .demo-title{font-size:.67rem!important;letter-spacing:.09em!important;color:#6a7771!important;font-weight:900!important}
+.auth-demo-btn{border-color:#cfe2ff!important;color:#0d6efd!important;background:#fff!important;border-radius:999px!important;font-weight:800!important}
+.auth-demo-btn:hover{background:#eaf2ff!important}
+.auth-card a,.auth-card .text-success{color:#0d6efd!important}
+
+/* Glitch Prevention: ensure register fields stay hidden when on Sign In tab */
+.register-only{display:none}
+
+@media(max-width:991px){body.auth-page{display:block;min-height:100svh}.auth-banner-pane{display:none!important}.auth-form-pane{min-height:100svh;padding:18px!important}.auth-card{max-width:560px!important}}
+@media(max-width:520px){.auth-card{padding:19px!important;border-radius:22px!important}.auth-title{font-size:1.85rem!important}.auth-tabs{margin-top:2px}.auth-page .form-control,.auth-page .form-select{min-height:54px!important}.auth-demo-panel .d-flex{gap:6px!important}.auth-demo-panel .btn{font-size:.7rem!important;padding:.42rem .58rem!important}.auth-form-pane{padding:12px!important}}

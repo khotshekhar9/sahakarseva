@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#17352f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='app-icon.png') }}">
+    <meta name="description" content="SahakarSeva — Cooperative Gig Services Platform for Household & Community Services connecting verified skilled workers with fair wages, welfare, and consumer trust.">
+    <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
+    <title>{% block title %}Dashboard - SahakarSeva Cooperative Platform{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        .leaflet-container img { max-width: none !important; max-height: none !important; }
+        .leaflet-tile { visibility: visible !important; }
+        /* Clean Google Translate UI Suppression */
+        .goog-te-banner-frame.skiptranslate,
+        iframe.goog-te-banner-frame,
+        .goog-te-gadget,
+        #goog-gt-tt,
+        .goog-te-balloon-frame {
+            display: none !important;
+        }
+        body {
+            top: 0px !important;
+            position: static !important;
+        }
+        .goog-text-highlight {
+            background: none !important;
+            box-shadow: none !important;
+        }
+    </style>
+    <style>
+        .brand-mark{width:34px;height:34px;border-radius:10px;background:var(--primary-color);color:#fff;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(23,53,47,.16)}
+        .brand-mark svg{width:19px;height:19px}
+        .sidebar-brand{gap:9px}
+
+        /* ─── High Contrast Dark Sidebar Navigation ─── */
+        #app-sidebar.sidebar, .sidebar {
+            background: linear-gradient(180deg, #101d18 0%, #0b1512 100%) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        #app-sidebar .sidebar-brand {
+            color: #ffffff !important;
+        }
+        #app-sidebar .sidebar-item a,
+        #app-sidebar .sidebar-item a span,
+        .sidebar .sidebar-item a,
+        .sidebar .sidebar-item a span {
+            color: #dce7e1 !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            font-weight: 600 !important;
+        }
+        #app-sidebar .sidebar-item a i,
+        #app-sidebar .sidebar-item a svg,
+        .sidebar .sidebar-item a i,
+        .sidebar .sidebar-item a svg {
+            color: #9db2aa !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        #app-sidebar .sidebar-item a:hover,
+        .sidebar .sidebar-item a:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: #ffffff !important;
+            transform: translateX(2px);
+        }
+        #app-sidebar .sidebar-item a:hover span,
+        .sidebar .sidebar-item a:hover span {
+            color: #ffffff !important;
+        }
+        #app-sidebar .sidebar-item a:hover i,
+        #app-sidebar .sidebar-item a:hover svg,
+        .sidebar .sidebar-item a:hover i,
+        .sidebar .sidebar-item a:hover svg {
+            color: #7bd0ad !important;
+        }
+        #app-sidebar .sidebar-item.active a,
+        .sidebar .sidebar-item.active a {
+            background: linear-gradient(90deg, rgba(46, 145, 107, 0.28), rgba(46, 145, 107, 0.10)) !important;
+            color: #ffffff !important;
+            box-shadow: inset 3px 0 0 #34d399 !important;
+        }
+        #app-sidebar .sidebar-item.active a span,
+        .sidebar .sidebar-item.active a span {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+        }
+        #app-sidebar .sidebar-item.active a i,
+        #app-sidebar .sidebar-item.active a svg,
+        .sidebar .sidebar-item.active a i,
+        .sidebar .sidebar-item.active a svg {
+            color: #4ade80 !important;
+        }
+        #app-sidebar .sidebar-item a .text-success,
+        .sidebar .sidebar-item a .text-success {
+            color: #4ade80 !important;
+            font-weight: 700 !important;
+        }
+
+        /* Lower navigation bar: strictly visible in mobile application only */
+        @media (min-width: 769px) {
+            .mobile-bottom-nav {
+                display: none !important;
+                visibility: hidden !important;
+                pointer-events: none !important;
+            }
+        }
+    </style>
+    <!-- Main Style -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=9.2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pro_ui.css') }}?v=9.2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/final_polish.css') }}?v=9.2">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="light-mode">
+
+    <!-- Skip to Content (Accessibility) -->
+    <a href="#main-content" class="skip-to-content">Skip to Content</a>
+
+    <!-- Scroll Progress Bar -->
+    <div id="scroll-progress-bar"></div>
+
+    <!-- Page Loading Spinner Overlay -->
+    <div id="page-loader">
+        <div class="loader-spinner"></div>
+        <span class="loader-logo">SAHAKARSEVA</span>
+    </div>
+
+    <!-- Global Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Global Search Overlay -->
+    <div id="search-overlay" role="dialog" aria-modal="true" aria-label="Global Search">
+        <div class="search-modal">
+            <div class="search-input-row">
+                <span class="search-prefix">🔍</span>
+                <input type="text" id="global-search-input" placeholder="Search" autocomplete="off">
+                <span class="search-kbd">ESC</span>
+            </div>
+            <div class="search-results-list" id="search-results-list">
+                <div class="search-empty" id="search-empty-state">
+                    Type to search
+                </div>
+            </div>
+            <div class="search-footer">
+                <span>↑↓ Navigate</span>
+                <span>↵ Open</span>
+                <span>ESC Close</span>
+                <span class="ms-auto">⌨ Ctrl+K to open</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Timeout Warning Modal -->
+    <div class="modal fade" id="session-timeout-modal" tabindex="-1" aria-labelledby="sessionTimeoutLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="sessionTimeoutLabel">⏳ Session Expiring Soon</h5>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <p class="text-secondary mb-3">Your session will expire in</p>
+                    <div id="session-countdown">60</div>
+                    <p class="text-muted mt-2 small">seconds. Click below to stay logged in.</p>
+                </div>
+                <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
+                    <button type="button" class="btn btn-primary px-4" id="session-extend-btn" onclick="extendSession()">Stay Logged In</button>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-secondary px-4">Logout Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reusable Confirm Dialog Modal -->
+    <div class="modal fade" id="confirm-modal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold" id="confirmModalLabel">Confirm Action</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0 text-secondary" id="confirm-modal-message">Are you sure you want to proceed?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-danger" id="confirm-modal-ok-btn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if current_user.is_authenticated and current_user.role == 'customer' %}
+    <!-- 1-Click Rapid Emergency SOS Dispatch Modal -->
+    <div class="modal fade" id="emergencyModal" tabindex="-1" aria-labelledby="emergencyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-danger shadow-lg" style="border-width: 2px;">
+                <div class="modal-header bg-danger text-white py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="font-size: 1.4rem;">🚨</span>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0 text-white" id="emergencyModalLabel">Rapid Emergency SOS Dispatch</h5>
+                            <small class="text-white-50">Direct broadcast to verified nearby workers · Fixed cooperative rates · Zero surge pricing</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="emergencySosForm" onsubmit="submitEmergencySOS(event)">
+                    <div class="modal-body p-4">
+                        <!-- Emergency Service Category -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-secondary">1. Select Emergency Category</label>
+                            <div class="row g-2" id="emergencyCategoryOptions">
+                                <div class="col-6 col-md-4">
+                                    <label class="d-block p-3 rounded-3 border text-start cursor-pointer emergency-cat-card active" style="cursor: pointer;">
+                                        <input type="radio" name="category" value="Electrical" class="d-none" checked onchange="updateEmergencyCategory(this, 650, 'Immediate fault isolation, MCB/fuse stabilization, and wiring hazard control.')">
+                                        <div class="fw-bold text-dark">⚡ Electrical</div>
+                                        <div class="small text-danger fw-bold">₹650 tariff</div>
+                                        <div class="text-muted" style="font-size:0.7rem;">Sparking, Short-Circuit</div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="d-block p-3 rounded-3 border text-start cursor-pointer emergency-cat-card" style="cursor: pointer;">
+                                        <input type="radio" name="category" value="Plumbing" class="d-none" onchange="updateEmergencyCategory(this, 600, 'Emergency water shutoff, line replacement, joint sealing, and water damage prevention.')">
+                                        <div class="fw-bold text-dark">🚰 Plumbing</div>
+                                        <div class="small text-danger fw-bold">₹600 tariff</div>
+                                        <div class="text-muted" style="font-size:0.7rem;">Burst Pipe, Main Leak</div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="d-block p-3 rounded-3 border text-start cursor-pointer emergency-cat-card" style="cursor: pointer;">
+                                        <input type="radio" name="category" value="Caregiving" class="d-none" onchange="updateEmergencyCategory(this, 800, 'Certified bedside companion, emergency vitals check, mobility assistance.')">
+                                        <div class="fw-bold text-dark">🩺 Caregiving</div>
+                                        <div class="small text-danger fw-bold">₹800 tariff</div>
+                                        <div class="text-muted" style="font-size:0.7rem;">Urgent Patient/Elderly</div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="d-block p-3 rounded-3 border text-start cursor-pointer emergency-cat-card" style="cursor: pointer;">
+                                        <input type="radio" name="category" value="Locksmith" class="d-none" onchange="updateEmergencyCategory(this, 550, 'Rapid residential unlocking, latch mechanism bypass, and secure re-locking.')">
+                                        <div class="fw-bold text-dark">🔑 Locksmith</div>
+                                        <div class="small text-danger fw-bold">₹550 tariff</div>
+                                        <div class="text-muted" style="font-size:0.7rem;">Door Lockout, Broken Latch</div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="d-block p-3 rounded-3 border text-start cursor-pointer emergency-cat-card" style="cursor: pointer;">
+                                        <input type="radio" name="category" value="Sanitization" class="d-none" onchange="updateEmergencyCategory(this, 500, 'Hospital-grade disinfection, flooded floor decontamination, bio-cleaning.')">
+                                        <div class="fw-bold text-dark">🧹 Sanitization</div>
+                                        <div class="small text-danger fw-bold">₹500 tariff</div>
+                                        <div class="text-muted" style="font-size:0.7rem;">Biohazard, Contamination</div>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="d-block p-3 rounded-3 border text-start cursor-pointer emergency-cat-card" style="cursor: pointer;">
+                                        <input type="radio" name="category" value="General" class="d-none" onchange="updateEmergencyCategory(this, 600, 'Rapid on-call artisan dispatch for multi-trade home and society emergencies.')">
+                                        <div class="fw-bold text-dark">🛠️ General</div>
+                                        <div class="small text-danger fw-bold">₹600 tariff</div>
+                                        <div class="text-muted" style="font-size:0.7rem;">Urgent Maintenance</div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scope / Tariff Card -->
+                        <div class="p-3 mb-3 rounded-3 bg-light border border-danger-subtle d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong id="emergencyScopeTitle" class="text-dark small">Electrical Emergency (Sparking, Short-Circuit, Fire Hazard)</strong>
+                                <div id="emergencyScopeDesc" class="text-secondary small" style="font-size:0.78rem;">Immediate fault isolation, MCB/fuse stabilization, and wiring hazard control.</div>
+                            </div>
+                            <div class="text-end ps-3">
+                                <span class="badge bg-danger fs-6 px-3 py-1" id="emergencyTariffBadge">₹650</span>
+                                <div class="text-muted small" style="font-size:0.68rem;">Fixed Rate</div>
+                            </div>
+                        </div>
+
+                        <!-- Brief Emergency Description -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small text-uppercase text-secondary">2. Brief Problem Summary</label>
+                            <input type="text" class="form-control" name="title" id="emergencyTitle" placeholder="e.g. Sparking switchboard in kitchen with smoke" required>
+                        </div>
+
+                        <!-- Location & GPS -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold small text-uppercase text-secondary mb-0">3. Incident Location</label>
+                                <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1 py-0 px-2" style="font-size:0.75rem;" onclick="detectEmergencyGPS()">
+                                    <i data-lucide="map-pin" style="width:12px;height:12px;"></i>
+                                    <span id="gpsBtnLabel">📍 Detect Live GPS Location</span>
+                                </button>
+                            </div>
+                            <textarea class="form-control" name="address" id="emergencyAddress" rows="2" placeholder="Street address, landmark, building..." required>{{ current_user.address or 'Deccan Gymkhana, Ward 1, Pune' }}</textarea>
+                            <input type="hidden" name="latitude" id="emergencyLat" value="18.5204">
+                            <input type="hidden" name="longitude" id="emergencyLng" value="73.8567">
+                            <input type="hidden" name="is_current_location" id="emergencyIsCurrent" value="0">
+                            <input type="hidden" name="radius_km" value="5.0">
+                            <div id="emergencyGpsStatus" class="small text-muted mt-1" style="font-size:0.75rem;">Default address loaded. Click "Detect Live GPS Location" to transmit exact artisan navigation coordinates.</div>
+                        </div>
+
+                        <!-- Additional Safety Notes -->
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small text-uppercase text-secondary">4. Safety Notes / Instructions (Optional)</label>
+                            <input type="text" class="form-control" name="description" id="emergencyDescription" placeholder="e.g. Main power tripped, please bring voltage tester">
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-top d-flex justify-content-between align-items-center">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger btn-lg fw-bold d-inline-flex align-items-center gap-2 px-4 shadow" id="emergencySubmitBtn">
+                            <span>⚡ Broadcast Emergency SOS Now</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Booking Confirmation Modal -->
+    <div class="modal fade" id="cancelBookingModal" tabindex="-1" aria-labelledby="cancelBookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-3">
+                <div class="modal-header bg-danger text-white py-3 px-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <i data-lucide="alert-circle" style="width:20px;height:20px;"></i>
+                        <h5 class="modal-title fw-bold mb-0 text-white" id="cancelBookingModalLabel">Cancel Service Request</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="cancelBookingForm" onsubmit="submitCancelBookingForm(event)">
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="cancelBookingId" name="booking_id">
+                        <p class="text-secondary small mb-3">
+                            Are you sure you want to cancel request <strong id="cancelBookingReqId" class="text-dark">#REQ</strong>?
+                            <span class="d-block text-muted mt-1" style="font-size:0.8rem;">
+                                In accordance with cooperative policy, cancellation is permitted only while an artisan has not yet been assigned or dispatched.
+                            </span>
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small mb-1" for="cancelReasonPreset">Reason for Cancellation</label>
+                            <select class="form-select form-select-sm mb-2" id="cancelReasonPreset" onchange="applyCancelReasonPreset(this)">
+                                <option value="">Select a common reason...</option>
+                                <option value="Issue resolved or no longer needed">Issue resolved or no longer needed</option>
+                                <option value="Booked by mistake or wrong service category">Booked by mistake or wrong service category</option>
+                                <option value="Schedule conflict or need to reschedule">Schedule conflict or need to reschedule</option>
+                                <option value="Alternative arrangement made">Alternative arrangement made</option>
+                                <option value="Other reason">Other reason</option>
+                            </select>
+                            <textarea class="form-control" id="cancelReasonInput" name="reason" rows="2" placeholder="Briefly specify why you are cancelling..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light border-top px-4 py-3 d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Keep Booking</button>
+                        <button type="submit" class="btn btn-danger btn-sm fw-semibold d-inline-flex align-items-center gap-1" id="confirmCancelSubmitBtn">
+                            <i data-lucide="x-circle" style="width:14px;height:14px;"></i>
+                            <span>Confirm Cancellation</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" title="Back to top" onclick="scrollToTop()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+    </button>
+
+    <div class="app-container" id="app-container">
+        <!-- Mobile Sidebar Backdrop Overlay -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar()" aria-hidden="true"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="app-sidebar">
+            <div class="sidebar-header">
+                <a href="/" class="sidebar-brand">
+                    <span class="brand-mark" aria-hidden="true"><i data-lucide="handshake"></i></span><span class="fw-bold">SahakarSeva</span>
+                </a>
+                <!-- Mobile Sidebar Close Button -->
+                <button type="button" class="btn btn-sm btn-outline-secondary d-lg-none ms-auto p-1 rounded-circle d-flex align-items-center justify-content-center" onclick="toggleMobileSidebar()" aria-label="Close Navigation Menu" style="width: 32px; height: 32px;">
+                    <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+
+            <!-- Role-Based Navigation Menu -->
+            <ul class="sidebar-menu">
+                {% if current_user.role in ('publisher', 'super_admin') %}
+                    <!-- State Labour Cooperative Federation (Apex Council) Menu -->
+                    <li class="sidebar-item {% block nav_publisher_dash %}{% endblock %}">
+                        <a href="{{ url_for('publisher.dashboard') }}#overview" title="Command Center">
+                            <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_fed_command">Command Center</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_publisher_societies %}{% endblock %} {% if request.endpoint in ('publisher.societies', 'publisher.societies_page') %}active{% endif %}">
+                        <a href="{{ url_for('publisher.societies_page') }}" title="Primary Societies" class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <i data-lucide="building" style="width: 18px; height: 18px;"></i>
+                                <span data-i18n="nav_aff_societies">Primary Societies</span>
+                            </div>
+                            {% if pending_societies_count and pending_societies_count > 0 %}
+                                <span class="badge bg-warning text-dark rounded-pill px-2" style="font-size: 0.72rem;">{{ pending_societies_count }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_publisher_disputes %}{% endblock %} {% if request.endpoint in ('publisher.disputes', 'publisher.complaints_page') %}active{% endif %}">
+                        <a href="{{ url_for('publisher.complaints_page') }}" title="Customer Disputes & Conciliation">
+                            <i data-lucide="alert-circle" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_disputes">Customer Complaints</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_publisher_money %}{% endblock %} {% if request.endpoint in ('publisher.money', 'publisher.money_page') %}active{% endif %}">
+                        <a href="{{ url_for('publisher.money_page') }}" title="State Ledger & Welfare Pool">
+                            <i data-lucide="trending-up" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_finance">Money & Welfare</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_publisher_settings %}{% endblock %} {% if request.endpoint in ('publisher.settings_page', 'publisher.settings') %}active{% endif %}">
+                        <a href="{{ url_for('publisher.settings_page') }}" title="Platform Settings & Security">
+                            <i data-lucide="sliders" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_gov_settings">Platform Settings & Security</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_publisher_profile %}{% endblock %} {% if request.endpoint in ('publisher.profile_page', 'publisher.profile') %}active{% endif %}">
+                        <a href="{{ url_for('publisher.profile_page') }}" title="Federation Profile">
+                            <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_profile">Profile</span>
+                        </a>
+                    </li>
+
+                {% elif current_user.role in ('admin', 'manager', 'supervisor') %}
+                    <!-- Labour Cooperative Society (PACS / District Union) 7 Core Operations Menu -->
+                    <li class="sidebar-item {% block nav_admin_dash %}{% endblock %}">
+                        <a href="{{ url_for('admin.dashboard') }}" title="Executive Overview">
+                            <i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_soc_dashboard">Executive Overview</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_admin_service_requests %}{% endblock %}">
+                        <a href="{{ url_for('admin.service_requests') }}" title="Service Bookings">
+                            <i data-lucide="wrench" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_service_tickets">Service Bookings</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_admin_workers %}{% endblock %}">
+                        <a href="{{ url_for('admin.workers_page') }}" title="Cooperative Artisans">
+                            <i data-lucide="users" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_workers">Cooperative Artisans</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_admin_attendance %}{% endblock %}">
+                        <a href="{{ url_for('admin.attendance_page') }}" title="Daily Attendance">
+                            <i data-lucide="calendar-check" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_attendance">Daily Attendance</span>
+                        </a>
+                    </li>
+                    {% if current_user.role in ('admin', 'manager') %}
+                    <li class="sidebar-item {% block nav_admin_payments %}{% endblock %}">
+                        <a href="{{ url_for('admin.payments_page') }}" title="Cooperative Payments">
+                            <i data-lucide="dollar-sign" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_invoices">Cooperative Payments</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="sidebar-item {% block nav_admin_ai %}{% endblock %}">
+                        <a href="{{ url_for('admin.ai_demand_page') }}" title="AI Demand & Planning">
+                            <i data-lucide="brain" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_ai_demand">AI Demand & Planning</span>
+                        </a>
+                    </li>
+                    {% if current_user.role in ('admin', 'manager') %}
+                    <li class="sidebar-item {% block nav_admin_settings %}{% endblock %}">
+                        <a href="{{ url_for('admin.settings_page') }}" title="Society Settings & 2FA">
+                            <i data-lucide="settings" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_settings">Society Settings & 2FA</span>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                {% elif current_user.role == 'worker' %}
+                    <!-- Cooperative Skilled Member Portal Menu (7 Core Operations) -->
+                    <li class="sidebar-item {% block nav_worker_dash %}{% endblock %}">
+                        <a href="{{ url_for('worker.dashboard') }}" title="Home">
+                            <i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_member_dashboard">Home</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_worker_jobs %}{% endblock %}">
+                        <a href="{{ url_for('worker.service_requests') }}" title="My Jobs">
+                            <i data-lucide="briefcase" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_todays_jobs">My Jobs</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_worker_attendance %}{% endblock %}">
+                        <a href="{{ url_for('worker.attendance_page') }}" title="Attendance">
+                            <i data-lucide="map-pin" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_gps_checkin">Attendance</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ url_for('worker.earnings_page') }}" title="Earnings & Payouts">
+                            <i data-lucide="wallet" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_earnings">Earnings</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_worker_benefits %}{% endblock %} {% if request.endpoint in ('worker.benefits', 'worker.benefits_page') %}active{% endif %}">
+                        <a href="{{ url_for('worker.benefits') }}" title="Benefits & Social Security" class="nav-link {% if request.endpoint in ('worker.benefits', 'worker.benefits_page') %}active{% endif %}">
+                            <i class="fas fa-heartbeat me-2" style="font-size: 16px;"></i>
+                            <span>Benefits</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_worker_certificates %}{% endblock %} {% if request.endpoint in ('worker.certificates', 'worker.certificates_page') %}active{% endif %}">
+                        <a href="{{ url_for('worker.certificates') }}" title="Certificates" class="nav-link {% if request.endpoint in ('worker.certificates', 'worker.certificates_page') %}active{% endif %}">
+                            <i class="fas fa-certificate me-2" style="font-size: 16px;"></i>
+                            <span data-i18n="nav_certifications">Certificates</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ url_for('worker.profile_page') }}" title="Profile">
+                            <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+                            <span data-i18n="nav_welfare_profile">Profile</span>
+                        </a>
+                    </li>
+
+                {% elif current_user.role == 'customer' %}
+                    <!-- Citizen Customer Menu (6 Core Operations) -->
+                    <li class="sidebar-item {% block nav_customer_dash %}{% endblock %}">
+                        <a href="{{ url_for('customer.dashboard') }}" title="Home">
+                            <i data-lucide="home" style="width: 18px; height: 18px;"></i>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_customer_book %}{% endblock %}">
+                        <a href="{{ url_for('customer.book_service') }}" title="Book Service">
+                            <i data-lucide="plus-circle" style="width: 18px; height: 18px;"></i>
+                            <span>Book Service</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ url_for('customer.bookings_page') }}" title="My Bookings">
+                            <i data-lucide="calendar-days" style="width: 18px; height: 18px;"></i>
+                            <span>My Bookings</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ url_for('customer.payments_page') }}" title="Payments">
+                            <i data-lucide="wallet" style="width: 18px; height: 18px;"></i>
+                            <span>Payments</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% block nav_customer_help %}{% endblock %}">
+                        <a href="{{ url_for('customer.help_page') }}" title="Help">
+                            <i data-lucide="help-circle" style="width: 18px; height: 18px;"></i>
+                            <span>Help & Support</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="{{ url_for('customer.profile_page') }}" title="Profile">
+                            <i data-lucide="user" style="width: 18px; height: 18px;"></i>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+
+            <!-- Sidebar User Profiler widget -->
+            <div class="sidebar-footer">
+                {% if current_user.is_authenticated %}
+                    <div class="user-widget">
+                        <div class="user-avatar">
+                            {{ current_user.username[:2].upper() }}
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">{{ current_user.username }}</span>
+                            <span class="user-role">{{ current_user.role }}</span>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm w-100 mt-2 d-flex align-items-center justify-content-center gap-2 sidebar-logout-btn" title="Logout">
+                        <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+                        <span>Logout</span>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2" title="Sign In">
+                        <i data-lucide="log-in" style="width: 14px; height: 14px;"></i>
+                        <span>Sign In</span>
+                    </a>
+                {% endif %}
+            </div>
+        </aside>
+
+        <!-- Main Workspace Frame -->
+        <main class="main-content" id="main-content">
+            <!-- Top Header Navbar -->
+            <header class="header-bar">
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Sidebar Collapse Button (desktop) -->
+                    <button class="sidebar-toggle-btn" onclick="toggleSidebarCollapse()" title="Collapse Sidebar (Ctrl+B)">
+                        <i data-lucide="panel-left" style="width: 18px; height: 18px;"></i>
+                    </button>
+                    <!-- Mobile Hamburger Menu Button -->
+                    <button class="btn btn-light d-lg-none d-flex align-items-center justify-content-center p-2" type="button" onclick="toggleMobileSidebar()" aria-label="Open Navigation Menu" style="width: 40px; height: 40px; border-radius: var(--radius-md);">
+                        <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+                    </button>
+                    <!-- Page Section Title -->
+                    <h5 class="mb-0 fw-bold text-truncate d-none d-sm-block" id="header-page-title">{% block page_title %}Dashboard{% endblock %}</h5>
+                </div>
+
+                <!-- Global Search Trigger -->
+                <button class="search-trigger-btn d-none d-md-flex" onclick="openSearch()" id="search-trigger-btn">
+                    <i data-lucide="search" style="width: 14px; height: 14px;"></i>
+                    Search anything...
+                    <span class="search-shortcut">Ctrl+K</span>
+                </button>
+
+                <div class="header-actions">
+                    <!-- Multilingual Language Switcher (EN | HI | MR) -->
+                    <div class="dropdown me-1 notranslate">
+                        <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 py-1 px-2 text-dark border notranslate" data-bs-toggle="dropdown" aria-expanded="false" id="lang-switcher-btn" style="border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: var(--card-bg, #fff);">
+                            <i data-lucide="languages" style="width: 14px; height: 14px;"></i>
+                            <span id="current-lang-label" class="notranslate d-none d-sm-inline">English</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-1 notranslate" style="min-width: 130px; font-size: 0.85rem;">
+                            <li><a class="dropdown-item py-1 notranslate" href="javascript:void(0)" onclick="setAppLanguage('en')">🇬🇧 English</a></li>
+                            <li><a class="dropdown-item py-1 notranslate" href="javascript:void(0)" onclick="setAppLanguage('hi')">🇮🇳 हिंदी (Hindi)</a></li>
+                            <li><a class="dropdown-item py-1 notranslate" href="javascript:void(0)" onclick="setAppLanguage('mr')">🇮🇳 मराठी (Marathi)</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Dark Mode Toggle Button -->
+                    <button class="theme-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
+                        <i data-lucide="sun" id="theme-icon-light" style="width: 20px; height: 20px;"></i>
+                        <i data-lucide="moon" id="theme-icon-dark" style="width: 20px; height: 20px; display: none;"></i>
+                    </button>
+
+                    <!-- Real-time Notifications Bell -->
+                    <div class="dropdown">
+                        <button class="notifications-toggle" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i data-lucide="bell" style="width: 20px; height: 20px;"></i>
+                            <span class="badge-dot" id="notification-dot" style="display: none;"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 py-2" aria-labelledby="notificationsDropdown" style="width: 320px; max-height: 400px; overflow-y: auto;" id="notification-menu">
+                            <li class="dropdown-header border-bottom pb-2 d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">Recent Alerts</span>
+                                <a href="#" class="small text-decoration-none" onclick="markAllNotificationsRead(event)">Clear All</a>
+                            </li>
+                            <!-- Populated dynamically via JS -->
+                            <li id="empty-notifications-msg"><div class="text-center text-secondary py-3 small">No unread notifications</div></li>
+                        </ul>
+                    </div>
+
+                    <!-- Profile Dropdown -->
+                    {% if current_user.is_authenticated %}
+                    <div class="dropdown">
+                        <button class="profile-btn" data-bs-toggle="dropdown" aria-expanded="false" id="profile-dropdown-btn">
+                            <div class="mini-avatar">{{ current_user.username[:2].upper() }}</div>
+                            <span class="d-none d-sm-inline">{{ current_user.username }}</span>
+                            <i data-lucide="chevron-down" style="width: 14px; height: 14px; opacity: 0.6;"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end profile-dropdown-menu" aria-labelledby="profile-dropdown-btn">
+                            <li class="dropdown-header">
+                                <div class="fw-semibold text-primary">{{ current_user.username }}</div>
+                                <div class="small text-muted text-capitalize">{{ current_user.role }}</div>
+                            </li>
+                            {% if current_user.role in ('publisher', 'super_admin') %}
+                            <li><a class="dropdown-item" href="{{ url_for('publisher.profile') }}">
+                                <i data-lucide="user" style="width: 15px; height: 15px;"></i> My Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('publisher.settings') }}">
+                                <i data-lucide="settings" style="width: 15px; height: 15px;"></i> Settings
+                            </a></li>
+                            {% elif current_user.role in ('admin', 'contractor', 'manager', 'supervisor') %}
+                            <li><a class="dropdown-item" href="{{ url_for('admin.profile') }}">
+                                <i data-lucide="user" style="width: 15px; height: 15px;"></i> My Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.settings_page') }}">
+                                <i data-lucide="settings" style="width: 15px; height: 15px;"></i> Settings
+                            </a></li>
+                            {% elif current_user.role == 'worker' %}
+                            <li><a class="dropdown-item" href="{{ url_for('worker.profile') }}">
+                                <i data-lucide="user" style="width: 15px; height: 15px;"></i> My Profile
+                            </a></li>
+                            {% elif current_user.role == 'customer' %}
+                            <li><a class="dropdown-item" href="{{ url_for('customer.profile') }}">
+                                <i data-lucide="user" style="width: 15px; height: 15px;"></i> My Profile
+                            </a></li>
+                            {% else %}
+                            <li><a class="dropdown-item" href="/">
+                                <i data-lucide="home" style="width: 15px; height: 15px;"></i> Home
+                            </a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}" style="color: var(--danger-color) !important;">
+                                <i data-lucide="log-out" style="width: 15px; height: 15px;"></i> Logout
+                            </a></li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-primary fw-bold">Sign In</a>
+                    {% endif %}
+                </div>
+            </header>
+
+            <!-- Dynamic Role & Feature Navigation Ribbon -->
+            {% block breadcrumb %}
+            <div class="cf-breadcrumb-wrapper">
+                <nav class="cf-breadcrumb-container breadcrumb breadcrumb-nav" aria-label="breadcrumb" id="cf-main-breadcrumb">
+                    <div class="cf-breadcrumb-path">
+                        <!-- Role-Specific Portal Root Badge (Preserves portal session, distinct styling per role) -->
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.role in ('publisher', 'super_admin') %}
+                                <a href="{{ url_for('publisher.dashboard') }}" class="cf-crumb-root cf-root-publisher" title="Apex Cooperative Federation Portal">
+                                    <span class="cf-root-badge">
+                                        <i data-lucide="shield-check" class="cf-crumb-icon"></i>
+                                        <span>Apex Federation</span>
+                                    </span>
+                                </a>
+                            {% elif current_user.role in ('admin', 'manager', 'supervisor') %}
+                                <a href="{{ url_for('admin.dashboard') }}" class="cf-crumb-root cf-root-admin" title="Labour Cooperative Society Portal">
+                                    <span class="cf-root-badge">
+                                        <i data-lucide="building-2" class="cf-crumb-icon"></i>
+                                        <span>Society Operations</span>
+                                    </span>
+                                </a>
+                            {% elif current_user.role == 'worker' %}
+                                <a href="{{ url_for('worker.dashboard') }}" class="cf-crumb-root cf-root-worker" title="Artisan Cooperative Workbench">
+                                    <span class="cf-root-badge">
+                                        <i data-lucide="wrench" class="cf-crumb-icon"></i>
+                                        <span>Artisan Workbench</span>
+                                    </span>
+                                </a>
+                            {% elif current_user.role == 'customer' %}
+                                <a href="{{ url_for('customer.dashboard') }}" class="cf-crumb-root cf-root-customer" title="Citizen Community Portal">
+                                    <span class="cf-root-badge">
+                                        <i data-lucide="user" class="cf-crumb-icon"></i>
+                                        <span>Citizen Portal</span>
+                                    </span>
+                                </a>
+                            {% else %}
+                                <a href="/" class="cf-crumb-root cf-root-default">
+                                    <span class="cf-root-badge">
+                                        <i data-lucide="home" class="cf-crumb-icon"></i>
+                                        <span>SahakarSeva</span>
+                                    </span>
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="/" class="cf-crumb-root cf-root-default">
+                                <span class="cf-root-badge">
+                                    <i data-lucide="home" class="cf-crumb-icon"></i>
+                                    <span>SahakarSeva</span>
+                                </span>
+                            </a>
+                        {% endif %}
+
+                        <!-- Separator -->
+                        <span class="cf-crumb-sep" aria-hidden="true">
+                            <i data-lucide="chevron-right" class="cf-chevron"></i>
+                        </span>
+
+                        <!-- Primary Section / Page Title (Maintains .bc-current for 100% backward test compatibility) -->
+                        <span class="bc-current">{% block page_title_bc %}Dashboard{% endblock %}</span>
+
+                        <!-- Dynamic Subpanel / Active Tab Badge -->
+                        <span class="cf-crumb-subpanel" id="cf-bc-subpanel" style="display: none;">
+                            <span class="cf-crumb-sep" aria-hidden="true">
+                                <i data-lucide="chevron-right" class="cf-chevron"></i>
+                            </span>
+                            <span class="badge cf-subpanel-pill" id="cf-bc-subpanel-text"></span>
+                        </span>
+                    </div>
+
+                    <!-- Role Context Status Indicator (Right side on desktop) -->
+                    <div class="cf-breadcrumb-meta d-none d-sm-flex align-items-center gap-2">
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.role in ('publisher', 'super_admin') %}
+                                <span class="badge cf-meta-pill cf-meta-pub">
+                                    <i data-lucide="shield" class="me-1" style="width:12px;height:12px;"></i>
+                                    <span id="cf-bc-meta-text">Apex Council Governance</span>
+                                </span>
+                            {% elif current_user.role in ('admin', 'manager', 'supervisor') %}
+                                <span class="badge cf-meta-pill cf-meta-adm">
+                                    <i data-lucide="landmark" class="me-1" style="width:12px;height:12px;"></i>
+                                    <span id="cf-bc-meta-text">PACS Ward Operations</span>
+                                </span>
+                            {% elif current_user.role == 'worker' %}
+                                <span class="badge cf-meta-pill cf-meta-wrk">
+                                    <i data-lucide="check-circle-2" class="me-1" style="width:12px;height:12px;"></i>
+                                    <span id="cf-bc-meta-text">88% Living Wage &bull; PMSBY</span>
+                                </span>
+                            {% elif current_user.role == 'customer' %}
+                                <span class="badge cf-meta-pill cf-meta-cst">
+                                    <i data-lucide="award" class="me-1" style="width:12px;height:12px;"></i>
+                                    <span id="cf-bc-meta-text">Fair Tariff &bull; Zero Surge</span>
+                                </span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </nav>
+            </div>
+            {% endblock %}
+
+            <!-- Main Dynamic Page Content Block -->
+            <div class="page-container">
+                
+                <!-- Flash messages → auto-converted to Toasts via JS below -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div id="flash-data" style="display:none;">
+                            {% for category, msg in messages %}
+                            {% if '400' not in msg or 'could not understand' not in msg.lower() %}
+                            <span data-category="{{ 'danger' if category in ('danger','error') else 'success' if category == 'success' else 'warning' if category == 'warning' else 'primary' }}" data-msg="{{ msg }}"></span>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+
+            <!-- Footer -->
+            <footer class="app-footer">
+                <span>© {{ year }} SahakarSeva &mdash; Cooperative Gig Services Platform for Household & Community Services.</span>
+                <div class="footer-links">
+                    <a href="#">Cooperative Welfare</a>
+                    <a href="#">Fair Wages Policy</a>
+                    <a href="#">v2.5</a>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Lucide Icon Renderer -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Leaflet Map JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        // ─── 1. ICONS ───────────────────────────────────────────────────
+        lucide.createIcons();
+
+        // ─── 2. THEME ───────────────────────────────────────────────────
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('theme-icon-light').style.display = 'none';
+                document.getElementById('theme-icon-dark').style.display = 'inline-block';
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.getElementById('theme-icon-light').style.display = 'inline-block';
+                document.getElementById('theme-icon-dark').style.display = 'none';
+            }
+        }
+        initTheme();
+
+        function toggleDarkMode() {
+            const body = document.body;
+            const iconLight = document.getElementById('theme-icon-light');
+            const iconDark = document.getElementById('theme-icon-dark');
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                localStorage.setItem('theme', 'light');
+                iconLight.style.display = 'inline-block';
+                iconDark.style.display = 'none';
+            } else {
+                body.classList.add('dark-mode');
+                localStorage.setItem('theme', 'dark');
+                iconLight.style.display = 'none';
+                iconDark.style.display = 'inline-block';
+            }
+            window.dispatchEvent(new Event('theme-changed'));
+        }
+
+        // ─── 3. PAGE LOADER ─────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function() {
+            const loader = document.getElementById('page-loader');
+            if (loader) {
+                loader.classList.add('fade-out');
+                setTimeout(() => loader.remove(), 350);
+            }
+        });
+
+        // ─── 4. SCROLL PROGRESS BAR ─────────────────────────────────────
+        const progressBar = document.getElementById('scroll-progress-bar');
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            if (progressBar) progressBar.style.width = pct + '%';
+
+            // Back to top button
+            const btt = document.getElementById('back-to-top');
+            if (btt) btt.classList.toggle('visible', scrollTop > 300);
+        }, { passive: true });
+
+        // ─── 5. BACK TO TOP ─────────────────────────────────────────────
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ─── 6. TOAST NOTIFICATIONS ─────────────────────────────────────
+        const toastIcons = { success: '✅', danger: '❌', warning: '⚠️', primary: 'ℹ️' };
+        function showToast(message, type = 'primary', duration = 5000) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `cf-toast toast-${type}`;
+            toast.innerHTML = `
+                <span class="toast-icon">${toastIcons[type] || 'ℹ️'}</span>
+                <div class="toast-body">${message}</div>
+                <button class="toast-close" onclick="dismissToast(this.parentElement)">✕</button>
+                <div class="toast-progress"></div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => dismissToast(toast), duration);
+        }
+        function dismissToast(toast) {
+            if (!toast || toast.classList.contains('toast-exit')) return;
+            toast.classList.add('toast-exit');
+            setTimeout(() => toast.remove(), 300);
+        }
+        // Convert flash messages to toasts on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const flashData = document.getElementById('flash-data');
+            if (flashData) {
+                flashData.querySelectorAll('span[data-msg]').forEach(el => {
+                    const msg = el.dataset.msg || '';
+                    if (msg.includes('400') && msg.toLowerCase().includes('could not understand')) return;
+                    showToast(msg, el.dataset.category);
+                });
+            }
+        });
+
+        // ─── 7. MOBILE SIDEBAR ──────────────────────────────────────────
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('app-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (sidebar) sidebar.classList.toggle('show');
+            if (backdrop) backdrop.classList.toggle('show');
+        }
+
+        // Auto-close mobile sidebar & auto-highlight active navigation link
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-highlight matching sidebar link based on current URL
+            const currentPath = window.location.pathname;
+            const currentHash = window.location.hash;
+            let matched = false;
+            const navLinks = document.querySelectorAll('#app-sidebar .sidebar-menu a');
+            navLinks.forEach(function(link) {
+                const href = link.getAttribute('href');
+                if (!href) return;
+                const parentLi = link.closest('.sidebar-item');
+                if (href === currentPath || (currentHash && href === (currentPath + currentHash))) {
+                    if (parentLi) parentLi.classList.add('active');
+                    matched = true;
+                }
+            });
+            if (!matched && currentPath !== '/') {
+                navLinks.forEach(function(link) {
+                    const href = link.getAttribute('href');
+                    if (href && href !== '/' && href !== '#' && currentPath.startsWith(href)) {
+                        const parentLi = link.closest('.sidebar-item');
+                        if (parentLi) parentLi.classList.add('active');
+                    }
+                });
+            }
+
+            navLinks.forEach(function(navLink) {
+                navLink.addEventListener('click', function() {
+                    if (window.innerWidth < 992) {
+                        const sidebar = document.getElementById('app-sidebar');
+                        const backdrop = document.getElementById('sidebar-backdrop');
+                        if (sidebar && sidebar.classList.contains('show')) {
+                            sidebar.classList.remove('show');
+                        }
+                        if (backdrop && backdrop.classList.contains('show')) {
+                            backdrop.classList.remove('show');
+                        }
+                    }
+                });
+            });
+        });
+
+        // ─── 8. SIDEBAR COLLAPSE (desktop) ──────────────────────────────
+        function toggleSidebarCollapse() {
+            const container = document.getElementById('app-container');
+            const collapsed = container.classList.toggle('sidebar-collapsed');
+            localStorage.setItem('sidebar-collapsed', collapsed ? '1' : '0');
+        }
+        // Restore sidebar state
+        (function() {
+            if (localStorage.getItem('sidebar-collapsed') === '1') {
+                const c = document.getElementById('app-container');
+                if (c) c.classList.add('sidebar-collapsed');
+            }
+        })();
+
+        // ─── 9. GLOBAL SEARCH ───────────────────────────────────────────
+        function openSearch() {
+            const overlay = document.getElementById('search-overlay');
+            overlay.classList.add('open');
+            setTimeout(() => document.getElementById('global-search-input').focus(), 100);
+        }
+        function closeSearch() {
+            document.getElementById('search-overlay').classList.remove('open');
+            document.getElementById('global-search-input').value = '';
+            document.getElementById('search-results-list').innerHTML =
+                '<div class="search-empty" id="search-empty-state">Type to search</div>';
+        }
+        document.getElementById('search-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeSearch();
+        });
+
+        // Navigation menu quick links for search
+        const userRole = "{{ current_user.role if current_user and current_user.is_authenticated else '' }}";
+        const quickLinks = [];
+        if (['publisher', 'super_admin'].includes(userRole)) {
+            quickLinks.push(
+                { title: 'Platform Command Center', url: '{{ url_for("publisher.dashboard") }}', icon: '🛡️', sub: 'Apex Federation' },
+                { title: 'Primary Societies', url: '{{ url_for("publisher.societies_page") }}', icon: '🏢', sub: 'Apex Federation' },
+                { title: 'Pending Societies Onboarding', url: '{{ url_for("publisher.societies_page", tab="pending") }}', icon: '⏳', sub: 'Apex Federation' },
+                { title: 'Customer Complaints', url: '{{ url_for("publisher.complaints_page") }}', icon: '⚖️', sub: 'Apex Federation' },
+                { title: 'Money & Welfare', url: '{{ url_for("publisher.money_page") }}', icon: '💰', sub: 'Apex Federation' },
+                { title: 'Platform Settings & Security', url: '{{ url_for("publisher.settings_page") }}', icon: '⚙️', sub: 'Apex Federation' },
+                { title: 'Federation Profile', url: '{{ url_for("publisher.profile_page") }}', icon: '👤', sub: 'Apex Federation' }
+            );
+        } else if (['admin', 'manager', 'supervisor'].includes(userRole)) {
+            quickLinks.push(
+                { title: 'Executive Overview', url: '{{ url_for("admin.dashboard") }}', icon: '📊', sub: 'Primary Society' },
+                { title: 'Service Bookings', url: '{{ url_for("admin.service_requests") }}', icon: '🔧', sub: 'Primary Society' },
+                { title: 'Cooperative Artisans', url: '{{ url_for("admin.workers_page") }}', icon: '👷', sub: 'Primary Society' },
+                { title: 'Daily Attendance', url: '{{ url_for("admin.attendance_page") }}', icon: '📍', sub: 'Primary Society' },
+                { title: 'Cooperative Payments', url: '{{ url_for("admin.payments_page") }}', icon: '💰', sub: 'Primary Society' },
+                { title: 'AI Demand & Planning', url: '{{ url_for("admin.ai_demand_page") }}', icon: '🧠', sub: 'Primary Society' },
+                { title: 'Society Settings & 2FA', url: '{{ url_for("admin.settings_page") }}', icon: '⚙️', sub: 'Primary Society' }
+            );
+        } else if (userRole === 'worker') {
+            quickLinks.push(
+                { title: 'Worker Dashboard', url: '{{ url_for("worker.dashboard") }}', icon: '📊', sub: 'Worker' },
+                { title: 'My Jobs', url: '{{ url_for("worker.service_requests") }}', icon: '💼', sub: 'Worker' },
+                { title: 'Attendance', url: '{{ url_for("worker.attendance_page") }}', icon: '📍', sub: 'Worker' },
+                { title: 'Earnings', url: '{{ url_for("worker.earnings_page") }}', icon: '💰', sub: 'Worker' },
+                { title: 'Benefits (Suraksha Nidhi)', url: '{{ url_for("worker.benefits") }}', icon: '❤️', sub: 'Worker' },
+                { title: 'Certificates (KYC Badging)', url: '{{ url_for("worker.certificates") }}', icon: '📜', sub: 'Worker' },
+                { title: 'Profile', url: '{{ url_for("worker.profile_page") }}', icon: '👤', sub: 'Worker' }
+            );
+        } else if (userRole === 'customer') {
+            quickLinks.push(
+                { title: 'Customer Dashboard', url: '{{ url_for("customer.dashboard") }}', icon: '📊', sub: 'Customer' },
+                { title: 'Book Service', url: '{{ url_for("customer.book_service") }}', icon: '🔧', sub: 'Customer' },
+                { title: 'My Bookings', url: '{{ url_for("customer.bookings_page") }}', icon: '🕒', sub: 'Customer' },
+                { title: 'Payments', url: '{{ url_for("customer.payments_page") }}', icon: '💳', sub: 'Customer' },
+                { title: 'Help & Support', url: '{{ url_for("customer.help_page") }}', icon: '❓', sub: 'Customer' },
+                { title: 'Profile', url: '{{ url_for("customer.profile_page") }}', icon: '👤', sub: 'Customer' }
+            );
+        }
+
+        let searchDebounce;
+        document.getElementById('global-search-input').addEventListener('input', function() {
+            clearTimeout(searchDebounce);
+            const q = this.value.trim().toLowerCase();
+            searchDebounce = setTimeout(() => renderSearch(q), 150);
+        });
+
+        function renderSearch(q) {
+            const list = document.getElementById('search-results-list');
+            if (!q) {
+                list.innerHTML = '<div class="search-empty">Type to search</div>';
+                return;
+            }
+            const filtered = quickLinks.filter(l =>
+                l.title.toLowerCase().includes(q) || l.sub.toLowerCase().includes(q)
+            );
+            if (!filtered.length) {
+                list.innerHTML = `<div class="search-empty">No results for "${q}"</div>`;
+                return;
+            }
+            list.innerHTML = filtered.map(l => `
+                <a href="${l.url}" class="search-result-item" onclick="closeSearch()">
+                    <div class="search-result-icon">${l.icon}</div>
+                    <div class="search-result-text">
+                        <div class="sr-title">${l.title}</div>
+                        <div class="sr-sub">${l.sub}</div>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        // ─── 10. KEYBOARD SHORTCUTS ──────────────────────────────────────
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+K — open search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                openSearch();
+            }
+            // Ctrl+B — toggle sidebar
+            if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+                e.preventDefault();
+                toggleSidebarCollapse();
+            }
+            // Escape — close search
+            if (e.key === 'Escape') {
+                closeSearch();
+            }
+        });
+
+        // ─── 11. NOTIFICATIONS ───────────────────────────────────────────
+        async function fetchNotifications() {
+            try {
+                const response = await fetch('/api/notifications');
+                if (response.ok) {
+                    const data = await response.json();
+                    updateNotificationUI(data);
+                }
+            } catch(e) { /* Fail silently */ }
+        }
+
+        let knownNotificationIds = new Set();
+        let isFirstNotificationCheck = true;
+
+        function updateNotificationUI(notifications) {
+            const menu = document.getElementById('notification-menu');
+            const dot = document.getElementById('notification-dot');
+            const emptyMsg = document.getElementById('empty-notifications-msg');
+            menu.querySelectorAll('.notification-item').forEach(el => el.remove());
+            if (notifications.length > 0) {
+                dot.style.display = 'block';
+                if (emptyMsg) emptyMsg.style.display = 'none';
+                notifications.forEach(n => {
+                    if (!isFirstNotificationCheck && !knownNotificationIds.has(n.id) && (n.title.includes('DM') || n.title.includes('Message'))) {
+                        showToast(`💬 ${n.title}`, 'info');
+                    }
+                    knownNotificationIds.add(n.id);
+
+                    const li = document.createElement('li');
+                    li.className = 'notification-item dropdown-item py-2 px-3 border-bottom';
+                    li.innerHTML = `
+                        <div class="d-flex flex-column gap-1">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <strong class="small text-primary">${n.title}</strong>
+                                <span class="text-muted" style="font-size:0.65rem">${n.time}</span>
+                            </div>
+                            <p class="mb-0 text-secondary" style="font-size:0.75rem;white-space:normal">${n.message}</p>
+                        </div>`;
+                    menu.appendChild(li);
+                });
+            } else {
+                dot.style.display = 'none';
+                if (emptyMsg) emptyMsg.style.display = 'block';
+            }
+            isFirstNotificationCheck = false;
+        }
+
+        async function markAllNotificationsRead(e) {
+            e.preventDefault();
+            try {
+                const res = await fetch('/api/notifications/read', { method: 'POST' });
+                if (res.ok) updateNotificationUI([]);
+            } catch(err) {}
+        }
+
+        fetchNotifications();
+        setInterval(fetchNotifications, 30000);
+
+        // ─── 12. SESSION TIMEOUT WARNING ─────────────────────────────────
+        const SESSION_WARN_AFTER = 25 * 60 * 1000;  // 25 minutes
+        const SESSION_COUNTDOWN  = 60;               // 60 second countdown
+        let sessionTimer, countdownTimer, countdownVal;
+        const sessionModal = new bootstrap.Modal(document.getElementById('session-timeout-modal'));
+
+        function resetSessionTimer() {
+            clearTimeout(sessionTimer);
+            clearInterval(countdownTimer);
+            sessionTimer = setTimeout(startSessionWarning, SESSION_WARN_AFTER);
+        }
+
+        function startSessionWarning() {
+            countdownVal = SESSION_COUNTDOWN;
+            document.getElementById('session-countdown').textContent = countdownVal;
+            sessionModal.show();
+            countdownTimer = setInterval(() => {
+                countdownVal--;
+                document.getElementById('session-countdown').textContent = countdownVal;
+                if (countdownVal <= 0) {
+                    clearInterval(countdownTimer);
+                    window.location.href = '{{ url_for("auth.logout") }}';
+                }
+            }, 1000);
+        }
+
+        function extendSession() {
+            clearInterval(countdownTimer);
+            sessionModal.hide();
+            resetSessionTimer();
+            showToast('Session extended successfully!', 'success');
+        }
+
+        ['click','keydown','mousemove','scroll'].forEach(evt =>
+            document.addEventListener(evt, resetSessionTimer, { passive: true })
+        );
+        resetSessionTimer();
+
+        // ─── 13. CONFIRM DIALOG ──────────────────────────────────────────
+        // PWA install support: keeps the app installable on phones.
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/service-worker.js').catch(function () {});
+            });
+        }
+
+        function cfConfirm(message, onConfirm, title = 'Confirm Action', dangerBtn = true) {
+            document.getElementById('confirmModalLabel').textContent = title;
+            document.getElementById('confirm-modal-message').textContent = message;
+            const okBtn = document.getElementById('confirm-modal-ok-btn');
+            okBtn.className = `btn btn-sm ${dangerBtn ? 'btn-danger' : 'btn-primary'}`;
+            okBtn.textContent = 'Confirm';
+            const modal = new bootstrap.Modal(document.getElementById('confirm-modal'));
+            const handler = () => { onConfirm(); modal.hide(); okBtn.removeEventListener('click', handler); };
+            okBtn.addEventListener('click', handler);
+            modal.show();
+        }
+
+    </script>
+
+    {% if current_user.is_authenticated %}
+    <nav class="mobile-bottom-nav d-md-none" aria-label="Main navigation">
+        {% if current_user.role == 'customer' %}
+        <a href="{{ url_for('customer.dashboard') }}" class="{% if request.endpoint in ('customer.dashboard', 'customer.home') %}active{% endif %}"><i data-lucide="home"></i><span>Home</span></a>
+        <a href="{{ url_for('customer.book_service') }}" class="{% if request.endpoint == 'customer.book_service' %}active{% endif %}"><i data-lucide="plus-circle"></i><span>Book</span></a>
+        <a href="{{ url_for('customer.bookings_page') }}" class="{% if request.endpoint == 'customer.bookings_page' %}active{% endif %}"><i data-lucide="calendar-days"></i><span>Bookings</span></a>
+        <button type="button" onclick="toggleServiceAssistant()"><i data-lucide="message-circle"></i><span>Ask</span></button>
+        <a href="{{ url_for('customer.profile_page') }}" class="{% if request.endpoint == 'customer.profile_page' %}active{% endif %}"><i data-lucide="user"></i><span>Profile</span></a>
+        {% elif current_user.role == 'worker' %}
+        <a href="{{ url_for('worker.dashboard') }}" class="{% if request.endpoint in ('worker.dashboard', 'worker.home') %}active{% endif %}"><i data-lucide="home"></i><span>Home</span></a>
+        <a href="{{ url_for('worker.service_requests') }}" class="{% if request.endpoint in ('worker.service_requests', 'worker.jobs') %}active{% endif %}"><i data-lucide="briefcase"></i><span>Jobs</span></a>
+        <a href="{{ url_for('worker.earnings_page') }}" class="{% if request.endpoint == 'worker.earnings_page' %}active{% endif %}"><i data-lucide="wallet"></i><span>Earnings</span></a>
+        <button type="button" onclick="toggleServiceAssistant()"><i data-lucide="message-circle"></i><span>Ask</span></button>
+        <a href="{{ url_for('worker.profile_page') }}" class="{% if request.endpoint in ('worker.profile', 'worker.profile_page') %}active{% endif %}"><i data-lucide="user"></i><span>Profile</span></a>
+        {% elif current_user.role in ('admin','manager','supervisor') %}
+        <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint in ('admin.dashboard', 'admin.home') %}active{% endif %}"><i data-lucide="home"></i><span>Home</span></a>
+        <a href="{{ url_for('admin.service_requests') }}" class="{% if request.endpoint in ('admin.service_requests', 'admin.bookings') %}active{% endif %}"><i data-lucide="clipboard-list"></i><span>Bookings</span></a>
+        <a href="{{ url_for('admin.workers_page') }}" class="{% if request.endpoint == 'admin.workers_page' %}active{% endif %}"><i data-lucide="users"></i><span>Workers</span></a>
+        <a href="{{ url_for('admin.payments_page') }}" class="{% if request.endpoint == 'admin.payments_page' %}active{% endif %}"><i data-lucide="wallet"></i><span>Money</span></a>
+        <a href="{{ url_for('admin.settings_page') }}" class="{% if request.endpoint == 'admin.settings_page' %}active{% endif %}"><i data-lucide="settings"></i><span>Settings</span></a>
+        {% else %}
+        <a href="{{ url_for('publisher.dashboard') }}" class="{% if request.endpoint in ('publisher.dashboard', 'publisher.home') %}active{% endif %}"><i data-lucide="home"></i><span>Home</span></a>
+        <a href="{{ url_for('publisher.societies_page') }}" class="{% if request.endpoint == 'publisher.societies_page' %}active{% endif %}"><i data-lucide="building"></i><span>Societies</span></a>
+        <a href="{{ url_for('publisher.complaints_page') }}" class="{% if request.endpoint == 'publisher.complaints_page' %}active{% endif %}"><i data-lucide="alert-circle"></i><span>Disputes</span></a>
+        <a href="{{ url_for('publisher.money_page') }}" class="{% if request.endpoint == 'publisher.money_page' %}active{% endif %}"><i data-lucide="scale"></i><span>Ledger</span></a>
+        <a href="{{ url_for('publisher.settings_page') }}" class="{% if request.endpoint == 'publisher.settings_page' %}active{% endif %}"><i data-lucide="settings"></i><span>Settings</span></a>
+        {% endif %}
+    </nav>
+
+    {% if current_user.role in ('customer','worker') %}
+    <!-- Smart Service Assistant -->
+    <button id="service-assistant-fab" class="service-assistant-fab" type="button" aria-label="Open Service Assistant" onclick="toggleServiceAssistant()">
+        <span class="assistant-fab-mark"><img src="{{ url_for('static', filename='assistant-mark.svg') }}" alt="" aria-hidden="true"></span><span class="assistant-fab-label">Ask SahakarSeva</span>
+    </button>
+    <div id="service-assistant-panel" class="service-assistant-panel" aria-hidden="true">
+        <div class="assistant-head">
+            <div class="assistant-brand-row"><span class="assistant-head-mark"><img src="{{ url_for('static', filename='assistant-mark.svg') }}" alt="" aria-hidden="true"></span><div><div class="assistant-title">SahakarSeva Assistant</div><div class="assistant-subtitle"><span class="assistant-dot"></span> Service help only</div></div></div>
+            <button type="button" class="assistant-close" onclick="toggleServiceAssistant()" aria-label="Close">×</button>
+        </div>
+        <div id="assistant-messages" class="assistant-messages">
+            <div class="assistant-bubble bot"><strong>Hi 👋</strong><br>Tell me what you need. I can book or manage your services, check status, and answer work-related questions.</div>
+            <div class="assistant-quick-actions">
+                {% if current_user.role == 'customer' %}
+                <button type="button" onclick="askAssistant('I want to book a service')">Book service</button><button type="button" onclick="askAssistant('What is my latest booking status?')">Booking status</button><button type="button" onclick="askAssistant('I want to change my booking')">Change booking</button><button type="button" onclick="askAssistant('Show my payments')">Payments</button><button type="button" onclick="askAssistant('I need emergency help')">Emergency</button>
+                {% else %}
+                <button type="button" onclick="askAssistant('What is my next job?')">Next job</button><button type="button" onclick="askAssistant('What is my job status?')">Job status</button><button type="button" onclick="askAssistant('How do I check in?')">Attendance</button><button type="button" onclick="askAssistant('Show my earnings')">Earnings</button><button type="button" onclick="askAssistant('Show my benefits')">Benefits</button>
+                {% endif %}
+            </div>
+        </div>
+        <div class="assistant-input-row"><button type="button" class="assistant-mic" onclick="startAssistantVoice()" aria-label="Speak"><i data-lucide="mic" style="width:18px;height:18px"></i></button><input id="assistant-input" class="form-control" type="text" placeholder="Type or speak..." autocomplete="off" onkeydown="if(event.key==='Enter') sendAssistantMessage()"><button class="assistant-send" type="button" onclick="sendAssistantMessage()" aria-label="Send"><i data-lucide="arrow-up" style="width:17px;height:17px"></i></button></div>
+    </div>
+    {% endif %}
+
+    <script>
+        function startAssistantVoice(){const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(!Recognition){showToast('Voice input is not supported in this browser.','warning');return;}const r=new Recognition();r.lang=(window.APP_LANGUAGE==='hi')?'hi-IN':((window.APP_LANGUAGE==='mr')?'mr-IN':'en-IN');r.interimResults=false;r.maxAlternatives=1;r.onstart=()=>document.getElementById('service-assistant-fab')?.classList.add('listening');r.onend=()=>document.getElementById('service-assistant-fab')?.classList.remove('listening');r.onresult=e=>{const i=document.getElementById('assistant-input');if(i){i.value=e.results[0][0].transcript;sendAssistantMessage();}};r.onerror=()=>showToast('I could not hear you. Please try again.','warning');try{r.start();}catch(e){}}
+        function toggleServiceAssistant(){const p=document.getElementById('service-assistant-panel');if(!p)return;const open=p.classList.toggle('open');p.setAttribute('aria-hidden',open?'false':'true');document.getElementById('service-assistant-fab')?.classList.toggle('is-open',open);if(open)setTimeout(()=>document.getElementById('assistant-input')?.focus(),100);}
+        function appendAssistantMessage(text,who){const box=document.getElementById('assistant-messages');if(!box)return;const d=document.createElement('div');d.className='assistant-bubble '+who;d.innerHTML=who==='bot'?String(text).replace(/\n/g,'<br>'):String(text);box.appendChild(d);box.scrollTop=box.scrollHeight;}
+        async function askAssistant(text){appendAssistantMessage(text,'user');try{const r=await fetch('/api/assistant',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text, language:(window.APP_LANGUAGE||'en')})});if(!r.ok)throw new Error('assistant request failed');const data=await r.json();appendAssistantMessage(data.reply||'Please choose one of the options below.','bot');if(data.url){const a=document.createElement('a');a.href=data.url;a.className='assistant-action-link';a.textContent=data.action||'Open';document.getElementById('assistant-messages').appendChild(a);document.getElementById('assistant-messages').scrollTop=document.getElementById('assistant-messages').scrollHeight;}}catch(e){appendAssistantMessage('I could not connect right now. Please use the buttons in the app.','bot');}}
+        function sendAssistantMessage(){const i=document.getElementById('assistant-input');if(!i)return;const t=i.value.trim();if(!t)return;i.value='';askAssistant(t);}
+
+        // Customer Emergency SOS Modal and Dispatch Logic
+        function openEmergencyModal() {
+            const modalEl = document.getElementById('emergencyModal');
+            if (!modalEl) {
+                console.error('Emergency modal not found in DOM');
+                return;
+            }
+            const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            bsModal.show();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function updateEmergencyCategory(radio, rate, desc) {
+            document.querySelectorAll('.emergency-cat-card').forEach(function(el) {
+                el.classList.remove('active', 'border-danger', 'bg-danger-subtle');
+            });
+            const parentLabel = radio.closest('.emergency-cat-card');
+            if (parentLabel) {
+                parentLabel.classList.add('active', 'border-danger', 'bg-danger-subtle');
+            }
+            const scopeTitle = document.getElementById('emergencyScopeTitle');
+            const scopeDesc = document.getElementById('emergencyScopeDesc');
+            const tariffBadge = document.getElementById('emergencyTariffBadge');
+            if (scopeTitle) scopeTitle.textContent = radio.value + ' Emergency';
+            if (scopeDesc) scopeDesc.textContent = desc;
+            if (tariffBadge) tariffBadge.textContent = '₹' + rate;
+        }
+
+        function detectEmergencyGPS() {
+            const statusEl = document.getElementById('emergencyGpsStatus');
+            const labelEl = document.getElementById('gpsBtnLabel');
+            if (labelEl) labelEl.textContent = 'Acquiring GPS...';
+            if (statusEl) statusEl.textContent = 'Contacting satellite geolocation...';
+
+            if (!navigator.geolocation) {
+                if (statusEl) statusEl.textContent = 'Geolocation not supported in browser. Using manual address.';
+                if (labelEl) labelEl.textContent = '📍 Detect Live GPS Location';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                async function(pos) {
+                    const lat = pos.coords.latitude;
+                    const lng = pos.coords.longitude;
+                    const latInput = document.getElementById('emergencyLat');
+                    const lngInput = document.getElementById('emergencyLng');
+                    const curInput = document.getElementById('emergencyIsCurrent');
+                    if (latInput) latInput.value = lat;
+                    if (lngInput) lngInput.value = lng;
+                    if (curInput) curInput.value = '1';
+
+                    if (labelEl) labelEl.textContent = '✓ GPS Locked (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
+                    if (statusEl) statusEl.textContent = 'GPS locked with accuracy ±' + Math.round(pos.coords.accuracy) + 'm. Resolving street address...';
+
+                    try {
+                        const res = await fetch('/customer/api/geocode?lat=' + lat + '&lon=' + lng);
+                        const data = await res.json();
+                        if (data && data.display_name) {
+                            const addrInput = document.getElementById('emergencyAddress');
+                            if (addrInput) addrInput.value = data.display_name;
+                            if (statusEl) statusEl.textContent = '✓ Address resolved: ' + data.display_name;
+                        }
+                    } catch (ex) {
+                        if (statusEl) statusEl.textContent = '✓ GPS coordinates locked (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ').';
+                    }
+                },
+                function(err) {
+                    if (labelEl) labelEl.textContent = '📍 Detect Live GPS Location';
+                    if (statusEl) statusEl.textContent = 'Could not acquire GPS: ' + err.message + '. Default address preserved.';
+                },
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+            );
+        }
+
+        async function submitEmergencySOS(event) {
+            event.preventDefault();
+            const btn = document.getElementById('emergencySubmitBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Broadcasting SOS to Artisans...';
+            }
+
+            const form = document.getElementById('emergencySosForm');
+            const formData = new FormData(form);
+            const payload = {};
+            formData.forEach(function(value, key) { payload[key] = value; });
+
+            try {
+                const response = await fetch('/customer/emergency-dispatch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    const modalEl = document.getElementById('emergencyModal');
+                    if (modalEl) {
+                        const bsModal = bootstrap.Modal.getInstance(modalEl);
+                        if (bsModal) bsModal.hide();
+                    }
+                    if (typeof showToast === 'function') {
+                        showToast(result.message || 'Emergency SOS Dispatched Successfully!', 'danger');
+                    } else {
+                        alert(result.message || 'Emergency SOS Dispatched Successfully!');
+                    }
+                    const reqId = result.data ? result.data.request_id : null;
+                    if (reqId) {
+                        window.location.href = '/customer/booking/' + reqId + '/details';
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    alert(result.message || 'Could not dispatch emergency request. Please call society hotline.');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<span>⚡ Broadcast Emergency SOS Now</span>';
+                    }
+                }
+            } catch (err) {
+                alert('Network error dispatching emergency. Please try again or call emergency helpline.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>⚡ Broadcast Emergency SOS Now</span>';
+                }
+            }
+        }
+
+        function openCancelBookingModal(bookingId, reqId) {
+            const idInput = document.getElementById('cancelBookingId');
+            const reqLabel = document.getElementById('cancelBookingReqId');
+            const reasonInput = document.getElementById('cancelReasonInput');
+            const presetSelect = document.getElementById('cancelReasonPreset');
+            if (idInput) idInput.value = bookingId;
+            if (reqLabel) reqLabel.textContent = '#' + reqId;
+            if (reasonInput) reasonInput.value = '';
+            if (presetSelect) presetSelect.value = '';
+
+            const modalEl = document.getElementById('cancelBookingModal');
+            if (modalEl) {
+                const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                bsModal.show();
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function applyCancelReasonPreset(selectEl) {
+            const input = document.getElementById('cancelReasonInput');
+            if (input && selectEl.value && selectEl.value !== 'Other reason') {
+                input.value = selectEl.value;
+            }
+        }
+
+        async function submitCancelBookingForm(event) {
+            event.preventDefault();
+            const bookingId = document.getElementById('cancelBookingId').value;
+            const reason = document.getElementById('cancelReasonInput').value.trim();
+            const btn = document.getElementById('confirmCancelSubmitBtn');
+
+            if (!bookingId) return;
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Cancelling...';
+            }
+
+            try {
+                const res = await fetch('/customer/booking/' + bookingId + '/cancel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ reason: reason })
+                });
+
+                const data = await res.json().catch(() => null);
+
+                if (res.ok && data && data.status === 'success') {
+                    const modalEl = document.getElementById('cancelBookingModal');
+                    if (modalEl) {
+                        const bsModal = bootstrap.Modal.getInstance(modalEl);
+                        if (bsModal) bsModal.hide();
+                    }
+                    if (typeof showToast === 'function') {
+                        showToast(data.message || 'Booking cancelled successfully.', 'success');
+                    } else {
+                        alert(data.message || 'Booking cancelled successfully.');
+                    }
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 400);
+                } else {
+                    const errMsg = (data && data.message) || 'Unable to cancel booking.';
+                    alert(errMsg);
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i data-lucide="x-circle" style="width:14px;height:14px;"></i><span>Confirm Cancellation</span>';
+                        if (window.lucide) lucide.createIcons();
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Network error while cancelling booking. Please try again.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i data-lucide="x-circle" style="width:14px;height:14px;"></i><span>Confirm Cancellation</span>';
+                    if (window.lucide) lucide.createIcons();
+                }
+            }
+        }
+    </script>
+    {% endif %}
+    <!-- Comprehensive Multilingual Translation Engine (English, Hindi, Marathi) -->
+    <script src="{{ url_for('static', filename='js/translations.js') }}?v=4.0"></script>
+    <script>
+        // Global Dynamic Breadcrumb & Tab/Feature Synchronization
+        window.updateBreadcrumb = function(sectionName, subPanelName, metaBadge) {
+            try {
+                const currentEl = document.querySelector('.bc-current');
+                if (currentEl && sectionName) {
+                    currentEl.textContent = sectionName;
+                }
+                const subpanelEl = document.getElementById('cf-bc-subpanel');
+                const subpanelTextEl = document.getElementById('cf-bc-subpanel-text');
+                if (subpanelEl && subpanelTextEl) {
+                    if (subPanelName) {
+                        subpanelTextEl.textContent = subPanelName;
+                        subpanelEl.style.display = 'inline-flex';
+                    } else {
+                        subpanelEl.style.display = 'none';
+                    }
+                }
+                if (metaBadge) {
+                    const metaEl = document.getElementById('cf-bc-meta-text');
+                    if (metaEl) metaEl.textContent = metaBadge;
+                }
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+            } catch(e) {
+                console.warn('Breadcrumb update notification:', e);
+            }
+        };
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

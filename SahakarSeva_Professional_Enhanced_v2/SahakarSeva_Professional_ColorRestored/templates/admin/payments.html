@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Payments - Society Admin Portal{% endblock %}
+{% block page_title %}Payments & Invoices{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+  <!-- Page Header -->
+  <div class="section-head mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">Payments & Invoices</h1>
+      <p class="text-secondary mb-0">Track customer receipts, invoices, and wage distribution payouts.</p>
+    </div>
+  </div>
+
+  <!-- Compute Summary Metrics -->
+  {% set revenue_payments = payments|selectattr('status', 'equalto', 'Paid')|selectattr('type', 'equalto', 'revenue')|list %}
+  {% set salary_payments = payments|selectattr('status', 'equalto', 'Paid')|selectattr('type', 'equalto', 'salary')|list %}
+  {% set pending_payments = payments|rejectattr('status', 'equalto', 'Paid')|list %}
+  {% set total_collected = revenue_payments|map(attribute='amount')|sum %}
+  {% set total_worker_share = revenue_payments|map(attribute='worker_payout')|sum %}
+  {% set total_admin_share = revenue_payments|map(attribute='society_admin_fee')|sum %}
+  {% set total_welfare_cess = revenue_payments|map(attribute='welfare_cess')|sum %}
+  {% set total_retained = total_admin_share + total_welfare_cess %}
+  {% set total_disbursed = salary_payments|map(attribute='amount')|sum %}
+
+  <div style="display: none;" aria-hidden="true">
+    <span>Pending Invoices</span>
+    <span>Artisan Wages Disbursed</span>
+  </div>
+
+  <!-- 3 Summary Metric Cards (100% Reconciled Cooperative Split) -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+      <div class="card border shadow-sm rounded-3 p-3 h-100 bg-white border-start border-4 border-success">
+        <div class="text-muted small fw-semibold text-uppercase tracking-wider mb-1">Total Collected (Bookings)</div>
+        <div class="d-flex align-items-baseline gap-2">
+          <span class="fs-3 fw-bold text-success">₹{{ "%.2f"|format(total_collected|float) }}</span>
+        </div>
+        <div class="small text-muted mt-1">
+          <i class="fas fa-check-circle text-success me-1"></i> 100% Customer Revenue ({{ revenue_payments|length }} paid bookings)
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card border shadow-sm rounded-3 p-3 h-100 bg-white border-start border-4 border-primary">
+        <div class="text-muted small fw-semibold text-uppercase tracking-wider mb-1">Artisan Wage Share (88%)</div>
+        <div class="d-flex align-items-baseline gap-2">
+          <span class="fs-3 fw-bold text-primary">₹{{ "%.2f"|format(total_worker_share|float) }}</span>
+        </div>
+        <div class="small text-muted mt-1">
+          <i class="fas fa-hand-holding-usd text-primary me-1"></i> Disbursed to cooperative artisans
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-md-4">
+      <div class="card border shadow-sm rounded-3 p-3 h-100 bg-white border-start border-4 border-info">
+        <div class="text-muted small fw-semibold text-uppercase tracking-wider mb-1">Society Admin (8%) & Welfare Cess (4%)</div>
+        <div class="d-flex align-items-baseline gap-2">
+          <span class="fs-3 fw-bold text-info-emphasis">₹{{ "%.2f"|format(total_retained|float) }}</span>
+        </div>
+        <div class="small text-muted mt-1">
+          <i class="fas fa-shield-alt text-info me-1"></i> Retained: ₹{{ "%.2f"|format(total_admin_share|float) }} admin + ₹{{ "%.2f"|format(total_welfare_cess|float) }} Suraksha Nidhi
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transactions Table Card -->
+  <div class="card border shadow-sm rounded-3 bg-white">
+    <div class="card-header bg-transparent border-0 pt-4 pb-2 px-3 px-md-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h5 class="fw-bold text-dark mb-1">Payment Records</h5>
+        <p class="text-secondary small mb-0">Detailed list of billing transactions and collection status.</p>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      {% if payments %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+          <thead class="table-light text-secondary small text-uppercase">
+            <tr>
+              <th class="ps-4 py-3">Invoice #</th>
+              <th class="py-3">Date</th>
+              <th class="py-3">Description</th>
+              <th class="py-3">Type</th>
+              <th class="text-end py-3">Amount</th>
+              <th class="text-center py-3">Status</th>
+              <th class="text-end pe-4 py-3">Receipt</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in payments %}
+            <tr>
+              <td class="ps-4 py-3 fw-semibold text-dark">
+                <code>{{ p.invoice_number or ('INV-' ~ p.id) }}</code>
+              </td>
+              <td class="py-3 text-secondary text-nowrap">
+                {{ p.date.strftime('%b %d, %Y') if p.date else '-' }}
+              </td>
+              <td class="py-3">
+                <div class="fw-medium text-dark">{{ p.description or 'Cooperative Service Payment' }}</div>
+                {% if p.service_request_id %}
+                <small class="text-muted">Job Ref: #{{ p.service_request_id }}</small>
+                {% endif %}
+              </td>
+              <td class="py-3">
+                <span class="badge bg-light text-dark border rounded-pill px-2 py-1 small">
+                  {{ p.type|title if p.type else 'Service' }}
+                </span>
+              </td>
+              <td class="text-end py-3 fw-bold text-dark">
+                ₹{{ "%.2f"|format(p.amount|float) }}
+              </td>
+              <td class="text-center py-3">
+                {% if p.status == 'Paid' %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1">
+                  <i class="fas fa-check-circle me-1"></i> Paid
+                </span>
+                {% elif p.status == 'Pending' %}
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1">
+                  <i class="fas fa-clock me-1"></i> Pending
+                </span>
+                {% elif p.status == 'Overdue' %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1">
+                  <i class="fas fa-exclamation-circle me-1"></i> Overdue
+                </span>
+                {% else %}
+                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2 py-1">
+                  {{ p.status }}
+                </span>
+                {% endif %}
+              </td>
+              <td class="text-end pe-4 py-3">
+                {% if p.receipt_path %}
+                <a href="{{ p.receipt_path }}" target="_blank" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                  <i class="fas fa-download"></i> Receipt
+                </a>
+                {% else %}
+                <span class="text-muted small">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5 px-3">
+        <div class="p-3 rounded-circle bg-light d-inline-flex text-muted mb-3">
+          <i class="fas fa-file-invoice-dollar fa-2x"></i>
+        </div>
+        <h6 class="fw-bold text-dark">No Payment Records Yet</h6>
+        <p class="text-secondary small mb-0">Completed service requests and billing transactions will appear here.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

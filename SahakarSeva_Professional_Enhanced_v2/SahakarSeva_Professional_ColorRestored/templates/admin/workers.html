@@ -1,0 +1,491 @@
+{% extends 'base.html' %}
+{% block title %}Workers & KYC Verification - Admin{% endblock %}
+{% block page_title %}Workers & Verification{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+  <div class="section-head d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">Workers & Verification</h1>
+      <p class="text-secondary mb-0">Manage worker skills, availability, and verify onboarding identity credentials.</p>
+    </div>
+  </div>
+
+  <!-- Verification & Filter Navigation Tabs -->
+  <ul class="nav nav-pills mb-4 gap-2" id="workerFilterTabs" role="tablist">
+    <li class="nav-item">
+      <button class="nav-link active px-3 py-2 fw-semibold" id="tab-all" data-bs-toggle="pill" data-filter="all">
+        All Workers <span class="badge bg-secondary ms-1 rounded-pill">{{ workers|length }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link px-3 py-2 fw-semibold" id="tab-verified" data-bs-toggle="pill" data-filter="verified">
+        Verified <span class="badge bg-success ms-1 rounded-pill">{{ workers|selectattr('is_verified')|list|length }}</span>
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link px-3 py-2 fw-semibold position-relative" id="tab-pending" data-bs-toggle="pill" data-filter="pending">
+        Pending Verification 
+        <span class="badge bg-warning text-dark ms-1 rounded-pill" id="pendingCounterBadge">{{ pending_count }}</span>
+      </button>
+    </li>
+  </ul>
+
+  <!-- Pending Applications Review Table (Visible when pending > 0 or when pending tab selected) -->
+  {% set pending_workers = workers|rejectattr('is_verified')|selectattr('verification_status', 'equalto', 'pending')|list %}
+  <div id="pendingReviewSection" class="card shadow-sm border-0 mb-4 {% if pending_workers|length == 0 %}d-none{% endif %}" style="background:var(--surface-color, #fff);border-radius:12px;">
+    <div class="card-header bg-warning bg-opacity-10 border-0 py-3 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center">
+        <i class="fas fa-user-shield text-warning fs-5 me-2"></i>
+        <h5 class="mb-0 fw-bold">Verification Queue</h5>
+      </div>
+      <span class="badge bg-warning text-dark px-3 py-1 rounded-pill" id="pendingSectionBadge">{{ pending_workers|length }} Pending</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="ps-3">Worker</th>
+              <th>Trade & Experience</th>
+              <th>Contact / Locality</th>
+              <th>ID Proof Document</th>
+              <th class="text-end pe-3">Action</th>
+            </tr>
+          </thead>
+          <tbody id="pendingWorkersTableBody">
+            {% for pw in pending_workers %}
+            <tr id="pending-row-{{ pw.id }}">
+              <td class="ps-3">
+                <div class="fw-bold">{{ pw.user.username|title }}</div>
+                <div class="small text-muted">ID: #{{ pw.id }}</div>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">{{ pw.skills or 'General Worker' }}</span>
+                <div class="small text-muted mt-1">{{ pw.experience_years or 0 }} yrs exp · ₹{{ "%.0f"|format(pw.salary_rate or 450) }}/day</div>
+              </td>
+              <td>
+                <div><i class="fas fa-phone small text-muted me-1"></i>{{ pw.user.phone or 'N/A' }}</div>
+                <div class="small text-muted"><i class="fas fa-map-marker-alt small text-muted me-1"></i>{{ pw.user.address or 'Eastern Suburbs' }}</div>
+              </td>
+              <td>
+                {% if pw.id_proof_file %}
+                <button type="button" class="btn btn-sm btn-outline-info d-flex align-items-center gap-1" onclick="previewIdProof('{{ pw.id_proof_file }}', '{{ pw.user.username|title }}')">
+                  <i class="fas fa-file-alt"></i> View ID Proof
+                </button>
+                {% else %}
+                <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 opacity-75" onclick="previewIdProof('', '{{ pw.user.username|title }}')">
+                  <i class="fas fa-file-alt"></i> View ID Proof
+                </button>
+                {% endif %}
+              </td>
+              <td class="text-end pe-3">
+                <button class="btn btn-sm btn-success px-3 me-1" data-worker-id="{{ pw.id }}" onclick="verifyWorker(this.dataset.workerId, this)">
+                  <i class="fas fa-check me-1"></i> Approve
+                </button>
+                <button class="btn btn-sm btn-outline-danger px-2" data-worker-id="{{ pw.id }}" onclick="rejectWorker(this.dataset.workerId, this)">
+                  <i class="fas fa-times me-1"></i> Reject
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Worker Cards Grid -->
+  <div class="row g-3" id="workersGrid">
+    {% for w in workers %}
+    <div class="col-12 col-lg-6 worker-card-item" data-verified="{{ 'true' if w.is_verified else 'false' }}" data-status="{{ w.verification_status or 'pending' }}" id="worker-card-{{ w.id }}">
+      <div class="simple-list-card p-3" style="background:var(--surface-color, #fff);border:1px solid rgba(0,0,0,0.08);border-radius:10px;">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <strong class="fs-6">{{ w.user.username|title }}</strong>
+              {% if w.is_verified %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small rounded-pill">
+                <i class="fas fa-check-circle me-1"></i> Verified
+              </span>
+              {% elif w.verification_status == 'rejected' %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small rounded-pill">
+                <i class="fas fa-times-circle me-1"></i> Rejected
+              </span>
+              {% else %}
+              <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 small rounded-pill">
+                <i class="fas fa-clock me-1"></i> Pending KYC
+              </span>
+              {% endif %}
+            </div>
+            <div class="small text-secondary mt-1">{{ w.skills or 'Skills not added' }}</div>
+          </div>
+          <span class="status-chip">{{ w.availability_status or 'available' }}</span>
+        </div>
+
+        <div class="small text-secondary mt-2">
+          <span><i class="fas fa-briefcase me-1"></i>{{ w.experience_years or 0 }} yrs</span> · 
+          <span><i class="fas fa-phone me-1"></i>{{ w.user.phone or 'No phone' }}</span> · 
+          <span>₹{{ "%.0f"|format(w.salary_rate or 450) }}/day</span>
+        </div>
+
+        {% if w.id_proof_file %}
+        <div class="mt-2">
+          <button type="button" class="btn btn-sm btn-link text-primary text-decoration-none p-0 d-inline-flex align-items-center gap-1" onclick="previewIdProof('{{ w.id_proof_file }}', '{{ w.user.username|title }}')">
+            <i class="fas fa-paperclip"></i> View ID Proof Document
+          </button>
+        </div>
+        {% else %}
+        <div class="mt-2">
+          <button type="button" class="btn btn-sm btn-link text-secondary text-decoration-none p-0 d-inline-flex align-items-center gap-1 opacity-75" onclick="previewIdProof('', '{{ w.user.username|title }}')">
+            <i class="fas fa-paperclip"></i> Check ID Proof Document
+          </button>
+        </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top">
+          <button class="btn btn-sm btn-outline-primary" 
+                  data-worker='{{ {'id':w.id,'username':w.user.username,'email':w.user.email,'phone':w.user.phone or '','address':w.user.address or '','skills':w.skills or '','experience_years':w.experience_years or 0,'salary_rate':w.salary_rate or 0,'availability_status':w.availability_status or 'available'}|tojson|forceescape }}' 
+                  onclick="editWorker(this)">
+            <i class="fas fa-edit me-1"></i> Edit
+          </button>
+
+          {% if not w.is_verified and w.verification_status == 'pending' %}
+          <div class="d-flex gap-1" id="card-actions-{{ w.id }}">
+            <button class="btn btn-sm btn-success px-2 py-1" data-worker-id="{{ w.id }}" onclick="verifyWorker(this.dataset.workerId, this)">
+              <i class="fas fa-check me-1"></i> Approve
+            </button>
+            <button class="btn btn-sm btn-outline-danger px-2 py-1" data-worker-id="{{ w.id }}" onclick="rejectWorker(this.dataset.workerId, this)">
+              <i class="fas fa-times me-1"></i> Reject
+            </button>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+      <div class="empty-card p-4 text-center text-muted">No workers found.</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Edit Worker Modal -->
+<div class="modal fade" id="editWorkerModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form class="modal-content" onsubmit="submitWorkerEdit(event)">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Worker</h5>
+        <button class="btn-close" data-bs-dismiss="modal" type="button"></button>
+      </div>
+      <div class="modal-body row g-3">
+        <input type="hidden" id="ew-id">
+        <div class="col-12"><label class="form-label">Name</label><input id="ew-username" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">Email</label><input id="ew-email" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">Phone</label><input id="ew-phone" class="form-control"></div>
+        <div class="col-12"><label class="form-label">Skills</label><input id="ew-skills" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">Experience</label><input id="ew-exp" type="number" class="form-control"></div>
+        <div class="col-md-6"><label class="form-label">Status</label><select id="ew-status" class="form-select"><option>available</option><option>busy</option><option>leave</option><option>pending_verification</option><option>inactive</option></select></div>
+        <div class="col-12"><label class="form-label">Address</label><textarea id="ew-address" class="form-control"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" type="submit">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ID Proof Document Preview Modal -->
+<div class="modal fade" id="idProofModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title fw-bold" id="idProofModalTitle">
+          <i class="fas fa-id-card text-primary me-2"></i>Worker Identity Document
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center p-4">
+        <div id="idProofContent">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+      <div class="modal-footer bg-light">
+        <a id="idProofOpenNewTab" href="#" target="_blank" class="btn btn-outline-primary btn-sm d-none">
+          <i class="fas fa-external-link-alt me-1"></i> Open Full Document
+        </a>
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filter tabs logic
+document.querySelectorAll('#workerFilterTabs button').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const filter = tab.getAttribute('data-filter');
+    const cards = document.querySelectorAll('.worker-card-item');
+    const pendingSec = document.getElementById('pendingReviewSection');
+
+    cards.forEach(card => {
+      const isVerified = card.getAttribute('data-verified') === 'true';
+      const status = card.getAttribute('data-status');
+
+      if (filter === 'all') {
+        card.classList.remove('d-none');
+      } else if (filter === 'verified') {
+        card.classList.toggle('d-none', !isVerified);
+      } else if (filter === 'pending') {
+        card.classList.toggle('d-none', status !== 'pending');
+      }
+    });
+
+    if (pendingSec) {
+      if (filter === 'verified') {
+        pendingSec.classList.add('d-none');
+      } else {
+        const rows = document.querySelectorAll('#pendingWorkersTableBody tr');
+        if (rows.length > 0) pendingSec.classList.remove('d-none');
+      }
+    }
+  });
+});
+
+// Approve Worker AJAX with Anti-Double-Click Spinner
+async function verifyWorker(id, btn) {
+  const origHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Approving...';
+  }
+  try {
+    const resp = await fetch(`/admin/workers/${id}/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+    const data = await resp.json();
+    if (resp.ok && data.status === 'success') {
+      if (typeof showToast === 'function') {
+        showToast(data.message || 'Worker approved and marked available.', 'success');
+      }
+      // Remove row from pending queue
+      const row = document.getElementById(`pending-row-${id}`);
+      if (row) {
+        row.style.transition = 'opacity 0.4s ease';
+        row.style.opacity = '0';
+        setTimeout(() => {
+          row.remove();
+          updatePendingCounts();
+        }, 400);
+      }
+      // Update card on page
+      const card = document.getElementById(`worker-card-${id}`);
+      if (card) {
+        card.setAttribute('data-verified', 'true');
+        card.setAttribute('data-status', 'approved');
+        const badge = card.querySelector('.badge');
+        if (badge) {
+          badge.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small rounded-pill';
+          badge.innerHTML = '<i class="fas fa-check-circle me-1"></i> Verified';
+        }
+        const actions = document.getElementById(`card-actions-${id}`);
+        if (actions) actions.remove();
+      }
+    } else {
+      if (typeof showToast === 'function') showToast(data.message || 'Action failed.', 'danger');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    if (typeof showToast === 'function') showToast('Network error during verification.', 'danger');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+    }
+  }
+}
+
+// Reject Worker AJAX with Anti-Double-Click Spinner
+async function rejectWorker(id, btn) {
+  const origHtml = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Rejecting...';
+  }
+  try {
+    const resp = await fetch(`/admin/workers/${id}/reject`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+    const data = await resp.json();
+    if (resp.ok && data.status === 'success') {
+      if (typeof showToast === 'function') {
+        showToast(data.message || 'Worker application rejected.', 'warning');
+      }
+      // Remove row from pending queue
+      const row = document.getElementById(`pending-row-${id}`);
+      if (row) {
+        row.style.transition = 'opacity 0.4s ease';
+        row.style.opacity = '0';
+        setTimeout(() => {
+          row.remove();
+          updatePendingCounts();
+        }, 400);
+      }
+      // Update card on page
+      const card = document.getElementById(`worker-card-${id}`);
+      if (card) {
+        card.setAttribute('data-verified', 'false');
+        card.setAttribute('data-status', 'rejected');
+        const badge = card.querySelector('.badge');
+        if (badge) {
+          badge.className = 'badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small rounded-pill';
+          badge.innerHTML = '<i class="fas fa-times-circle me-1"></i> Rejected';
+        }
+        const actions = document.getElementById(`card-actions-${id}`);
+        if (actions) actions.remove();
+      }
+    } else {
+      if (typeof showToast === 'function') showToast(data.message || 'Action failed.', 'danger');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    if (typeof showToast === 'function') showToast('Network error.', 'danger');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origHtml;
+    }
+  }
+}
+
+function updatePendingCounts() {
+  const count = document.querySelectorAll('#pendingWorkersTableBody tr').length;
+  const cBadge = document.getElementById('pendingCounterBadge');
+  const sBadge = document.getElementById('pendingSectionBadge');
+  if (cBadge) cBadge.textContent = count;
+  if (sBadge) sBadge.textContent = `${count} Pending`;
+  if (count === 0) {
+    const pSec = document.getElementById('pendingReviewSection');
+    if (pSec) pSec.classList.add('d-none');
+  }
+}
+
+function previewIdProof(fileUrl, workerName) {
+  const modalTitle = document.getElementById('idProofModalTitle');
+  const content = document.getElementById('idProofContent');
+  const openBtn = document.getElementById('idProofOpenNewTab');
+  
+  if (modalTitle) {
+    modalTitle.innerHTML = `<i class="fas fa-id-card text-primary me-2"></i>Identity Document — ${workerName || 'Worker'}`;
+  }
+  
+  if (!fileUrl || fileUrl.trim() === '' || fileUrl === 'None') {
+    content.innerHTML = `
+      <div class="py-5 text-muted">
+        <i class="fas fa-file-invoice fa-3x text-secondary mb-3 opacity-50"></i>
+        <h6 class="fw-bold">No Document Uploaded</h6>
+        <p class="small text-muted mb-0">This worker has not uploaded a digital copy of their ID proof yet.</p>
+      </div>
+    `;
+    if (openBtn) openBtn.classList.add('d-none');
+  } else if (fileUrl.toLowerCase().endsWith('.pdf')) {
+    content.innerHTML = `
+      <div class="ratio ratio-16x9 border rounded">
+        <iframe src="${fileUrl}" style="border:none;" title="Worker Identity Document"></iframe>
+      </div>
+    `;
+    if (openBtn) {
+      openBtn.href = fileUrl;
+      openBtn.classList.remove('d-none');
+    }
+  } else {
+    content.innerHTML = `
+      <div class="p-2 border rounded bg-light d-inline-block shadow-sm" style="max-width: 100%;">
+        <img src="${fileUrl}" alt="ID Document Proof" class="img-fluid rounded" style="max-height: 460px; object-fit: contain;">
+      </div>
+    `;
+    if (openBtn) {
+      openBtn.href = fileUrl;
+      openBtn.classList.remove('d-none');
+    }
+  }
+  
+  const modal = new bootstrap.Modal(document.getElementById('idProofModal'));
+  modal.show();
+}
+window.previewIdProof = previewIdProof;
+
+function editWorker(b){
+  const x = JSON.parse(b.dataset.worker);
+  for(const [id,val] of [
+    ['ew-id',x.id],
+    ['ew-username',x.username],
+    ['ew-email',x.email],
+    ['ew-phone',x.phone],
+    ['ew-skills',x.skills],
+    ['ew-exp',x.experience_years],
+    ['ew-status',x.availability_status],
+    ['ew-address',x.address]
+  ]) {
+    const el = document.getElementById(id);
+    if (el) el.value = val;
+  }
+  new bootstrap.Modal(document.getElementById('editWorkerModal')).show();
+}
+
+async function submitWorkerEdit(e){
+  e.preventDefault();
+  const saveBtn = e.target.querySelector('button[type="submit"]');
+  const origHtml = saveBtn ? saveBtn.innerHTML : '';
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Saving...';
+  }
+  try {
+    const fd = new FormData();
+    fd.append('username', document.getElementById('ew-username').value);
+    fd.append('email', document.getElementById('ew-email').value);
+    fd.append('phone', document.getElementById('ew-phone').value);
+    fd.append('skills', document.getElementById('ew-skills').value);
+    fd.append('experience_years', document.getElementById('ew-exp').value);
+    fd.append('availability_status', document.getElementById('ew-status').value);
+    fd.append('address', document.getElementById('ew-address').value);
+    const id = document.getElementById('ew-id').value;
+    const r = await fetch(`/admin/api/update/worker/${id}`, {method:'POST', body:fd});
+    const d = await r.json();
+    if (typeof showToast === 'function') {
+      showToast(d.message || 'Worker updated successfully.', d.status === 'success' ? 'success' : 'danger');
+    }
+    if (d.status === 'success') {
+      setTimeout(() => location.reload(), 600);
+    } else if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = origHtml;
+    }
+  } catch (err) {
+    if (typeof showToast === 'function') showToast('Failed to update worker details.', 'danger');
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = origHtml;
+    }
+  }
+}
+</script>
+{% endblock %}

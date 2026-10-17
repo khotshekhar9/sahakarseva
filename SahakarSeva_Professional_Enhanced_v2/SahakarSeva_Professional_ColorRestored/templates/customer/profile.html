@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}My Profile - SahakarSeva{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+  <div class="section-head mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">My Profile</h1>
+      <p class="text-secondary mb-0">Keep your contact and address details up to date.</p>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-3 bg-white p-4">
+    <form id="customerProfileForm" class="row g-3" onsubmit="saveCustomerProfile(event)">
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold small text-secondary">Full Name <span class="text-danger">*</span></label>
+        <input class="form-control" name="username" value="{{ current_user.username }}" placeholder="Your full name" required>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold small text-secondary">Email Address <span class="text-danger">*</span></label>
+        <input class="form-control" type="email" name="email" value="{{ current_user.email }}" placeholder="name@example.com" required>
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold small text-secondary">Phone Number</label>
+        <input class="form-control" name="phone" value="{{ current_user.phone or '' }}" placeholder="10-digit mobile number">
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label fw-semibold small text-secondary">Emergency Contact</label>
+        <input class="form-control" name="emergency_contact" value="{{ customer.emergency_contact or '' }}" placeholder="Name & phone of trusted contact">
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold small text-secondary">Saved Service Address</label>
+        <textarea class="form-control" name="address" rows="3" placeholder="Flat / Building, Street, Area, City, PIN">{{ current_user.address or '' }}</textarea>
+      </div>
+      <div class="col-12">
+        <label class="form-label fw-semibold small text-secondary">New Password <span class="text-muted fw-normal">(optional)</span></label>
+        <input class="form-control" type="password" name="password" autocomplete="new-password" placeholder="Leave blank to keep your current password">
+      </div>
+      <div class="col-12 pt-2">
+        <button class="btn btn-success fw-semibold px-4 py-2" type="submit">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function saveCustomerProfile(e) {
+  e.preventDefault();
+  try {
+    const r = await fetch('{{ url_for("customer.update_profile_api") }}', {
+      method: 'POST',
+      body: new FormData(e.target)
+    });
+    const d = await r.json();
+    if (typeof showToast === 'function') {
+      showToast(d.message || 'Saved', d.status === 'success' ? 'success' : 'danger');
+    } else {
+      alert(d.message || 'Saved');
+    }
+    if (d.status === 'success') {
+      setTimeout(() => location.reload(), 600);
+    }
+  } catch (err) {
+    alert('Failed to save profile. Please try again.');
+  }
+}
+</script>
+{% endblock %}

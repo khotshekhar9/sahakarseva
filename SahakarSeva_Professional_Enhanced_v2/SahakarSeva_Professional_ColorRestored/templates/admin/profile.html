@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Profile - SahakarSeva{% endblock %}
+{% block page_title %}Admin Profile & Security{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+  <!-- Page Header -->
+  <div class="section-head mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">Admin Profile & Security</h1>
+      <p class="text-secondary mb-0">Manage your society administrator details and account credentials.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Personal / Contact Details -->
+    <div class="col-12 col-lg-7">
+      <div class="card border shadow-sm rounded-3 p-3 p-md-4 bg-white h-100">
+        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+          <i class="fas fa-user-circle text-primary fs-5"></i>
+          <h5 class="fw-bold text-dark mb-0">Contact & Society Information</h5>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.update_admin_profile_api') }}" class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold text-secondary">Username / Name</label>
+            <input name="username" type="text" class="form-control" value="{{ current_user.username }}" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold text-secondary">Email Address</label>
+            <input name="email" type="email" class="form-control" value="{{ current_user.email }}" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold text-secondary">Helpline Phone Number</label>
+            <input name="phone" type="text" class="form-control" value="{{ current_user.phone or '' }}" placeholder="+91 98200 12345">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label small fw-semibold text-secondary">Assigned Role</label>
+            <input type="text" class="form-control bg-light" value="Society Administrator (Admin)" disabled readonly>
+          </div>
+          <div class="col-12">
+            <label class="form-label small fw-semibold text-secondary">Office / Headquarters Address</label>
+            <textarea name="address" rows="3" class="form-control" placeholder="Society office registered address">{{ current_user.address or '' }}</textarea>
+          </div>
+          <div class="col-12 pt-2">
+            <button type="submit" class="btn btn-success px-4">
+              <i class="fas fa-check me-1"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right Column: Change Password Card -->
+    <div class="col-12 col-lg-5">
+      <div class="card border shadow-sm rounded-3 p-3 p-md-4 bg-white h-100" id="change-password">
+        <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom">
+          <i class="fas fa-key text-primary fs-5"></i>
+          <h5 class="fw-bold text-dark mb-0">Change Admin Password</h5>
+        </div>
+
+        <p class="text-secondary small mb-3">
+          Ensure your account is using a long, random password to stay secure.
+        </p>
+
+        <form method="POST" action="{{ url_for('admin.change_admin_password_api') }}" class="d-flex flex-column gap-3">
+          <div>
+            <label class="form-label small fw-semibold text-secondary">Current Password</label>
+            <div class="input-group">
+              <input type="password" name="current_password" id="inputCurrentPassword" class="form-control" placeholder="Enter current password" required autocomplete="current-password">
+              <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="inputCurrentPassword" aria-label="Toggle password visibility">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label small fw-semibold text-secondary">New Password</label>
+            <div class="input-group">
+              <input type="password" name="new_password" id="inputNewPassword" class="form-control" placeholder="At least 6 characters" required autocomplete="new-password">
+              <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="inputNewPassword" aria-label="Toggle password visibility">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <div class="form-text small text-muted">Minimum 6 characters.</div>
+          </div>
+
+          <div>
+            <label class="form-label small fw-semibold text-secondary">Confirm New Password</label>
+            <div class="input-group">
+              <input type="password" name="confirm_password" id="inputConfirmPassword" class="form-control" placeholder="Re-type new password" required autocomplete="new-password">
+              <button class="btn btn-outline-secondary toggle-pw" type="button" data-target="inputConfirmPassword" aria-label="Toggle password visibility">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" class="btn btn-primary px-4 w-100">
+              <i class="fas fa-lock me-1"></i> Update Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.toggle-pw').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const targetId = this.getAttribute('data-target');
+      const input = document.getElementById(targetId);
+      if (input) {
+        const isPassword = input.getAttribute('type') === 'password';
+        input.setAttribute('type', isPassword ? 'text' : 'password');
+        const icon = this.querySelector('i');
+        if (icon) {
+          icon.classList.toggle('fa-eye', !isPassword);
+          icon.classList.toggle('fa-eye-slash', isPassword);
+        }
+      }
+    });
+  });
+
+  // If navigating with #change-password hash, highlight card
+  if (window.location.hash === '#change-password') {
+    const card = document.getElementById('change-password');
+    if (card) {
+      card.classList.add('border-primary');
+      card.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+});
+</script>
+{% endblock %}

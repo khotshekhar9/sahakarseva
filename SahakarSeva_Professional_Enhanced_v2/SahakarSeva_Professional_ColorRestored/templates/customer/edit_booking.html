@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% block title %}Edit Booking - SahakarSeva{% endblock %}
+{% block page_title %}Edit Booking{% endblock %}
+{% block page_title_bc %}
+  <li class="breadcrumb-item"><a href="{{ url_for('customer.bookings_page') }}">My Bookings</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Edit #{{ booking.request_id }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0 py-2" style="max-width: 860px;">
+  <!-- Header with back button -->
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <h2 class="h4 fw-bold text-dark mb-0">Edit Booking Request</h2>
+        <span class="badge bg-primary-subtle text-primary border px-2 py-1 small">#{{ booking.request_id }}</span>
+      </div>
+      <p class="text-secondary small mb-0">Update service details or schedule prior to technician dispatch.</p>
+    </div>
+    <a href="{{ url_for('customer.bookings_page') }}" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1">
+      <i data-lucide="arrow-left" style="width:15px;height:15px;"></i>
+      <span>Back to Bookings</span>
+    </a>
+  </div>
+
+  {% if booking.assigned_worker_id %}
+  <div class="alert alert-warning d-flex align-items-start gap-3 rounded-3 shadow-sm border-0 mb-4 p-3" role="alert">
+    <i data-lucide="alert-triangle" class="text-warning flex-shrink-0 mt-1" style="width:20px;height:20px;"></i>
+    <div class="small">
+      <strong>Editing Locked:</strong> A certified cooperative technician has already been assigned or dispatched for this service request. To change the schedule or request changes, please message the technician via the booking status screen.
+      <div class="mt-2">
+        <a href="{{ url_for('customer.booking_details', booking_id=booking.id) }}" class="btn btn-warning btn-sm text-dark fw-semibold">
+          View Live Status
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Edit Booking Card -->
+  <div class="card border-0 shadow-sm rounded-3 overflow-hidden bg-white mb-4">
+    <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-light text-dark border px-2 py-1">{{ booking.category }}</span>
+        <span class="text-muted small">Created on {{ booking.created_at.strftime('%d %b %Y') if booking.created_at else 'Recent' }}</span>
+      </div>
+      <div>
+        <span class="badge {% if booking.status == 'Pending Review' %}bg-primary-subtle text-primary{% elif booking.status == 'Scheduled' %}bg-info-subtle text-info{% else %}bg-secondary-subtle text-secondary{% endif %} px-2 py-1">
+          {{ booking.status }}
+        </span>
+      </div>
+    </div>
+
+    <form method="POST" class="card-body p-4">
+      <div class="row g-3">
+        <!-- Service Category -->
+        <div class="col-12 col-md-6">
+          <label class="form-label small fw-bold text-dark">Service Category <span class="text-danger">*</span></label>
+          <select class="form-select" name="category" required {% if booking.assigned_worker_id %}disabled{% endif %}>
+            {% for cat in ['Electrician', 'Plumber', 'Plumbing', 'Carpenter', 'Carpentry', 'Painter', 'Painting', 'Cleaning', 'Home Deep Cleaning', 'AC Repair', 'Appliance Repair'] %}
+              <option value="{{ cat }}" {% if booking.category == cat or (cat == 'Electrician' and booking.category == 'Electrical') %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Issue Title -->
+        <div class="col-12 col-md-6">
+          <label class="form-label small fw-bold text-dark">Issue Summary / Title <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="title" value="{{ booking.title }}" required {% if booking.assigned_worker_id %}disabled{% endif %} placeholder="e.g. Fuse Replacement or Pipe Leakage">
+        </div>
+
+        <!-- Problem Description -->
+        <div class="col-12">
+          <label class="form-label small fw-bold text-dark">Additional Details & Notes</label>
+          <textarea class="form-control" name="description" rows="3" {% if booking.assigned_worker_id %}disabled{% endif %} placeholder="Provide any helpful instructions, symptoms, or access notes...">{{ booking.description or '' }}</textarea>
+        </div>
+
+        <!-- Date & Time Row -->
+        <div class="col-12 col-md-6">
+          <label class="form-label small fw-bold text-dark">Preferred Date</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted border-end-0">
+              <i data-lucide="calendar" style="width:16px;height:16px;"></i>
+            </span>
+            <input type="date" class="form-control border-start-0 ps-0" name="visit_date" value="{{ booking.visit_date.strftime('%Y-%m-%d') if booking.visit_date else '' }}" {% if booking.assigned_worker_id %}disabled{% endif %}>
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="form-label small fw-bold text-dark">Preferred Time Window</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted border-end-0">
+              <i data-lucide="clock" style="width:16px;height:16px;"></i>
+            </span>
+            <input type="text" class="form-control border-start-0 ps-0" name="preferred_time" value="{{ booking.preferred_time or '' }}" placeholder="e.g. 10:00 AM - 01:00 PM" {% if booking.assigned_worker_id %}disabled{% endif %}>
+          </div>
+        </div>
+
+        <!-- Service Address -->
+        <div class="col-12">
+          <label class="form-label small fw-bold text-dark">Service Address & Flat/Wing <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted border-end-0 align-items-start pt-2">
+              <i data-lucide="map-pin" style="width:16px;height:16px;"></i>
+            </span>
+            <textarea class="form-control border-start-0 ps-0" name="address" rows="2" required {% if booking.assigned_worker_id %}disabled{% endif %}>{{ booking.address }}</textarea>
+          </div>
+        </div>
+
+        <!-- Priority Selection -->
+        <div class="col-12 col-md-6">
+          <label class="form-label small fw-bold text-dark">Urgency Level</label>
+          <select class="form-select" name="priority" {% if booking.assigned_worker_id %}disabled{% endif %}>
+            <option value="Normal" {% if booking.priority == 'Normal' %}selected{% endif %}>Normal (Standard Fair Tariff)</option>
+            <option value="Urgent" {% if booking.priority == 'Urgent' %}selected{% endif %}>Urgent (Expedited Dispatch)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Action Buttons Footer -->
+      <div class="d-flex align-items-center justify-content-end gap-2 mt-4 pt-3 border-top">
+        <a href="{{ url_for('customer.bookings_page') }}" class="btn btn-outline-secondary px-3">
+          Cancel
+        </a>
+        <button type="submit" class="btn btn-primary d-inline-flex align-items-center gap-2 px-4" {% if booking.assigned_worker_id %}disabled{% endif %}>
+          <i data-lucide="check" style="width:16px;height:16px;"></i>
+          <span>Save Changes</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

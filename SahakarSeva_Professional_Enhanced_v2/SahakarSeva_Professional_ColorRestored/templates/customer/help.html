@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% block title %}Help & Support - SahakarSeva{% endblock %}
+{% block page_title %}Help & Support{% endblock %}
+{% block page_title_bc %}Help{% endblock %}
+{% block nav_customer_help %}active{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+  <!-- Clean Unobtrusive Header (No duplicate buttons) -->
+  <div class="welcome-hero simple-hero help-hero-minimal mb-4">
+    <div>
+      <div class="eyebrow">COOPERATIVE SUPPORT</div>
+      <h1 class="greeting-heading">Help & Support</h1>
+      <p class="text-secondary mb-0">Find quick solutions or contact your cooperative society support team.</p>
+    </div>
+  </div>
+
+  <!-- Section 1: Quick Common Answers (Instant FAQ) -->
+  <section class="simple-section mb-4" id="faq-section">
+    <div class="section-head mb-3">
+      <div>
+        <h2 class="h5 fw-bold mb-1">Quick Common Answers</h2>
+        <p class="text-secondary small mb-0">Instant solutions for booking, emergency dispatch, cooperative pricing, and worker verification.</p>
+      </div>
+    </div>
+
+    <div class="accordion help-faq-accordion shadow-sm" id="helpFaqAccordion">
+      <!-- Item 1: Booking -->
+      <div class="accordion-item border-0">
+        <h3 class="accordion-header" id="faqHeadingOne">
+          <button class="accordion-button fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseOne" aria-expanded="true" aria-controls="faqCollapseOne">
+            🛠️ How does booking work?
+          </button>
+        </h3>
+        <div id="faqCollapseOne" class="accordion-collapse collapse show" aria-labelledby="faqHeadingOne" data-bs-parent="#helpFaqAccordion">
+          <div class="accordion-body pt-1 pb-3">
+            <ul class="faq-bullet-list">
+              <li>Select service, pick a date/time, and a certified local cooperative artisan will be matched.</li>
+              <li>Track live status checkpoints and receive your verified artisan's details instantly.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 2: Emergency Response -->
+      <div class="accordion-item border-0">
+        <h3 class="accordion-header" id="faqHeadingTwo">
+          <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseTwo" aria-expanded="false" aria-controls="faqCollapseTwo">
+            🚨 Emergency response time?
+          </button>
+        </h3>
+        <div id="faqCollapseTwo" class="accordion-collapse collapse" aria-labelledby="faqHeadingTwo" data-bs-parent="#helpFaqAccordion">
+          <div class="accordion-body pt-1 pb-3">
+            <ul class="faq-bullet-list">
+              <li>High-priority dispatch routes nearby trade technicians within minutes.</li>
+              <li>Fixed transparent emergency rates apply with zero surge pricing.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 3: Pricing & Fair Wage -->
+      <div class="accordion-item border-0">
+        <h3 class="accordion-header" id="faqHeadingThree">
+          <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseThree" aria-expanded="false" aria-controls="faqCollapseThree">
+            💳 How does fair wage pricing work?
+          </button>
+        </h3>
+        <div id="faqCollapseThree" class="accordion-collapse collapse" aria-labelledby="faqHeadingThree" data-bs-parent="#helpFaqAccordion">
+          <div class="accordion-body pt-1 pb-3">
+            <ul class="faq-bullet-list">
+              <li>88% goes directly to the worker, 8% funds society operations, and 4% secures worker welfare.</li>
+              <li>Direct transparent digital settlements eliminate middleman commissions.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 4: Verification -->
+      <div class="accordion-item border-0">
+        <h3 class="accordion-header" id="faqHeadingFour">
+          <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseFour" aria-expanded="false" aria-controls="faqCollapseFour">
+            🔒 How to verify the visiting technician?
+          </button>
+        </h3>
+        <div id="faqCollapseFour" class="accordion-collapse collapse" aria-labelledby="faqHeadingFour" data-bs-parent="#helpFaqAccordion">
+          <div class="accordion-body pt-1 pb-3">
+            <ul class="faq-bullet-list">
+              <li>Check the photo ID badge in your booking card and share your 6-digit start OTP only after arrival.</li>
+              <li>All artisans are background-verified members of registered labour cooperatives.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Raise a Ticket & Ticket History (Resolution Center) -->
+  <section class="simple-section mt-4" id="ticket-section">
+    <div class="section-head mb-3">
+      <div>
+        <h2 class="h5 fw-bold mb-1">Help & Support Tickets</h2>
+        <p class="text-secondary small mb-0">Raise a ticket with your cooperative society or track existing requests.</p>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Left Column: Raise a Ticket -->
+      <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm rounded-3 p-4 bg-white h-100">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="p-2 rounded-2 bg-primary-subtle text-primary">
+              <i data-lucide="plus-circle" style="width:18px;height:18px;"></i>
+            </div>
+            <div>
+              <h3 class="h6 fw-bold mb-0">Raise a Ticket</h3>
+              <span class="text-secondary small">Direct line to cooperative supervisors</span>
+            </div>
+          </div>
+
+          <form id="supportTicketForm" onsubmit="submitSupportTicket(event)">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small mb-1" for="ticketTitle">Issue Summary</label>
+              <input type="text" class="form-control" name="title" id="ticketTitle" placeholder="e.g., Question about billing or schedule" required>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label small fw-semibold">Send To</label>
+              <select name="escalation_level" class="form-select form-select-sm" id="ticketEscalation">
+                <option value="society" selected>Primary Cooperative Society (Service Questions & Booking Help)</option>
+                <option value="apex">Apex Federation (Unresolved Complaint or Dispute)</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small mb-1" for="ticketPriority">Priority</label>
+              <select class="form-select" name="priority" id="ticketPriority">
+                <option value="Normal" selected>Normal</option>
+                <option value="High">High</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small mb-1" for="ticketDesc">Description</label>
+              <textarea class="form-control" name="description" id="ticketDesc" rows="4" placeholder="Describe the issue briefly..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 fw-semibold d-flex align-items-center justify-content-center gap-2 py-2" id="ticketSubmitBtn">
+              <i data-lucide="send" style="width:16px;height:16px;"></i>
+              <span>Submit Ticket</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right Column: My Support Tickets -->
+      <div class="col-12 col-lg-6">
+        <div class="card border-0 shadow-sm rounded-3 p-4 bg-white h-100">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-2">
+              <div class="p-2 rounded-2 bg-secondary-subtle text-secondary">
+                <i data-lucide="inbox" style="width:18px;height:18px;"></i>
+              </div>
+              <div>
+                <h3 class="h6 fw-bold mb-0">My Support Tickets</h3>
+                <span class="text-secondary small">Track status & updates</span>
+              </div>
+            </div>
+            <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 small" id="ticketCountBadge">
+              {{ tickets|length }} Total
+            </span>
+          </div>
+
+          <div id="ticketsListContainer" class="tickets-scroll-box">
+            {% if tickets %}
+              {% for t in tickets %}
+              <div class="ticket-item-compact p-3 mb-2 rounded-3 border bg-light-subtle d-flex justify-content-between align-items-center gap-3">
+                <div class="min-w-0 flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <span class="fw-semibold text-dark text-truncate small" style="max-width: 240px;" title="{{ t.title }}">{{ t.title }}</span>
+                    <span class="badge bg-white border text-muted px-1 py-0" style="font-size: 0.7rem;">#{{ t.id }}</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.75rem;">
+                    <span>Priority: <strong>{{ t.priority }}</strong></span>
+                    <span>·</span>
+                    {% if t.target_tier == 'apex' or t.escalation_level == 'apex' or t.is_apex_dispute %}
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0" style="font-size: 0.68rem;">Apex Federation</span>
+                    {% else %}
+                    <span class="badge bg-light text-secondary border px-2 py-0" style="font-size: 0.68rem;">Primary Society</span>
+                    {% endif %}
+                    {% if t.created_at %}
+                    <span>·</span>
+                    <span>{{ t.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="flex-shrink-0">
+                  {% if t.status == 'Resolved' %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Resolved</span>
+                  {% elif t.status == 'In Progress' %}
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">In Progress</span>
+                  {% else %}
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">Open</span>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="empty-card py-5 text-center text-muted" id="emptyTicketsCard">
+                <i data-lucide="ticket" style="width:36px;height:36px;opacity:0.4;" class="mb-2"></i>
+                <h6 class="fw-semibold mb-1">No support tickets</h6>
+                <p class="small text-secondary mb-0">Use the form on the left to raise a ticket if you need assistance.</p>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function escapeHtml(text) {
+  if (!text) return '';
+  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+  return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+
+async function submitSupportTicket(e) {
+  e.preventDefault();
+  const form = document.getElementById('supportTicketForm');
+  const btn = document.getElementById('ticketSubmitBtn');
+  const title = document.getElementById('ticketTitle').value.trim();
+  const desc = document.getElementById('ticketDesc').value.trim();
+  const priority = document.getElementById('ticketPriority').value;
+  const escalation = document.getElementById('ticketEscalation') ? document.getElementById('ticketEscalation').value : 'society';
+
+  if (!title || !desc) {
+    if (typeof showToast === 'function') {
+      showToast('Please enter both an issue summary and a description.', 'warning');
+    } else {
+      alert('Please fill in all required fields.');
+    }
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Submitting...';
+
+  try {
+    const res = await fetch('{{ url_for("customer.create_ticket") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({
+        title: title,
+        description: desc,
+        priority: priority,
+        escalation_level: escalation
+      })
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (res.ok && data && data.status === 'success') {
+      if (typeof showToast === 'function') {
+        showToast('Support ticket created successfully. Our team will review shortly.', 'success');
+      }
+
+      // Prepend the new ticket to the list dynamically
+      const listContainer = document.getElementById('ticketsListContainer');
+      const emptyCard = document.getElementById('emptyTicketsCard');
+      if (emptyCard) emptyCard.remove();
+
+      const newTicket = data.ticket || {
+        id: 'New',
+        title: title,
+        priority: priority,
+        escalation_level: escalation,
+        status: 'Open',
+        created_at: 'Just now'
+      };
+
+      const tierBadgeHtml = (newTicket.escalation_level === 'apex' || newTicket.target_tier === 'apex')
+        ? '<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0" style="font-size: 0.68rem;">Apex Escalated</span>'
+        : '<span class="badge bg-light text-secondary border px-2 py-0" style="font-size: 0.68rem;">Primary Society</span>';
+
+      const ticketEl = document.createElement('div');
+      ticketEl.className = 'ticket-item-compact p-3 mb-2 rounded-3 border bg-light-subtle d-flex justify-content-between align-items-center gap-3';
+      ticketEl.innerHTML = `
+        <div class="min-w-0 flex-grow-1">
+          <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+            <span class="fw-semibold text-dark text-truncate small" style="max-width: 240px;" title="${escapeHtml(newTicket.title)}">${escapeHtml(newTicket.title)}</span>
+            <span class="badge bg-white border text-muted px-1 py-0" style="font-size: 0.7rem;">#${newTicket.id}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2 text-muted" style="font-size: 0.75rem;">
+            <span>Priority: <strong>${escapeHtml(newTicket.priority)}</strong></span>
+            <span>·</span>
+            ${tierBadgeHtml}
+            <span>·</span>
+            <span>${newTicket.created_at || 'Just now'}</span>
+          </div>
+        </div>
+        <div class="flex-shrink-0">
+          <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1">Open</span>
+        </div>
+      `;
+      listContainer.prepend(ticketEl);
+
+      // Update badge counter
+      const badge = document.getElementById('ticketCountBadge');
+      if (badge) {
+        const count = listContainer.querySelectorAll('.ticket-item-compact').length;
+        badge.textContent = `${count} Total`;
+      }
+
+      form.reset();
+      document.getElementById('ticketPriority').value = 'Normal';
+    } else {
+      throw new Error((data && data.message) || 'Failed to submit ticket');
+    }
+  } catch (err) {
+    console.error(err);
+    if (typeof showToast === 'function') {
+      showToast('Could not submit ticket: ' + (err.message || 'Please try again.'), 'danger');
+    } else {
+      alert('Could not submit ticket: ' + (err.message || 'Please try again.'));
+    }
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="send" style="width:16px;height:16px;"></i><span>Submit Ticket</span>';
+    if (window.lucide) lucide.createIcons();
+  }
+}
+</script>
+{% endblock %}

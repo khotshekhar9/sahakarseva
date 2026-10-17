@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}My Earnings - Worker{% endblock %}
+{% block page_title %}My Earnings{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+  <!-- Header -->
+  <div class="section-head mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">My Earnings</h1>
+      <p class="text-secondary mb-0">View your payment settlements and download official payslips.</p>
+    </div>
+  </div>
+
+  <!-- 3 High-Impact Metric Cards -->
+  {% set total_earned = salaries|selectattr('status', 'equalto', 'Paid')|map(attribute='amount')|sum %}
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-4">
+      <div class="card border shadow-sm rounded-3 p-3 h-100 bg-white border-start border-4 border-success">
+        <div class="text-secondary small fw-semibold text-uppercase tracking-wider mb-1">Total Earned</div>
+        <div class="d-flex align-items-baseline gap-2">
+          <span class="fs-3 fw-bold text-success">₹{{ '%.2f'|format(total_earned|float) }}</span>
+        </div>
+        <div class="small text-muted mt-1">Paid directly to your account</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card border shadow-sm rounded-3 p-3 h-100 bg-white border-start border-4 border-primary">
+        <div class="text-secondary small fw-semibold text-uppercase tracking-wider mb-1">Recent Payout</div>
+        <div class="d-flex align-items-baseline gap-2">
+          <span class="fs-3 fw-bold text-dark">₹{{ '%.2f'|format(salaries[0].amount|float) if salaries else '0.00' }}</span>
+        </div>
+        <div class="small text-muted mt-1">{{ salaries[0].date.strftime('%d %b %Y') if (salaries and salaries[0].date) else 'No recent payout' }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card border shadow-sm rounded-3 p-3 h-100 bg-white border-start border-4 border-info">
+        <div class="text-secondary small fw-semibold text-uppercase tracking-wider mb-1">Settlements</div>
+        <div class="d-flex align-items-baseline gap-2">
+          <span class="fs-3 fw-bold text-dark">{{ salaries|length }}</span>
+        </div>
+        <div class="small text-muted mt-1">Total payout records</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Earnings & Payslips List -->
+  <div class="card border shadow-sm rounded-3 p-4 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h2 class="h5 fw-bold mb-1">Payment History</h2>
+        <p class="text-secondary small mb-0">Record of all completed daily wages and gig earnings.</p>
+      </div>
+      <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill small">{{ salaries|length }} Records</span>
+    </div>
+
+    <div class="row g-3">
+      {% for p in salaries %}
+      <div class="col-12 col-lg-6">
+        <div class="simple-list-card d-flex flex-column justify-content-between p-3 rounded-3 border bg-light-subtle h-100">
+          <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+            <div>
+              <div class="fs-5 fw-bold text-dark">₹{{ '%.2f'|format(p.amount|float) }}</div>
+              <div class="small text-secondary mt-1">{{ p.description or 'Worker wage payout' }}</div>
+              {% if p.invoice_number %}
+              <div class="small text-muted font-monospace">#{{ p.invoice_number }}</div>
+              {% endif %}
+            </div>
+            <div>
+              {% if p.status == 'Paid' %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill">Paid</span>
+              {% else %}
+                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 rounded-pill">{{ p.status }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-2">
+            <span class="small text-muted">
+              <i class="far fa-calendar-alt me-1"></i>
+              {{ p.date.strftime('%d %b %Y') if p.date else 'Date not recorded' }}
+            </span>
+            {% if p.id %}
+            <a class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1 py-1 px-2" href="{{ url_for('worker.download_payslip_pdf', payment_id=p.id) }}" target="_blank">
+              <i data-lucide="download" style="width: 13px; height: 13px;"></i>
+              <span>Download Payslip</span>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div class="col-12">
+        <div class="text-center py-5">
+          <div class="p-3 rounded-circle bg-light d-inline-flex text-muted mb-2">
+            <i data-lucide="wallet" style="width: 32px; height: 32px;"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-1">No payment records yet</h5>
+          <p class="text-secondary small mb-0">Your wages and payslips will appear here once service bookings are completed.</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  if (window.lucide) lucide.createIcons();
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{
+  "name": "SahakarSeva",
+  "short_name": "SahakarSeva",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1a73e8",
+  "orientation": "portrait-primary",
+  "description": "Simple cooperative services for homes and communities.",
+  "icons": [
+    {
+      "src": "/static/app-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}

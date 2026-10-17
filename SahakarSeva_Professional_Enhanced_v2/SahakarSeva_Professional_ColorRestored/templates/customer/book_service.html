@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Book Service - SahakarSeva{% endblock %}
+{% block page_title %}Book Service{% endblock %}
+{% block content %}
+<div class="simple-booking-wrap">
+  <div class="booking-top"><div><div class="eyebrow">SIMPLE BOOKING</div><h1>What do you need?</h1><p>It takes about a minute.</p></div><a href="{{ url_for('customer.dashboard') }}" class="btn btn-light border">Back Home</a></div>
+  <form id="bookServiceForm" enctype="multipart/form-data" onsubmit="submitSimpleBooking(event)">
+    <input type="hidden" name="customer_name" value="{{ current_user.username|title }}"><input type="hidden" name="mobile_number" value="{{ current_user.phone or '' }}">
+    <input type="hidden" name="contractor_id" value="{{ selected_contractor_id or (contractors[0].id if contractors else '') }}">
+    <div class="booking-progress"><div class="step-dot active" data-step="1">1</div><span></span><div class="step-dot" data-step="2">2</div><span></span><div class="step-dot" data-step="3">3</div><span></span><div class="step-dot" data-step="4">4</div></div>
+    <section class="booking-step active" data-step-panel="1">
+      <h2>Choose a service</h2><p class="text-secondary">Pick the work you need.</p>
+      <div class="service-grid">
+        {% for icon,label in [('zap','Electrician'),('droplets','Plumber'),('sparkles','Cleaning'),('snowflake','AC Service'),('hammer','Carpenter'),('paintbrush','Painter'),('car','Driver'),('chef-hat','Cook'),('heart-handshake','Caregiver'),('flower-2','Gardener'),('wrench','Technician'),('ellipsis','Other')] %}
+        <button type="button" class="service-choice" data-value="{{ label }}" onclick="chooseService(this)"><i data-lucide="{{ icon }}"></i><strong>{{ label }}</strong></button>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="category" id="categoryInput" value="">
+      <input type="hidden" name="title" id="titleInput" value="">
+      <div class="booking-actions"><span></span><button type="button" class="btn btn-primary" onclick="nextBookingStep(2)">Continue</button></div>
+    </section>
+    <section class="booking-step" data-step-panel="2">
+      <h2>What is the problem?</h2><p class="text-secondary">A few words are enough.</p>
+      <textarea class="form-control form-control-lg mb-3" name="description" id="descriptionInput" rows="4" placeholder="Example: fan is not working"></textarea>
+      <div class="media-row"><label class="media-btn"><span>📷</span><strong>Add Photo</strong><input type="file" name="photos" accept="image/*" capture="environment" multiple hidden onchange="photoCount(this)"></label><span id="photoCount" class="small text-secondary"></span><button type="button" class="media-btn" onclick="startVoiceSimple()"><span>🎤</span><strong>Speak</strong></button><span id="voiceStatus" class="small text-secondary"></span></div>
+      <input type="file" id="voiceFile" name="voice_audio" accept="audio/*" hidden>
+      <div class="booking-actions"><button type="button" class="btn btn-light border" onclick="nextBookingStep(1)">Back</button><button type="button" class="btn btn-primary" onclick="nextBookingStep(3)">Continue</button></div>
+    </section>
+    <section class="booking-step" data-step-panel="3">
+      <h2>Where do you need it?</h2><p class="text-secondary">Use your location or type your address.</p>
+      <div class="location-box"><button type="button" class="btn btn-outline-primary btn-lg" onclick="getBookingLocation()">📍 Use My Location</button><div id="locationStatus" class="small text-secondary">Location is optional if you enter your address.</div></div>
+      <textarea class="form-control" name="address" id="addressInput" rows="3" placeholder="Flat / House, Area, City, PIN" required>{{ current_user.address or '' }}</textarea>
+      <input type="hidden" name="latitude" id="latInput"><input type="hidden" name="longitude" id="lngInput">
+      <div class="booking-actions"><button type="button" class="btn btn-light border" onclick="nextBookingStep(2)">Back</button><button type="button" class="btn btn-primary" onclick="nextBookingStep(4)">Continue</button></div>
+    </section>
+    <section class="booking-step" data-step-panel="4">
+      <h2>Choose a time</h2><p class="text-secondary">Pick a day and tell us how urgent it is.</p>
+      <div class="row g-3"><div class="col-12 col-md-6"><label class="form-label fw-bold">Date</label><input class="form-control form-control-lg" type="date" name="preferred_date" id="preferredDate" required></div><div class="col-12 col-md-6"><label class="form-label fw-bold">Time <span class="text-muted fw-normal">(optional)</span></label><input class="form-control form-control-lg" type="time" name="preferred_time" id="preferredTime"></div></div><div class="mt-3"><label class="form-label fw-bold">Urgency</label><select class="form-select form-select-lg" name="priority"><option value="Normal">Normal</option><option value="Urgent">Urgent</option><option value="Emergency">Emergency</option></select></div>
+      <div class="booking-summary" id="bookingSummary"></div>
+      <div class="booking-actions"><button type="button" class="btn btn-light border" onclick="nextBookingStep(3)">Back</button><button class="btn btn-success btn-lg fw-bold" type="submit" id="bookSubmit">Book Service</button></div>
+    </section>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+let bookingStep=1; let selectedService='';
+function chooseService(btn){document.querySelectorAll('.service-choice').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');selectedService=btn.dataset.value;document.getElementById('categoryInput').value=selectedService;document.getElementById('titleInput').value=selectedService;updateSummary();}
+function nextBookingStep(step){
+ if(step>bookingStep){if(bookingStep===1 && !selectedService){alert('Please choose a service first.');return;} if(bookingStep===2 && !document.getElementById('descriptionInput').value.trim()){alert('Please tell us the problem.');return;} if(bookingStep===3 && !document.getElementById('addressInput').value.trim()){alert('Please enter your address or use your location.');return;}}
+ bookingStep=step;document.querySelectorAll('.booking-step').forEach(x=>x.classList.remove('active'));document.querySelector(`[data-step-panel="${step}"]`).classList.add('active');document.querySelectorAll('.step-dot').forEach(x=>x.classList.toggle('active',parseInt(x.dataset.step)<=step));updateSummary();window.scrollTo({top:0,behavior:'smooth'});
+}
+function updateSummary(){const box=document.getElementById('bookingSummary');if(!box)return;box.innerHTML=`<div><span>Service</span><strong>${selectedService||'Not selected'}</strong></div><div><span>Problem</span><strong>${document.getElementById('descriptionInput')?.value||'Not added'}</strong></div><div><span>Address</span><strong>${document.getElementById('addressInput')?.value||'Not added'}</strong></div>`;}
+function photoCount(input){document.getElementById('photoCount').textContent=input.files.length?`${input.files.length} photo${input.files.length===1?'':'s'} added`:'';}
+function startVoiceSimple(){const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SpeechRecognition){document.getElementById('voiceStatus').textContent='Voice is not supported on this browser.';return;}const r=new SpeechRecognition();r.lang='en-IN';r.onstart=()=>document.getElementById('voiceStatus').textContent='Listening...';r.onresult=e=>{document.getElementById('descriptionInput').value=(document.getElementById('descriptionInput').value+' '+e.results[0][0].transcript).trim();document.getElementById('voiceStatus').textContent='Added';};r.onerror=()=>document.getElementById('voiceStatus').textContent='Try again';r.start();}
+function getBookingLocation(){const s=document.getElementById('locationStatus');s.textContent='Finding your location...';if(!navigator.geolocation){s.textContent='Location is not available. Enter your address.';return;}navigator.geolocation.getCurrentPosition(async p=>{document.getElementById('latInput').value=p.coords.latitude;document.getElementById('lngInput').value=p.coords.longitude;s.textContent='✓ Location found';try{const r=await fetch(`/customer/api/geocode?lat=${p.coords.latitude}&lon=${p.coords.longitude}`);const d=await r.json();if(d.display_name)document.getElementById('addressInput').value=d.display_name;}catch(e){}},()=>s.textContent='Could not get location. Please enter your address.',{enableHighAccuracy:true,timeout:7000,maximumAge:30000});}
+async function submitSimpleBooking(e){e.preventDefault();const b=document.getElementById('bookSubmit');b.disabled=true;b.textContent='Booking...';const fd=new FormData(document.getElementById('bookServiceForm'));try{const r=await fetch('/customer/book-service/submit',{method:'POST',body:fd});const d=await r.json();if(d.status==='success'){window.location.href=`{{ url_for('customer.dashboard') }}#services`;}else{alert(d.message||'Could not create booking.');b.disabled=false;b.textContent='Book Service';}}catch(e){alert('Please try again.');b.disabled=false;b.textContent='Book Service';}}
+document.getElementById('preferredDate').value=new Date().toISOString().slice(0,10);
+const urlParams = new URLSearchParams(window.location.search);
+const catParam = (urlParams.get('category') || urlParams.get('service') || '').toLowerCase();
+if (catParam) {
+    const choices = document.querySelectorAll('.service-choice');
+    for (const btn of choices) {
+        const val = (btn.dataset.value || '').toLowerCase();
+        if (val.includes(catParam) || catParam.includes(val) || (catParam === 'electrical' && val === 'electrician') || (catParam === 'plumbing' && val === 'plumber') || (catParam === 'carpentry' && val === 'carpenter') || (catParam === 'painting' && val === 'painter') || (catParam === 'housekeeping' && val === 'cleaning') || (catParam === 'drivers' && val === 'driver') || (catParam === 'gardening' && val === 'gardener') || (catParam === 'appliance' && val === 'technician')) {
+            chooseService(btn);
+            break;
+        }
+    }
+}
+</script>
+{% endblock %}

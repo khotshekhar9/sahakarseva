@@ -1,0 +1,1714 @@
+{% extends 'base.html' %}
+
+{% block title %}Service Jobs & Workpool - Worker Portal{% endblock %}
+
+{% block page_title %}Service Jobs & Workpool{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ─── Artisan Workspace Modern CSS ─────────────────────────────────────── */
+    :root {
+        --ss-primary: #17352f;
+        --ss-primary-hover: #1f453d;
+        --ss-emerald: #10b981;
+        --ss-emerald-dark: #059669;
+        --ss-emerald-bg: #ecfdf5;
+        --ss-amber: #f59e0b;
+        --ss-amber-dark: #d97706;
+        --ss-amber-bg: #fffbeb;
+        --ss-danger: #dc2626;
+        --ss-danger-bg: #fef2f2;
+        --ss-slate-50: #f8fafc;
+        --ss-slate-100: #f1f5f9;
+        --ss-slate-200: #e2e8f0;
+        --ss-slate-300: #cbd5e1;
+        --ss-slate-600: #475569;
+        --ss-slate-700: #334155;
+        --ss-slate-800: #1e293b;
+        --ss-slate-900: #0f172a;
+        --ss-card-radius: 18px;
+        --ss-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06);
+        --ss-shadow-md: 0 4px 14px -2px rgba(15, 23, 42, 0.08);
+        --ss-shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.1);
+    }
+
+    .artisan-workspace-container {
+        width: 100%;
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 0.25rem 0.5rem 5rem;
+    }
+
+    /* ─── Modern Hero Banner ───────────────────────────────────────────────── */
+    .artisan-hero-banner {
+        background: linear-gradient(135deg, #134e4a 0%, #064e3b 50%, #0f172a 100%);
+        border-radius: var(--ss-card-radius);
+        padding: 1.5rem 1.75rem;
+        color: #ffffff;
+        box-shadow: var(--ss-shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .artisan-hero-banner::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 320px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, rgba(255, 255, 255, 0) 70%);
+        pointer-events: none;
+    }
+
+    .hero-metric-chip {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 12px;
+        padding: 0.5rem 1rem;
+        text-align: center;
+        min-width: 105px;
+        transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .hero-metric-chip:hover {
+        background: rgba(255, 255, 255, 0.18);
+        transform: translateY(-2px);
+    }
+
+    .hero-metric-chip .metric-num {
+        font-size: 1.45rem;
+        font-weight: 800;
+        line-height: 1.1;
+        color: #ffffff;
+    }
+
+    .hero-metric-chip .metric-label {
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.85);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+    }
+
+    /* ─── Quick Filter Pills & Search Bar ──────────────────────────────────── */
+    .filters-bar {
+        background: #ffffff;
+        border: 1px solid var(--ss-slate-200);
+        border-radius: 14px;
+        padding: 0.6rem 0.85rem;
+        box-shadow: var(--ss-shadow-sm);
+    }
+
+    .filter-pill {
+        border: 1px solid var(--ss-slate-200);
+        background: #ffffff;
+        color: var(--ss-slate-700);
+        border-radius: 20px;
+        padding: 0.4rem 0.95rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .filter-pill:hover {
+        background: var(--ss-slate-100);
+        color: var(--ss-slate-900);
+    }
+
+    .filter-pill.active {
+        background: var(--ss-primary);
+        color: #ffffff;
+        border-color: var(--ss-primary);
+        box-shadow: 0 2px 6px rgba(23, 53, 47, 0.25);
+    }
+
+    .filter-pill.active .badge-count {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+    }
+
+    .filter-pill .badge-count {
+        background: var(--ss-slate-100);
+        color: var(--ss-slate-700);
+        border-radius: 10px;
+        padding: 0.15rem 0.45rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+    }
+
+    /* ─── Open Cooperative Pool Container ─────────────────────────────────── */
+    #available-pool {
+        background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+        border: 1.5px solid #86efac !important;
+        border-radius: var(--ss-card-radius);
+        box-shadow: var(--ss-shadow-sm);
+    }
+
+    .open-pool-card {
+        background: #ffffff;
+        border: 1px solid #bbf7d0;
+        border-radius: 14px;
+        padding: 1.15rem;
+        box-shadow: var(--ss-shadow-sm);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .open-pool-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px -3px rgba(16, 185, 129, 0.15);
+        border-color: #4ade80;
+    }
+
+    .pool-payout-callout {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 10px;
+        padding: 0.65rem 0.85rem;
+    }
+
+    /* ─── Main Active Job Cards ────────────────────────────────────────────── */
+    .artisan-job-card {
+        background: #ffffff;
+        border: 1px solid var(--ss-slate-200);
+        border-radius: var(--ss-card-radius);
+        box-shadow: var(--ss-shadow-sm);
+        padding: 1.35rem;
+        margin-bottom: 1.25rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        position: relative;
+    }
+
+    .artisan-job-card:hover {
+        box-shadow: var(--ss-shadow-md);
+        border-color: var(--ss-slate-300);
+    }
+
+    .artisan-job-card.is-emergency-active {
+        border-left: 5px solid var(--ss-danger) !important;
+        border-color: #fca5a5;
+        background: #fff;
+    }
+
+    .artisan-job-card.is-in-progress {
+        border-left: 5px solid #0284c7 !important;
+    }
+
+    .artisan-job-card.is-completed {
+        border-left: 5px solid var(--ss-emerald) !important;
+        background: #fafbfc;
+    }
+
+    /* Card Header Strip */
+    .job-header-strip {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding-bottom: 0.85rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--ss-slate-100);
+    }
+
+    .job-id-tag {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--ss-slate-800);
+        background: var(--ss-slate-100);
+        padding: 0.25rem 0.55rem;
+        border-radius: 6px;
+        border: 1px solid var(--ss-slate-200);
+    }
+
+    /* Sub-panels inside Job Card */
+    .info-section-panel {
+        background: var(--ss-slate-50);
+        border: 1px solid var(--ss-slate-200);
+        border-radius: 12px;
+        padding: 0.85rem 1rem;
+    }
+
+    .info-section-panel .panel-label {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: var(--ss-slate-600);
+        margin-bottom: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    /* Tap-to-Call Customer Pill */
+    .btn-tap-call {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+        font-weight: 700;
+        border-radius: 20px;
+        padding: 0.35rem 0.85rem;
+        font-size: 0.82rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .btn-tap-call:hover {
+        background: #d1fae5;
+        color: #047857;
+        transform: translateY(-1px);
+    }
+
+    /* Destination Address Pill */
+    .address-display-box {
+        background: #ffffff;
+        border: 1px solid var(--ss-slate-200);
+        border-left: 3px solid var(--ss-primary);
+        border-radius: 8px;
+        padding: 0.65rem 0.85rem;
+    }
+
+    /* Action Hub Panel (Right Side) */
+    .action-hub-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    /* High-Contrast Confirm Site Arrival Card */
+    .arrival-card {
+        background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%) !important;
+        border: 1.5px solid #93c5fd !important;
+        color: #1e293b !important;
+        border-radius: 14px !important;
+        padding: 1rem 1.15rem !important;
+    }
+
+    .arrival-card .arrival-heading {
+        color: #1e3a8a !important;
+        font-weight: 800 !important;
+        font-size: 0.82rem !important;
+        letter-spacing: 0.04em !important;
+    }
+
+    .arrival-card .arrival-text {
+        color: #334155 !important;
+        font-size: 0.82rem !important;
+    }
+
+    .otp-input-control {
+        font-size: 1.25rem !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.25em !important;
+        text-align: center !important;
+        border-radius: 10px !important;
+        border: 2px solid #3b82f6 !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+        height: 46px !important;
+    }
+
+    .otp-input-control:focus {
+        border-color: #1d4ed8 !important;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2) !important;
+    }
+
+    /* Interactive Progress / Completion Panel */
+    .job-progress-panel {
+        background: #ffffff !important;
+        border: 1px solid var(--ss-slate-200) !important;
+        border-radius: 14px !important;
+        padding: 1.15rem !important;
+    }
+
+    /* Compact Map Container */
+    .artisan-map-container {
+        height: 160px;
+        border-radius: 12px;
+        border: 1px solid var(--ss-slate-200);
+        overflow: hidden;
+    }
+
+    .map-placeholder-clean {
+        background: #f8fafc;
+        border: 1px dashed var(--ss-slate-300);
+        border-radius: 12px;
+        padding: 0.85rem 1rem;
+        font-size: 0.82rem;
+        color: var(--ss-slate-600);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Emergency Destination Card Accessibility Standards */
+    .emergency-status-card,
+    .emergency-destination-card,
+    .panel-danger {
+        background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%) !important;
+        border: 1px solid #f87171 !important;
+        border-radius: 12px !important;
+        color: #ffffff !important;
+        padding: 0.85rem 1rem !important;
+    }
+
+    .emergency-status-card .emergency-heading {
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.04em !important;
+    }
+
+    .emergency-status-card .emergency-address-box {
+        background-color: rgba(0, 0, 0, 0.28) !important;
+        border: 1px solid rgba(255, 255, 255, 0.22) !important;
+        border-radius: 8px !important;
+        padding: 0.6rem 0.75rem !important;
+    }
+
+    .emergency-status-card .emergency-address-text {
+        color: #ffffff !important;
+        font-size: 0.875rem !important;
+        font-weight: 600 !important;
+    }
+
+    .emergency-status-card .emergency-instruction-text {
+        color: rgba(255, 255, 255, 0.95) !important;
+        font-size: 0.78rem !important;
+    }
+
+    .emergency-status-card .emergency-coord-badge {
+        background-color: rgba(0, 0, 0, 0.42) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(255, 255, 255, 0.35) !important;
+        font-weight: 700 !important;
+        font-size: 0.72rem !important;
+    }
+
+    .emergency-pulse-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+        animation: emergencyPulse 1.5s infinite;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+    @keyframes emergencyPulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.75);
+        }
+
+        70% {
+            box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        }
+    }
+
+    /* ─── Mobile Responsiveness (Thumb friendly) ───────────────────────────── */
+    @media (max-width: 768px) {
+        .artisan-workspace-container {
+            padding: 0.25rem 0.25rem 5.5rem;
+        }
+
+        .artisan-hero-banner {
+            padding: 1.15rem 1rem;
+            border-radius: 14px;
+        }
+
+        .artisan-hero-banner .hero-metrics-wrap {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .artisan-job-card {
+            padding: 1rem;
+            border-radius: 14px;
+        }
+
+        .filters-bar {
+            padding: 0.5rem;
+        }
+
+        .filter-pills {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 0.25rem;
+        }
+
+        .filter-pills::-webkit-scrollbar {
+            display: none;
+        }
+
+        .btn-mobile-full {
+            width: 100%;
+        }
+
+        .otp-input-control {
+            font-size: 1.15rem !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="artisan-workspace-container">
+
+    <!-- LIVE EMERGENCY DISPATCH BROADCASTS CONTAINER -->
+    <div id="worker-socket-config" data-trade-category="{{ worker.trade_category if worker else 'Electrical' }}"
+        data-trades='{{ (worker_trades if worker_trades else [worker.trade_category if worker else "Electrical"])|tojson }}'
+        data-worker-id="{{ current_user.id }}" style="display:none;"></div>
+
+    <div id="emergency-broadcast-feed" class="d-flex flex-column gap-3 mb-3">
+        {% if pending_emergencies %}
+        {% for emg in pending_emergencies %}
+        <div class="card border-danger border-2 shadow-lg emergency-broadcast-card animate__animated animate__headShake rounded-4 overflow-hidden"
+            id="job-alert-{{ emg.id }}">
+            <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center py-2 px-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="emergency-pulse-dot"></span>
+                    <strong>Live Emergency Alert: {{ emg.category }}</strong>
+                </div>
+                <div class="badge bg-white text-danger fw-bold countdown-timer" data-expires="900">15:00</div>
+            </div>
+            <div class="card-body p-3 bg-white">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                    <div>
+                        <h6 class="mb-1 text-dark fw-bold">{{ emg.request_id }}</h6>
+                        <p class="text-secondary small mb-1"><i class="fas fa-map-marker-alt text-danger me-1"></i> {{
+                            emg.address }}</p>
+                        <span class="badge bg-danger text-white">{{ emg.severity or 'Critical' }} Severity</span>
+                    </div>
+                    <div class="text-end">
+                        <span
+                            class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fs-6 fw-bold">Earn
+                            ₹{{ '{:,.2f}'.format(emg.worker_payout or (emg.fixed_rate * 0.88)) }}</span>
+                        <div class="text-muted small">88% Direct Living Wage</div>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-3">
+                    <button
+                        class="btn btn-success btn-sm flex-grow-1 fw-bold py-2 shadow-sm d-flex align-items-center justify-content-center gap-2"
+                        data-emg-id="{{ emg.id }}" onclick="claimEmergencyJob(this.dataset.emgId)">
+                        <i class="fas fa-check"></i> Accept & Navigate
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm px-3" data-emg-id="{{ emg.id }}"
+                        onclick="dismissJobAlert(this.dataset.emgId)">Ignore</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- MODERN ARTISAN HERO BANNER -->
+    <div class="artisan-hero-banner mb-3">
+        <div
+            class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <span class="badge bg-white text-dark fw-bold px-2 py-1"><i
+                            class="fas fa-hard-hat text-success me-1"></i> Artisan Portal</span>
+                    <span class="badge bg-success text-white border border-light-subtle px-2 py-1"><i
+                            class="fas fa-shield-alt me-1"></i> 88% Living Wage Guaranteed</span>
+                </div>
+                <h3 class="fw-bold mb-1 text-white">Daily Service Jobs & Workpool</h3>
+                <p class="text-white-50 small mb-0">Claim community jobs in your trade or execute active assigned
+                    customer requests.</p>
+            </div>
+            <div class="hero-metrics-wrap d-flex align-items-center gap-2">
+                <div class="hero-metric-chip">
+                    <div class="metric-num text-warning">{{ available_jobs|length }}</div>
+                    <div class="metric-label">Open to Claim</div>
+                </div>
+                <div class="hero-metric-chip">
+                    <div class="metric-num text-info">{{ active_jobs_count if active_jobs_count is defined else
+                        (jobs|rejectattr('status', 'in', ['Completed', 'Work Completed', 'Work Approved', 'Paid',
+                        'Closed', 'Cancelled'])|list|length) }}</div>
+                    <div class="metric-label">My Active Jobs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK FILTER PILLS & SEARCH BAR -->
+    <div class="filters-bar mb-4">
+        <div
+            class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-2">
+            <div class="filter-pills d-flex align-items-center gap-2">
+                <button type="button" class="filter-pill active" onclick="filterJobs('all', this)" id="filter-all-btn">
+                    <i class="fas fa-th-list"></i> All <span class="badge-count">{{ (available_jobs|length) +
+                        (jobs|length) }}</span>
+                </button>
+                <button type="button" class="filter-pill" onclick="filterJobs('pool', this)" id="filter-pool-btn">
+                    <i class="fas fa-hand-holding-heart text-success"></i> Open Pool <span class="badge-count">{{
+                        available_jobs|length }}</span>
+                </button>
+                <button type="button" class="filter-pill" onclick="filterJobs('active', this)" id="filter-active-btn">
+                    <i class="fas fa-tools text-primary"></i> Active / En Route <span class="badge-count">{{
+                        active_jobs_count if active_jobs_count is defined else (jobs|rejectattr('status', 'in',
+                        ['Completed', 'Work Completed', 'Work Approved', 'Paid', 'Closed', 'Cancelled'])|list|length)
+                        }}</span>
+                </button>
+                <button type="button" class="filter-pill" onclick="filterJobs('completed', this)"
+                    id="filter-completed-btn">
+                    <i class="fas fa-check-circle text-success"></i> Completed <span class="badge-count">{{
+                        completed_jobs_count if completed_jobs_count is defined else (jobs|selectattr('status', 'in',
+                        ['Completed', 'Work Completed', 'Work Approved', 'Paid', 'Closed', 'Cancelled'])|list|length)
+                        }}</span>
+                </button>
+            </div>
+            <div class="search-input-wrap">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control border-start-0 bg-light" id="artisanSearchInput"
+                        placeholder="Search customer, ID, or address..." oninput="searchArtisanJobs(this.value)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. OPEN COOPERATIVE JOB POOL / AVAILABLE WORK SECTION -->
+    <div class="card border-0 shadow-sm mb-4 overflow-hidden filter-group-item" id="available-pool">
+        <div class="card-body p-3 p-md-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success text-white px-2 py-1"><i
+                                class="fas fa-hand-holding-heart me-1"></i> Open Cooperative Pool</span>
+                        <span class="badge bg-white text-success border border-success fw-bold">{{ available_jobs|length
+                            }} Available</span>
+                    </div>
+                    <h4 class="fw-bold mb-0 text-dark mt-1">Available Jobs for You</h4>
+                    <p class="text-secondary small mb-0">Choose work in your area and trade. 88% living wage directly in
+                        your pocket.</p>
+                </div>
+            </div>
+
+            {% if available_jobs %}
+            <div class="row g-3">
+                {% for aj in available_jobs %}
+                <div class="col-12 col-md-6 col-xl-4 job-item-card-wrap" id="available-job-card-{{ aj.id }}"
+                    data-category="pool"
+                    data-search-text="{{ (aj.category ~ ' ' ~ aj.title ~ ' ' ~ aj.customer_name ~ ' ' ~ aj.address ~ ' ' ~ aj.request_id)|lower }}">
+                    <div class="open-pool-card h-100">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center gap-1">
+                                    <span
+                                        class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fw-bold">{{
+                                        aj.category }}</span>
+                                    <span class="badge bg-light text-dark border font-monospace"
+                                        style="font-size:0.75rem;">#{{ aj.request_id }}</span>
+                                </div>
+                                <span
+                                    class="badge {% if aj.priority == 'Urgent' %}bg-warning text-dark{% elif aj.priority == 'Emergency' %}bg-danger text-white{% else %}bg-light text-secondary border{% endif %}">{{
+                                    aj.priority }}</span>
+                            </div>
+                            <h6 class="fw-bold text-dark mb-1">{{ aj.title }}</h6>
+                            <p class="text-secondary small mb-3 text-truncate-2" title="{{ aj.description }}"
+                                style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                {{ aj.description or 'Standard repair service requested.' }}
+                            </p>
+
+                            <div class="d-flex flex-column gap-2 small text-muted mb-3 bg-light p-2 rounded-3 border">
+                                <div class="text-truncate">
+                                    <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                    <strong class="text-dark">{{ aj.address }}</strong>
+                                    <span class="badge bg-white text-secondary border ms-1">~{{ aj.distance_km }}
+                                        km</span>
+                                </div>
+                                <div><i class="fas fa-calendar-alt text-primary me-1"></i> Preferred: <strong>{{
+                                        aj.preferred_date }}</strong> ({{ aj.preferred_time }})</div>
+                                <div><i class="fas fa-user text-secondary me-1"></i> Customer: <strong>{{
+                                        aj.customer_name }}</strong></div>
+                            </div>
+                        </div>
+
+                        <div class="border-top pt-3 mt-auto">
+                            <div class="pool-payout-callout d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <div class="small text-muted"
+                                        style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Direct
+                                        Worker Payout</div>
+                                    <div class="text-muted" style="font-size: 0.7rem;">88% Fair Living Wage</div>
+                                </div>
+                                <div class="fw-bold text-success fs-5">₹{{ '{:,.2f}'.format(aj.worker_payout) }}</div>
+                            </div>
+                            <button
+                                class="btn btn-success w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 py-2"
+                                id="claim-btn-{{ aj.id }}" data-job-id="{{ aj.id }}"
+                                data-request-id="{{ aj.request_id }}" onclick="claimRegularJob(this)">
+                                <i class="fas fa-check-circle"></i> Claim This Job
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-white rounded-3 p-4 text-center border text-muted">
+                <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center mb-2"
+                    style="width: 48px; height: 48px;">
+                    <i class="fas fa-check-double fs-4"></i>
+                </div>
+                <div class="fw-bold text-dark fs-6">All available jobs in your trade are currently claimed.</div>
+                <small class="text-secondary d-block mt-1">New customer bookings in your society area will appear here
+                    automatically.</small>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 2. MY ACTIVE & ASSIGNED WORK SECTION -->
+    <div class="d-flex justify-content-between align-items-center mt-4 mb-3" id="assigned-jobs-heading-wrap">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark" id="assigned-jobs-heading">My Active & Assigned Work ({{
+                active_jobs_count if active_jobs_count is defined else (jobs|rejectattr('status', 'in', ['Completed',
+                'Work Completed', 'Work Approved', 'Paid', 'Closed', 'Cancelled'])|list|length) }})</h4>
+            <p class="text-secondary small mb-0" id="assigned-jobs-subheading">Track transit, verify customer OTP on
+                arrival, and submit completion reports.</p>
+        </div>
+    </div>
+
+    <div id="active-jobs-list">
+        {% for j in jobs %}
+        {% set is_concluded = j.status in ('Completed', 'Work Completed', 'Work Approved', 'Paid', 'Closed',
+        'Cancelled') %}
+        {% set is_active_work = j.otp_verified or j.status in ('In Progress', 'Active', 'OTP Verified', 'Work Started',
+        'Rework Required') %}
+        {% set is_travelling = j.status == 'Travelling' %}
+        {% set is_assigned = j.status in ('Assigned', 'Worker Assigned', 'Approved') %}
+
+        <div class="artisan-job-card premium-card job-item-card-wrap {% if j.is_emergency and not is_concluded %}is-emergency-active active-emergency-card{% elif is_active_work %}is-in-progress{% elif is_concluded %}is-completed{% endif %}"
+            id="job-{{ j.id }}" data-category="{% if is_concluded %}completed{% else %}active{% endif %}"
+            data-search-text="{{ (j.request_id ~ ' ' ~ j.customer_name ~ ' ' ~ j.category ~ ' ' ~ j.title ~ ' ' ~ j.address)|lower }}">
+
+            <!-- LIVE EMERGENCY CARD HEADER IF ACTIVE EMERGENCY -->
+            {% if j.is_emergency and not is_concluded %}
+            <div class="alert emergency-status-card d-flex align-items-center justify-content-between p-2 mb-3 rounded-3 shadow-sm"
+                role="alert">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="emergency-pulse-dot" aria-hidden="true"></span>
+                    <strong class="emergency-heading small">⚡ ACTIVE ON-DEMAND EMERGENCY DISPATCH</strong>
+                    <span class="badge emergency-badge">Live Location</span>
+                </div>
+                <span class="small fw-bold text-white">Fixed Payout: Rs. {{ '{:,.2f}'.format(j.fixed_rate or
+                    j.estimated_cost or 600.0) }}</span>
+            </div>
+            {% endif %}
+
+            <!-- TOP STATUS & META STRIP -->
+            <div class="job-header-strip">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    {% if is_concluded %}
+                    <span class="badge bg-success px-2 py-1"><i class="fas fa-check-circle me-1"></i> {{ j.status
+                        }}</span>
+                    {% elif is_active_work %}
+                    <span class="badge bg-warning text-dark px-2 py-1"><i class="fas fa-tools me-1"></i> In Progress
+                        (OTP Verified)</span>
+                    {% elif is_travelling %}
+                    <span class="badge bg-info text-dark px-2 py-1"><i class="fas fa-truck me-1"></i> En Route /
+                        Travelling</span>
+                    {% else %}
+                    <span class="badge bg-primary px-2 py-1"><i class="fas fa-user-check me-1"></i> {{ j.status
+                        }}</span>
+                    {% endif %}
+
+                    <span class="job-id-tag">#{{ j.request_id }}</span>
+                    <span class="badge bg-light text-dark border"><i
+                            class="far fa-calendar-alt text-secondary me-1"></i> {{ j.visit_date.strftime('%d %b %Y') if
+                        j.visit_date else 'Flexible / On-Demand' }}</span>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    {% if j.priority == 'Emergency' %}
+                    <span class="badge bg-danger text-white px-2 py-1">Emergency Priority</span>
+                    {% elif j.priority == 'Urgent' %}
+                    <span class="badge text-white px-2 py-1" style="background-color: #f97316 !important;">Urgent
+                        Priority</span>
+                    {% else %}
+                    <span class="badge bg-secondary text-white px-2 py-1">{{ j.priority or 'Normal' }} Priority</span>
+                    {% endif %}
+
+                    {% set cost_val = j.fixed_rate or j.estimated_cost %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold">
+                        {% if cost_val and cost_val|float > 0 %}
+                        Payout: ₹{{ '{:,.2f}'.format(cost_val|float * 0.88) }} (88%)
+                        {% else %}
+                        Tariff on Assessment
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- TWO-COLUMN RESPONSIVE WORKSPACE -->
+            <div class="row g-3 g-md-4">
+
+                <!-- LEFT COLUMN: CUSTOMER & SERVICE DETAILS -->
+                <div class="col-12 col-lg-6 d-flex flex-column gap-3">
+
+                    <!-- Customer Contact Box with 1-Tap Call -->
+                    <div class="info-section-panel">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="panel-label"><i class="fas fa-user text-primary"></i> Customer
+                                    Contact</span>
+                                <h6 class="fw-bold mb-0 text-dark">{{ j.customer_name }}</h6>
+                            </div>
+                            <div>
+                                <a href="tel:{{ j.mobile_number }}" class="btn-tap-call shadow-sm"
+                                    title="Tap to call customer">
+                                    <i class="fas fa-phone-alt"></i>
+                                    <span>Call {{ j.mobile_number }}</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Service Description -->
+                    <div class="info-section-panel">
+                        <span class="panel-label"><i class="fas fa-wrench text-secondary"></i> Service Request</span>
+                        <div class="fw-bold text-dark fs-6">{{ j.category }} &mdash; {{ j.title }}</div>
+                        <p class="text-secondary small mt-1 mb-0 bg-white p-2 rounded border">
+                            {{ j.description or 'No extra problem description provided.' }}
+                        </p>
+                    </div>
+
+                    <!-- Voice Note Playback (if recorded) -->
+                    {% if j.voice_path %}
+                    <div class="p-3 border rounded-3 bg-light bg-opacity-50">
+                        <span class="panel-label text-primary"><i class="fas fa-microphone"></i> Customer Voice
+                            Note</span>
+                        <audio src="{{ j.voice_path }}" controls style="width: 100%; height: 36px;"></audio>
+                    </div>
+                    {% endif %}
+
+                    <!-- Complaint Images (if provided) -->
+                    {% if j.photos %}
+                    <div>
+                        <span class="panel-label"><i class="fas fa-images text-secondary"></i> Job Photos &
+                            Attachments</span>
+                        <div class="d-flex flex-wrap gap-2 mt-1">
+                            {% for p in j.photos.split(',') %}
+                            <img src="{{ p }}" class="border rounded-3 shadow-sm"
+                                style="width: 70px; height: 70px; object-fit: cover; cursor: pointer;"
+                                onclick="window.open(this.src)" title="Click to view full photo">
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Service Destination Address -->
+                    {% if j.is_emergency and not is_concluded %}
+                    <div class="emergency-status-card emergency-destination-card panel-danger rounded-3 shadow-sm"
+                        role="region" aria-label="Live Emergency Destination">
+                        <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="emergency-pulse-dot" aria-hidden="true"></span>
+                                <i class="fas fa-map-marker-alt emergency-icon"></i>
+                                <h6 class="fw-bold mb-0 emergency-heading small">Live Emergency Destination (GPS)</h6>
+                            </div>
+                            {% if j.latitude and j.longitude %}
+                            <span class="badge emergency-coord-badge font-monospace">
+                                {{ '%.5f'|format(j.latitude|float) }}, {{ '%.5f'|format(j.longitude|float) }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="emergency-address-box mb-2">
+                            <p class="small mb-0 emergency-address-text fw-semibold">
+                                <i class="fas fa-location-arrow me-1 opacity-75"></i> {{ j.address }}
+                            </p>
+                        </div>
+                        <p class="small mb-0 emergency-instruction-text">
+                            <i class="fas fa-exclamation-triangle me-1"></i> Rapid emergency transit required. Follow
+                            live GPS navigation route immediately. Verify customer arrival code on site.
+                        </p>
+                    </div>
+                    {% else %}
+                    <div class="info-section-panel">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="panel-label"><i class="fas fa-map-pin text-danger"></i> Destination
+                                Address</span>
+                            {% if j.latitude and j.longitude %}
+                            <span class="badge bg-light text-secondary border font-monospace"
+                                style="font-size: 0.7rem;">
+                                {{ '%.4f'|format(j.latitude|float) }}, {{ '%.4f'|format(j.longitude|float) }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="address-display-box d-flex justify-content-between align-items-center gap-2">
+                            <div class="small text-dark fw-semibold mb-0 text-truncate">{{ j.address }}</div>
+                            <button type="button" class="btn btn-sm btn-outline-primary text-nowrap py-1 px-2"
+                                data-lat="{{ j.latitude or '' }}" data-lng="{{ j.longitude or '' }}"
+                                data-address="{{ j.address or '' }}" onclick="triggerNavigation(this)">
+                                <i class="fas fa-directions me-1"></i> Directions
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                <!-- RIGHT COLUMN: ACTION & WORKFLOW EXECUTION HUB -->
+                <div class="col-12 col-lg-6">
+                    <div class="action-hub-panel h-100">
+
+                        <!-- Map View (if coordinates exist) or Sleek Info Placeholder -->
+                        {% set has_coords = j.latitude and j.longitude and (j.latitude|float != 0.0) and
+                        (j.longitude|float != 0.0) %}
+                        {% if has_coords %}
+                        <div class="artisan-map-container shadow-sm mb-2">
+                            <div id="map-{{ j.id }}" style="height: 100%; width: 100%;"></div>
+                        </div>
+                        {% else %}
+                        <div class="map-placeholder map-placeholder-clean mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-map-marker-alt text-danger fs-5"></i>
+                                <div>
+                                    <strong class="text-dark d-block">Location coordinates pending</strong>
+                                    <span class="text-muted small">Site address verified in cooperative territory</span>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-light border text-primary fw-bold"
+                                data-lat="{{ j.latitude or '' }}" data-lng="{{ j.longitude or '' }}"
+                                data-address="{{ j.address or '' }}" onclick="triggerNavigation(this)">
+                                <i class="fas fa-location-arrow me-1"></i> Open Maps
+                            </button>
+                        </div>
+                        {% endif %}
+
+                        {# STAGE 1: Job Completed, Approved, Paid, or Closed #}
+                        {% if is_concluded %}
+                        <div class="job-completed-banner panel-success p-3 rounded-4 bg-success text-white text-center shadow-sm d-flex flex-column align-items-center justify-content-center"
+                            style="min-height: 140px;">
+                            <div class="rounded-circle bg-white text-success d-inline-flex align-items-center justify-content-center mb-2"
+                                style="width: 42px; height: 42px;">
+                                <i class="fas fa-check-circle fs-4"></i>
+                            </div>
+                            <h6 class="fw-bold mb-1 text-white">Job Verified & Finalized!</h6>
+                            <p class="small text-white-50 mb-0">Job concluded on {{ (j.completion_date or
+                                j.visit_date).strftime('%d %b %Y') if (j.completion_date or j.visit_date) else 'Recent
+                                Date' }}</p>
+                            <span class="badge bg-white bg-opacity-25 text-white mt-2"><i
+                                    class="fas fa-shield-alt me-1"></i> Under SahakarSeva Trust Guarantee</span>
+                        </div>
+
+                        {# STAGE 2: Work In Progress / OTP Verified #}
+                        {% elif is_active_work %}
+                        <div class="job-progress-panel shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2">
+                                <h6 class="mb-0 text-success fw-bold"><i class="fas fa-tools me-1"></i> Work In Progress
+                                </h6>
+                                <span
+                                    class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                    <i class="fas fa-shield-alt me-1"></i> OTP Verified
+                                </span>
+                            </div>
+                            <p class="small text-muted mb-3">Work certified on site. Record progress, materials, and
+                                complete ticket.</p>
+
+                            {% if j.status == 'Rework Required' %}
+                            <div class="alert alert-danger small p-2 mb-3">
+                                <strong>Rework Required:</strong> {{ j.rework_comments }}
+                            </div>
+                            {% endif %}
+
+                            <form action="{{ url_for('worker.complete_job_by_id', job_id=j.id) }}" method="POST"
+                                enctype="multipart/form-data" id="completeForm-{{ j.id }}"
+                                onsubmit="submitCompletedForm(event, '{{ j.id }}')">
+                                <input type="hidden" name="request_id" value="{{ j.request_id }}">
+                                <input type="hidden" name="job_id" value="{{ j.id }}">
+
+                                <div class="row g-2 mb-2">
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted mb-1">Hours Worked</label>
+                                        <input type="number" step="0.5" name="hours_worked"
+                                            class="form-control form-control-sm" placeholder="e.g. 1.5"
+                                            value="{{ j.time_worked or 1.0 }}">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted mb-1">Progress (%)</label>
+                                        <input type="number" class="form-control form-control-sm" name="progress"
+                                            min="0" max="100" value="{{ j.progress or 100 }}">
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted mb-1">Materials Used (optional)</label>
+                                    <input type="text" name="materials_used" class="form-control form-control-sm"
+                                        placeholder="e.g. 32A MCB switch, wire spool"
+                                        value="{{ j.materials_used or '' }}">
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted mb-1">Work Summary Notes</label>
+                                    <textarea name="work_notes" rows="2" class="form-control form-control-sm"
+                                        placeholder="Describe repair work completed on site...">{{ j.completion_notes or '' }}</textarea>
+                                </div>
+
+                                <div class="row g-2 mb-2">
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted mb-1">Work Photos</label>
+                                        <input type="file" class="form-control form-control-sm" name="photos"
+                                            accept="image/*" multiple>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted mb-1">Videos</label>
+                                        <input type="file" class="form-control form-control-sm" name="videos"
+                                            accept="video/*" multiple>
+                                    </div>
+                                </div>
+
+                                <!-- Voice Audio Completion Memo -->
+                                <div class="mb-3 border rounded-3 p-2 bg-light">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small fw-bold text-secondary"><i
+                                                class="fas fa-microphone text-danger me-1"></i> Voice Completion
+                                            Memo</span>
+                                        <span class="small text-secondary font-monospace"
+                                            id="rec-timer-{{ j.id }}">00:00</span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 py-1"
+                                            id="rec-btn-{{ j.id }}" onclick="toggleVoiceRecording('{{ j.id }}')">
+                                            <span class="spinner-grow spinner-grow-sm text-danger d-none"
+                                                id="rec-pulse-{{ j.id }}" role="status"
+                                                style="width: 10px; height: 10px;"></span>
+                                            <span id="rec-text-{{ j.id }}">Record Note</span>
+                                        </button>
+                                    </div>
+                                    <div class="d-none mt-2" id="rec-preview-container-{{ j.id }}">
+                                        <audio class="w-100" id="rec-playback-{{ j.id }}" controls
+                                            style="height: 32px;"></audio>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm py-2 px-3 fw-semibold"
+                                        onclick="saveDraftProgressLogs('{{ j.id }}')">Save Draft</button>
+                                    <button type="submit"
+                                        class="btn btn-success btn-sm flex-grow-1 py-2 fw-bold shadow-sm mark_job_completed_ajax_button"
+                                        id="mark_job_completed_ajax_button" data-job-id="{{ j.id }}"
+                                        data-testid="mark_job_completed_ajax_button"
+                                        onclick="submitCompletedForm(event, '{{ j.id }}')">
+                                        <i class="fas fa-check-double me-1"></i> Mark Job Completed
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        {# STAGE 3: Assigned / Travelling -> Start Travel & Confirm Site Arrival with OTP #}
+                        {% else %}
+                        <div class="d-flex flex-column gap-2">
+
+                            <!-- Navigate Button -->
+                            <button type="button"
+                                class="btn {% if j.is_emergency %}btn-danger{% else %}btn-primary{% endif %} w-100 py-2 d-flex align-items-center justify-content-center gap-2 shadow-sm fw-bold"
+                                data-lat="{{ j.latitude or '' }}" data-lng="{{ j.longitude or '' }}"
+                                data-address="{{ j.address or '' }}" onclick="triggerNavigation(this)">
+                                <i class="fas fa-location-arrow"></i>
+                                <span>{% if j.is_emergency %}⚡ Navigate to Emergency Location{% else %}Navigate to Site
+                                    Location{% endif %}</span>
+                            </button>
+
+                            <!-- Start Travel Button (if not already travelling) -->
+                            {% if is_assigned %}
+                            <form action="/worker/service-request/{{ j.id }}/travel" method="POST">
+                                <button type="submit"
+                                    class="btn btn-warning w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2 shadow-sm text-dark">
+                                    <i class="fas fa-truck"></i> Start Travel to Site
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            <!-- Accessible Confirm Site Arrival Panel with OTP -->
+                            <div class="arrival-card shadow-sm">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <span class="fw-bold arrival-heading text-uppercase">
+                                        <i class="fas fa-map-pin me-1 text-primary"></i> Confirm Site Arrival
+                                    </span>
+                                    <span class="badge bg-success text-white px-2 py-1 small">
+                                        <i class="fas fa-satellite me-1"></i>GIS Geofenced
+                                    </span>
+                                </div>
+                                <p class="small arrival-text mb-2">Enter the customer's arrival OTP on-site. To
+                                    auto-mark your attendance as <strong>Present</strong>:</p>
+
+                                <form action="{{ url_for('worker.verify_arrival_otp', job_id=j.id) }}" method="POST"
+                                    id="otpForm-{{ j.id }}" onsubmit="submitOtpVerification(event, '{{ j.id }}')">
+                                    <input type="hidden" name="worker_lat" value="0">
+                                    <input type="hidden" name="worker_lng" value="0">
+                                    <div class="d-flex flex-column flex-sm-row gap-2">
+                                        <input type="text" name="arrival_otp" maxlength="6" inputmode="numeric"
+                                            class="form-control otp-input-control flex-grow-1" placeholder="Enter OTP"
+                                            required>
+                                        <button type="submit"
+                                            class="btn btn-primary px-3 text-nowrap fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 py-2"
+                                            style="min-height: 46px;">
+                                            <i class="fas fa-key"></i> Verify & Start
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        {% else %}
+        <div class="bg-white rounded-4 p-5 text-center shadow-sm border">
+            <div class="rounded-circle bg-light text-secondary d-inline-flex align-items-center justify-content-center mb-3"
+                style="width: 64px; height: 64px;">
+                <i class="fas fa-calendar-check fs-2 text-muted"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-1">No Active Service Requests</h5>
+            <p class="text-secondary small mb-3">You are currently fully cleared of any outstanding repair tickets.</p>
+            <button class="btn btn-outline-success btn-sm fw-bold px-3 py-2"
+                onclick="filterJobs('pool', document.getElementById('filter-pool-btn'))">
+                <i class="fas fa-search me-1"></i> Browse Open Cooperative Pool
+            </button>
+        </div>
+        {% endfor %}
+        <!-- Dynamic Filter Empty State -->
+        <div id="no-matching-assigned-jobs" class="bg-white rounded-4 p-5 text-center shadow-sm border my-3"
+            style="display: none;">
+            <div class="rounded-circle bg-light text-secondary d-inline-flex align-items-center justify-content-center mb-3"
+                style="width: 56px; height: 56px;">
+                <i class="fas fa-clipboard-check fs-3 text-muted"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-1" id="no-matching-jobs-title">No Active Jobs Found</h5>
+            <p class="text-secondary small mb-3" id="no-matching-jobs-desc">You currently have no active or en route
+                jobs in your queue.</p>
+            <button type="button" class="btn btn-outline-success btn-sm fw-bold px-3 py-2"
+                onclick="filterJobs('pool', document.getElementById('filter-pool-btn'))">
+                <i class="fas fa-hand-holding-heart me-1"></i> Browse Open Cooperative Pool
+            </button>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script id="jobs-map-data" type="application/json">
+[
+    {% for j in jobs %}
+    {
+        "id": {{ j.id }},
+        "latitude": {{ j.latitude if j.latitude is not none else 'null' }},
+        "longitude": {{ j.longitude if j.longitude is not none else 'null' }},
+        "address": {{ (j.address or '') | tojson }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+
+<script>
+    // ─── 1. MAPS INITIALIZATION ────────────────────────────────────────────────
+    window.addEventListener('load', function () {
+        const rawData = document.getElementById('jobs-map-data');
+        if (!rawData) return;
+        try {
+            const jobsData = JSON.parse(rawData.textContent);
+            jobsData.forEach(function (j) {
+                const mapId = 'map-' + j.id;
+                const mapElem = document.getElementById(mapId);
+                if (!mapElem) return;
+
+                const lat = parseFloat(j.latitude);
+                const lng = parseFloat(j.longitude);
+
+                if (!j.latitude || !j.longitude || isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
+                    return;
+                }
+
+                try {
+                    const mObj = L.map(mapId, { zoomControl: false }).setView([lat, lng], 14);
+                    L.control.zoom({ position: 'bottomright' }).addTo(mObj);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '&copy; OpenStreetMap'
+                    }).addTo(mObj);
+
+                    const marker = L.marker([lat, lng]).addTo(mObj);
+                    if (j.address) {
+                        marker.bindPopup('<strong>Customer Location</strong><br>' + j.address).openPopup();
+                    }
+
+                    setTimeout(function () { mObj.invalidateSize(); }, 350);
+                    setTimeout(function () { mObj.invalidateSize(); }, 800);
+                    window.addEventListener('resize', function () { mObj.invalidateSize(); });
+                } catch (mapErr) {
+                    console.debug("Map init skipped for job:", j.id, mapErr);
+                }
+            });
+        } catch (e) {
+            console.error('Error initializing job maps:', e);
+        }
+    });
+
+    // ─── 2. NAVIGATION HELPER (COORDINATES OR ADDRESS DIRECT LAUNCH) ───────────
+    function triggerNavigation(lat, lng, address) {
+        if (lat && typeof lat === 'object' && lat.dataset) {
+            const btn = lat;
+            lat = btn.dataset.lat;
+            lng = btn.dataset.lng;
+            address = btn.dataset.address;
+        }
+        const parsedLat = parseFloat(lat);
+        const parsedLng = parseFloat(lng);
+        let target = '';
+
+        if (!isNaN(parsedLat) && !isNaN(parsedLng) && parsedLat !== 0 && parsedLng !== 0) {
+            target = `${parsedLat},${parsedLng}`;
+        } else if (address && address.trim().length > 0) {
+            target = encodeURIComponent(address.trim());
+        } else {
+            alert("Site destination address not available for this ticket.");
+            return;
+        }
+
+        const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${target}`;
+        window.open(googleMapsUrl, '_blank');
+    }
+
+    // ─── 3. OTP VERIFICATION HANDLER ──────────────────────────────────────────
+    async function submitOtpVerification(event, jobId) {
+        if (event && event.preventDefault) event.preventDefault();
+        const form = document.getElementById('otpForm-' + jobId);
+        if (!form) return;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Checking GPS Geofence...';
+        }
+
+        // Capture live browser GPS coordinates for 20-100m geofence validation
+        let coords = { lat: 0, lng: 0 };
+        if (navigator.geolocation) {
+            try {
+                coords = await new Promise((resolve) => {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                        () => resolve({ lat: 0, lng: 0 }),
+                        { timeout: 3500, enableHighAccuracy: true }
+                    );
+                });
+            } catch (geoErr) {
+                coords = { lat: 0, lng: 0 };
+            }
+        }
+
+        const fd = new FormData(form);
+        if (coords.lat && coords.lng) {
+            fd.set('worker_lat', coords.lat);
+            fd.set('worker_lng', coords.lng);
+            fd.set('lat', coords.lat);
+            fd.set('lng', coords.lng);
+        }
+
+        if (submitBtn) {
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verifying OTP...';
+        }
+
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+            });
+            const res = await response.json();
+            if (response.ok && res.status === 'success') {
+                if (typeof showToast === 'function') {
+                    showToast(res.message, 'success');
+                } else {
+                    alert(res.message);
+                }
+                setTimeout(() => window.location.reload(), 500);
+            } else {
+                const errMsg = res.message || "Verification failed. Please check OTP.";
+                if (typeof showToast === 'function') {
+                    showToast(errMsg, 'warning');
+                } else {
+                    alert("Verification Failed: " + errMsg);
+                }
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-key"></i> Verify & Start';
+                }
+            }
+        } catch (e) {
+            alert("Connection error. Try again.");
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-key"></i> Verify & Start';
+            }
+        }
+    }
+
+    // ─── 4. JOB COMPLETION FORM HANDLER ────────────────────────────────────────
+    let mediaRecorders = {};
+    let recordedBlobs = {};
+    let recordingIntervals = {};
+    let recordSeconds = {};
+
+    async function toggleVoiceRecording(jobId) {
+        const btn = document.getElementById('rec-btn-' + jobId);
+        const text = document.getElementById('rec-text-' + jobId);
+        const pulse = document.getElementById('rec-pulse-' + jobId);
+        const timer = document.getElementById('rec-timer-' + jobId);
+        const previewCont = document.getElementById('rec-preview-container-' + jobId);
+        const playback = document.getElementById('rec-playback-' + jobId);
+
+        if (!mediaRecorders[jobId]) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const mediaRecorder = new MediaRecorder(stream);
+                const chunks = [];
+
+                mediaRecorder.ondataavailable = e => {
+                    if (e.data && e.data.size > 0) chunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/wav' });
+                    recordedBlobs[jobId] = blob;
+                    const audioUrl = URL.createObjectURL(blob);
+                    playback.src = audioUrl;
+                    previewCont.classList.remove('d-none');
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorders[jobId] = mediaRecorder;
+                mediaRecorder.start();
+
+                btn.classList.replace('btn-outline-danger', 'btn-danger');
+                text.innerText = "Stop Recording";
+                pulse.classList.remove('d-none');
+
+                recordSeconds[jobId] = 0;
+                recordingIntervals[jobId] = setInterval(() => {
+                    recordSeconds[jobId]++;
+                    const m = Math.floor(recordSeconds[jobId] / 60).toString().padStart(2, '0');
+                    const s = (recordSeconds[jobId] % 60).toString().padStart(2, '0');
+                    timer.innerText = `${m}:${s}`;
+                }, 1000);
+
+            } catch (e) {
+                alert("Microphone connection failed: " + e.message);
+            }
+        } else {
+            const mediaRecorder = mediaRecorders[jobId];
+            mediaRecorder.stop();
+            clearInterval(recordingIntervals[jobId]);
+            btn.classList.replace('btn-danger', 'btn-outline-danger');
+            text.innerText = "Record Note";
+            pulse.classList.add('d-none');
+            mediaRecorders[jobId] = null;
+        }
+    }
+
+    async function submitCompletedForm(event, jobId) {
+        if (event && typeof event.preventDefault === 'function') {
+            event.preventDefault();
+        }
+        if (!jobId || typeof jobId === 'object') {
+            const firstForm = document.querySelector('form[id^="completeForm-"]');
+            if (firstForm) {
+                jobId = firstForm.id.replace('completeForm-', '');
+            }
+        }
+        const form = document.getElementById('completeForm-' + jobId);
+        if (!form) return;
+
+        const workNotes = form.querySelector('textarea[name="work_notes"]');
+        if (workNotes && !workNotes.value.trim()) {
+            workNotes.value = "Repair and maintenance work completed successfully on site as per customer request.";
+        }
+        const hoursInput = form.querySelector('input[name="hours_worked"]');
+        if (hoursInput && !hoursInput.value.trim()) {
+            hoursInput.value = "1.0";
+        }
+
+        const fd = new FormData(form);
+        const audioBlob = recordedBlobs[jobId];
+        if (audioBlob) {
+            fd.append('completion_audio', audioBlob, 'completion_note.wav');
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]') || form.querySelector('.mark_job_completed_ajax_button') || document.getElementById('mark_job_completed_ajax_button');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Submitting completion...';
+        }
+
+        const actionUrl = form.getAttribute('action') || form.action || ('/worker/service-request/' + jobId + '/complete');
+
+        try {
+            const response = await fetch(actionUrl, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+            });
+
+            if (response.ok) {
+                const res = await response.json().catch(() => ({}));
+                const msg = res.message || "Job completion details submitted successfully!";
+                if (typeof showToast === 'function') {
+                    showToast(msg, 'success');
+                } else {
+                    alert(msg);
+                }
+                setTimeout(() => window.location.reload(), 400);
+            } else if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                const errData = await response.json().catch(() => ({}));
+                alert(errData.message || "Submission failed. Please try again.");
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check-double me-1"></i> Mark Job Completed';
+                }
+            }
+        } catch (e) {
+            console.error("Completion submit error:", e);
+            alert("Upload failed. Please try again.");
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-double me-1"></i> Mark Job Completed';
+            }
+        }
+    }
+
+    // Global hook for test scripts
+    window.mark_job_completed_ajax_button = function (jobId) {
+        return submitCompletedForm(null, jobId);
+    };
+
+    async function saveDraftProgressLogs(jobId) {
+        if (!confirm("Save your progress log draft?")) return;
+        const form = document.getElementById('completeForm-' + jobId);
+        const fd = new FormData(form);
+        const audioBlob = recordedBlobs[jobId];
+        if (audioBlob) {
+            fd.append('completion_audio', audioBlob, 'completion_note.wav');
+        }
+
+        try {
+            const response = await fetch(`/worker/api/service-job/${jobId}/update-progress`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+            });
+            const res = await response.json();
+            if (res.status === 'success') {
+                if (typeof showToast === 'function') showToast("Success: " + res.message, 'success');
+                else alert("Success: " + res.message);
+                setTimeout(() => window.location.reload(), 500);
+            } else {
+                alert("Error: " + res.message);
+            }
+        } catch (e) {
+            alert("Failed to save progress logs. Check connection.");
+        }
+    }
+
+    // ─── 5. 1-CLICK JOB CLAIMING (OPEN COOPERATIVE POOL) ──────────────────────
+    async function claimRegularJob(jobId, reqNumber) {
+        if (jobId && typeof jobId === 'object' && jobId.dataset) {
+            const btn = jobId;
+            reqNumber = btn.dataset.requestId;
+            jobId = btn.dataset.jobId;
+        }
+        const btn = document.getElementById('claim-btn-' + jobId);
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Claiming...';
+        }
+
+        try {
+            const resp = await fetch(`/worker/service-requests/${jobId}/claim`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const data = await resp.json();
+            if (data.status === 'success') {
+                if (typeof showToast === 'function') {
+                    showToast(`✅ SUCCESS! You claimed Job #${reqNumber}. Moving to your active jobs.`, 'success');
+                } else {
+                    alert(`✅ SUCCESS! You claimed Job #${reqNumber}!\n\nCustomer: ${data.data.customer_name}\nAddress: ${data.data.address}\nArrival Security OTP: ${data.data.otp}`);
+                }
+                const card = document.getElementById('available-job-card-' + jobId);
+                if (card) {
+                    card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.95)';
+                }
+                setTimeout(() => { window.location.reload(); }, 900);
+            } else {
+                alert(data.message || 'Could not claim this job.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check-circle"></i> Claim This Job';
+                }
+            }
+        } catch (e) {
+            alert('Network error while claiming job. Please try again.');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Claim This Job';
+            }
+        }
+    }
+
+    // ─── 6. EMERGENCY JOB DISPATCH CLAIM ──────────────────────────────────────
+    async function claimEmergencyJob(reqId) {
+        const card = document.getElementById('job-alert-' + reqId) || document.getElementById('emg-job-card-' + reqId);
+        const btn = card ? (card.querySelector('.btn-success') || card.querySelector('button[id^="claim-btn-"]')) : null;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Claiming...';
+        }
+
+        try {
+            const resp = await fetch(`/worker/emergency-claim/${reqId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            const data = await resp.json();
+            if (data.status === 'success') {
+                if (typeof showToast === 'function') {
+                    showToast(`🚨 SUCCESS! Emergency Job #${data.data.request_id} claimed! Proceeding to site.`, 'success');
+                } else {
+                    alert(`🚨 SUCCESS! Emergency Job #${data.data.request_id} claimed!\n\nDestination: ${data.data.address}\nCustomer: ${data.data.customer_name}\nGuaranteed Payout: Rs. ${data.data.fixed_rate.toFixed(2)}`);
+                }
+                window.location.href = '/worker/service-requests#job-' + data.data.id;
+                window.location.reload();
+            } else {
+                alert(data.message || 'Failed to claim dispatch.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-check me-1"></i> Accept & Navigate';
+                }
+            }
+        } catch (e) {
+            alert('Network error claiming emergency dispatch.');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check me-1"></i> Accept & Navigate';
+            }
+        }
+    }
+
+    function dismissJobAlert(reqId) {
+        const card = document.getElementById('job-alert-' + reqId) || document.getElementById('emg-job-card-' + reqId);
+        if (card) {
+            card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(-10px)';
+            setTimeout(() => { card.remove(); }, 400);
+        }
+    }
+
+    // ─── SOCKET.IO EMERGENCY BROADCAST SUBSCRIBER ─────────────────────────────
+    (function initEmergencySocket() {
+        if (typeof io === 'undefined') return;
+        const configElem = document.getElementById('worker-socket-config');
+        if (!configElem) return;
+        
+        const workerId = configElem.dataset.workerId;
+        const tradeCategory = configElem.dataset.tradeCategory || 'Electrical';
+        let trades = [];
+        try {
+            trades = JSON.parse(configElem.dataset.trades || '[]');
+        } catch(e) {
+            trades = [tradeCategory];
+        }
+        
+        const socket = io();
+        socket.on('connect', function() {
+            socket.emit('join_trade_room', {
+                trade_category: tradeCategory,
+                trades: trades,
+                worker_id: workerId
+            });
+        });
+        
+        socket.on('emergency_job_alert', function(data) {
+            playEmergencyChime();
+            if (typeof renderIncomingEmergencyCard === 'function') {
+                renderIncomingEmergencyCard(data);
+            }
+        });
+        
+        socket.on('emergency_broadcast_dismissed', function(data) {
+            dismissJobAlert(data.id);
+        });
+    })();
+
+    function playEmergencyChime() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.setValueAtTime(1200, ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.4);
+        } catch (e) {
+            console.debug('Audio chime not supported or autoplay blocked:', e);
+        }
+    }
+
+    // ─── 7. INSTANT CLIENT-SIDE FILTERING & SEARCH ────────────────────────────
+    function filterJobs(type, btn) {
+        document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+
+        const poolContainer = document.getElementById('available-pool');
+        const assignedHeadingWrap = document.getElementById('assigned-jobs-heading-wrap');
+        const assignedHeading = document.getElementById('assigned-jobs-heading');
+        const assignedSubheading = document.getElementById('assigned-jobs-subheading');
+        const allWraps = document.querySelectorAll('.job-item-card-wrap');
+        const searchInput = document.getElementById('artisanSearchInput');
+        const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+
+        // Adjust section heading
+        if (assignedHeading) {
+            if (type === 'completed') {
+                assignedHeading.textContent = 'My Completed Work';
+                if (assignedSubheading) assignedSubheading.textContent = 'Service requests successfully executed, verified, and archived.';
+            } else if (type === 'active') {
+                assignedHeading.textContent = 'My Active & En Route Work';
+                if (assignedSubheading) assignedSubheading.textContent = 'Track transit, verify customer OTP on arrival, and submit completion reports.';
+            } else {
+                assignedHeading.textContent = 'My Active & Assigned Work';
+                if (assignedSubheading) assignedSubheading.textContent = 'Track transit, verify customer OTP on arrival, and submit completion reports.';
+            }
+        }
+
+        if (type === 'all') {
+            if (poolContainer) poolContainer.style.display = 'block';
+            if (assignedHeadingWrap) assignedHeadingWrap.style.display = '';
+            allWraps.forEach(card => {
+                const matchesSearch = !query || (card.dataset.searchText || '').includes(query);
+                card.style.display = matchesSearch ? '' : 'none';
+            });
+        } else if (type === 'pool') {
+            if (poolContainer) poolContainer.style.display = 'block';
+            if (assignedHeadingWrap) assignedHeadingWrap.style.display = 'none';
+            allWraps.forEach(card => {
+                if (card.dataset.category === 'pool') {
+                    const matchesSearch = !query || (card.dataset.searchText || '').includes(query);
+                    card.style.display = matchesSearch ? '' : 'none';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        } else {
+            if (poolContainer) poolContainer.style.display = 'none';
+            if (assignedHeadingWrap) assignedHeadingWrap.style.display = '';
+            allWraps.forEach(card => {
+                if (card.dataset.category === type) {
+                    const matchesSearch = !query || (card.dataset.searchText || '').includes(query);
+                    card.style.display = matchesSearch ? '' : 'none';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Check empty state in assigned-jobs-list
+        checkAssignedEmptyState(type);
+    }
+
+    function checkAssignedEmptyState(filterType) {
+        const emptyState = document.getElementById('no-matching-assigned-jobs');
+        if (!emptyState) return;
+
+        if (filterType === 'pool') {
+            emptyState.style.display = 'none';
+            return;
+        }
+
+        const assignedCards = document.querySelectorAll('#active-jobs-list .artisan-job-card');
+        let visibleCount = 0;
+        assignedCards.forEach(c => {
+            if (c.style.display !== 'none') visibleCount++;
+        });
+
+        if (visibleCount === 0 && assignedCards.length > 0) {
+            emptyState.style.display = 'block';
+            const titleElem = document.getElementById('no-matching-jobs-title');
+            const descElem = document.getElementById('no-matching-jobs-desc');
+            if (filterType === 'completed') {
+                if (titleElem) titleElem.textContent = 'No Completed Jobs Yet';
+                if (descElem) descElem.textContent = 'Completed jobs will appear here once you finish service requests and submit OTP verification.';
+            } else if (filterType === 'active') {
+                if (titleElem) titleElem.textContent = 'No Active or En Route Jobs';
+                if (descElem) descElem.textContent = 'You have no pending or in-progress jobs. Claim an open job from the pool!';
+            } else {
+                if (titleElem) titleElem.textContent = 'No Jobs Matching Your Search';
+                if (descElem) descElem.textContent = 'Try adjusting your search query or filter selection.';
+            }
+        } else {
+            emptyState.style.display = 'none';
+        }
+    }
+
+    function searchArtisanJobs(query) {
+        const activeFilterBtn = document.querySelector('.filter-pill.active');
+        const filterType = activeFilterBtn ? (
+            activeFilterBtn.id === 'filter-all-btn' ? 'all' :
+                activeFilterBtn.id === 'filter-pool-btn' ? 'pool' :
+                    activeFilterBtn.id === 'filter-active-btn' ? 'active' :
+                        activeFilterBtn.id === 'filter-completed-btn' ? 'completed' : 'all'
+        ) : 'all';
+
+        filterJobs(filterType, activeFilterBtn);
+    }
+</script>
+{% endblock %}

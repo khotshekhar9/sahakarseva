@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Demand Forecasting & Surge Modeling - Admin{% endblock %}
+{% block page_title %}AI Demand Forecasting & Surge Center{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+
+    <!-- 1. HEADER & OVERVIEW BANNER -->
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h1 class="h3 fw-bold text-dark mb-0">AI Demand Forecasting & Surge Center</h1>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                    <i data-lucide="cpu" style="width: 13px; height: 13px;" class="me-1"></i> Feature #11 AI Engine
+                </span>
+            </div>
+            <p class="text-secondary small mb-0">
+                Local, data-driven analytical pipeline querying historical service requests, applying exponential time-series smoothing (&alpha; = 0.35), and calculating workforce supply-demand deficits.
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-light text-dark border px-3 py-2">
+                <i data-lucide="map-pin" style="width: 14px; height: 14px;" class="text-danger me-1"></i>
+                <strong>{{ forecast.city }}</strong> Beat
+            </span>
+            <span class="badge bg-light text-secondary border px-3 py-2">
+                <i data-lucide="clock" style="width: 14px; height: 14px;" class="me-1"></i>
+                {{ forecast.generated_at }}
+            </span>
+            <button type="button" class="btn btn-sm btn-outline-primary shadow-sm" onclick="window.location.reload();">
+                <i data-lucide="refresh-cw" style="width: 14px; height: 14px;" class="me-1"></i> Refresh Forecast
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. EXECUTIVE METRIC STRIP (GLANCEABLE STATS) -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-secondary fw-semibold">7-Day Projected Demand</span>
+                    <div class="p-2 rounded-2 bg-primary-subtle text-primary">
+                        <i data-lucide="trending-up" style="width: 18px; height: 18px;"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold text-dark mb-1">{{ metrics.total_projected_7d_jobs }}</h3>
+                <div class="small text-muted d-flex align-items-center gap-1">
+                    <i data-lucide="calendar" style="width: 13px; height: 13px;" class="text-primary"></i>
+                    Upcoming week job requests
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-secondary fw-semibold">Active Verified Roster</span>
+                    <div class="p-2 rounded-2 bg-success-subtle text-success">
+                        <i data-lucide="users" style="width: 18px; height: 18px;"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold text-dark mb-1">{{ metrics.active_roster_count }}</h3>
+                <div class="small text-muted d-flex align-items-center gap-1">
+                    <i data-lucide="check-circle" style="width: 13px; height: 13px;" class="text-success"></i>
+                    Available cooperative artisans
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-secondary fw-semibold">Trades at Deficit Risk</span>
+                    <div class="p-2 rounded-2 {% if metrics.deficit_risk_trades_count > 0 %}bg-danger-subtle text-danger{% else %}bg-success-subtle text-success{% endif %}">
+                        <i data-lucide="alert-triangle" style="width: 18px; height: 18px;"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold {% if metrics.deficit_risk_trades_count > 0 %}text-danger{% else %}text-success{% endif %} mb-1">
+                    {{ metrics.deficit_risk_trades_count }}
+                </h3>
+                <div class="small text-muted d-flex align-items-center gap-1">
+                    {% if metrics.deficit_risk_trades_count > 0 %}
+                        <span class="text-danger fw-semibold">Shortage alerts requiring mobilization</span>
+                    {% else %}
+                        <span class="text-success fw-semibold">All trades fully covered</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 h-100 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="small text-secondary fw-semibold">Forecasting Health</span>
+                    <div class="p-2 rounded-2 bg-info-subtle text-info">
+                        <i data-lucide="activity" style="width: 18px; height: 18px;"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold text-dark mb-1">Active</h3>
+                <div class="small text-muted d-flex align-items-center gap-1">
+                    <i data-lucide="database" style="width: 13px; height: 13px;" class="text-info"></i>
+                    Live DB synchronization
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. ACTIONABLE COOPERATIVE REALLOCATION & MOBILITY INSIGHT -->
+    <div class="card border-0 shadow-sm rounded-3 p-4 mb-4 bg-white border-start border-4 border-primary">
+        <div class="d-flex align-items-start gap-3">
+            <div class="p-2 rounded-circle bg-primary-subtle text-primary flex-shrink-0 mt-1">
+                <i data-lucide="sparkles" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-1">
+                    <h5 class="fw-bold text-dark mb-0">Cooperative Mobility & Capacity Guidance</h5>
+                    <span class="badge bg-primary text-white small">Automated Reallocation Strategy</span>
+                </div>
+                <p class="text-dark small mb-3 leading-relaxed">
+                    {{ forecast.ai_insight }}
+                </p>
+
+                {% if reallocations %}
+                <div class="row g-2">
+                    {% for rec in reallocations %}
+                    <div class="col-12 col-md-6">
+                        <div class="p-3 rounded-2 border {% if rec.urgency == 'High' %}bg-danger-subtle border-danger-subtle text-danger-emphasis{% else %}bg-warning-subtle border-warning-subtle text-warning-emphasis{% endif %}">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="fw-bold small">
+                                    <i data-lucide="arrow-right-left" style="width: 14px; height: 14px;" class="me-1"></i>
+                                    {{ rec.trade }}
+                                </span>
+                                <span class="badge {% if rec.urgency == 'High' %}bg-danger text-white{% else %}bg-warning text-dark{% endif %}">
+                                    {{ rec.urgency }} Priority
+                                </span>
+                            </div>
+                            <div class="small mb-0">{{ rec.text }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. TREND VISUALIZER: 7-DAY DEMAND TRAJECTORY (CHART.JS) -->
+    <div class="card border-0 shadow-sm rounded-3 p-4 mb-4 bg-white">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div>
+                <h5 class="fw-bold text-dark mb-1">
+                    <i data-lucide="line-chart" style="width: 18px; height: 18px;" class="text-primary me-1"></i>
+                    7-Day Trade Demand Trajectory
+                </h5>
+                <span class="text-secondary small">
+                    Predictive forward curves calculated using Exponential Smoothing (&alpha; = 0.35) applied to live database requests.
+                </span>
+            </div>
+            <div class="badge bg-light text-secondary border px-2 py-1 small">
+                Predictive Smoothing Model
+            </div>
+        </div>
+
+        <div style="position: relative; height: 320px; width: 100%;">
+            <canvas id="demandForecastChart"></canvas>
+        </div>
+    </div>
+
+    <!-- 5. DYNAMIC DEMAND & WORKFORCE GAP ANALYSIS TABLE -->
+    <div class="card border-0 shadow-sm rounded-3 bg-white overflow-hidden mb-4">
+        <div class="card-header bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold text-dark mb-0">Categorical Demand & Supply Gap Matrix</h5>
+                <span class="text-secondary small">Comparison of historical volumes, 7-day projected demand, and active artisan rosters.</span>
+            </div>
+            <span class="badge bg-light text-dark border">
+                {{ forecast_data|length }} Trade Federations
+            </span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="demandForecastTable">
+                <thead class="table-light text-secondary small text-uppercase">
+                    <tr>
+                        <th style="min-width: 220px;">Trade Category</th>
+                        <th style="min-width: 160px;">Historical Volume</th>
+                        <th class="text-center" style="min-width: 130px;">Projected 7D</th>
+                        <th class="text-center" style="min-width: 150px;">Available Roster</th>
+                        <th class="text-center" style="min-width: 160px;">Surge Risk Level</th>
+                        <th style="min-width: 300px;">Actionable Cooperative Recommendation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in forecast_data %}
+                    <tr>
+                        <td class="fw-bold text-dark">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="p-2 rounded-2 {% if item.category == 'Electrical' %}bg-primary-subtle text-primary{% elif item.category == 'Plumbing' %}bg-info-subtle text-info{% elif item.category == 'Sanitization' %}bg-success-subtle text-success{% elif item.category == 'Caregiving' %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                                    <i data-lucide="{{ item.icon }}" style="width: 16px; height: 16px;"></i>
+                                </div>
+                                <div>
+                                    <span>{{ item.category or item.trade }}</span>
+                                    <div class="text-muted small fw-normal">{{ item.surge_factor }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ item.historical_completed }} completed</div>
+                            <div class="text-muted small">{{ item.total_historical_jobs }} total (Last 60d)</div>
+                        </td>
+                        <td class="text-center">
+                            <span class="fw-bold fs-6 text-primary">{{ item.projected_7d_demand }}</span>
+                            <div class="text-muted small">orders/wk</div>
+                        </td>
+                        <td class="text-center">
+                            <span class="fw-bold text-dark">{{ item.available_workers }} active</span>
+                            <div class="text-muted small">cap: {{ item.capacity }} jobs</div>
+                        </td>
+                        <td class="text-center">
+                            {% if item.risk_level == 'High' %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+                                    <i data-lucide="alert-circle" style="width: 12px; height: 12px;" class="me-1"></i>
+                                    High (+{{ item.deficit }} Short)
+                                </span>
+                            {% elif item.risk_level == 'Moderate' %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1">
+                                    <i data-lucide="alert-triangle" style="width: 12px; height: 12px;" class="me-1"></i>
+                                    Moderate (+{{ item.deficit }} Short)
+                                </span>
+                            {% else %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                    <i data-lucide="check-circle" style="width: 12px; height: 12px;" class="me-1"></i>
+                                    Balanced
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="small text-secondary">{{ item.recommendation }}</span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            <i data-lucide="inbox" style="width: 32px; height: 32px;" class="mb-2 d-block mx-auto text-secondary"></i>
+                            No demand forecast data available for this locality.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script id="aiDemandChartData" type="application/json">
+{
+    "labels": {{ chart_labels|tojson }},
+    "datasets": {{ chart_datasets|tojson }}
+}
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Initialize Lucide Icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    // 2. Initialize 7-Day Demand Chart
+    const ctx = document.getElementById('demandForecastChart');
+    if (ctx && typeof Chart !== 'undefined') {
+        let chartData = { labels: [], datasets: [] };
+        try {
+            const dataEl = document.getElementById('aiDemandChartData');
+            if (dataEl && dataEl.textContent) {
+                chartData = JSON.parse(dataEl.textContent);
+            }
+        } catch (e) {
+            console.error('Error parsing chart data:', e);
+        }
+        const labels = chartData.labels || [];
+        const datasets = chartData.datasets || [];
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 12,
+                            font: {
+                                size: 11,
+                                weight: '500'
+                            },
+                            padding: 14
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                        titleFont: { size: 12, weight: '700' },
+                        bodyFont: { size: 11 },
+                        padding: 10,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.dataset.label}: ${context.parsed.y} projected requests`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Projected Daily Demand (Requests)',
+                            font: { size: 11, weight: '600' }
+                        },
+                        grid: {
+                            color: 'rgba(226, 232, 240, 0.6)'
+                        },
+                        ticks: {
+                            stepSize: 1,
+                            font: { size: 10 }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: { size: 11, weight: '500' }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

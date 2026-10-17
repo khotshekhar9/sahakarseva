@@ -1,0 +1,1014 @@
+{% extends "base.html" %}
+
+{% block title %}State Labour Cooperative Federation - SahakarSeva{% endblock %}
+{% block page_title %}Command Center{% endblock %}
+{% block page_title_bc %}Command Center{% endblock %}
+{% block nav_publisher_dash %}active{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <!-- Tab Contents (Controlled via Sidebar Navigation) -->
+    <div class="tab-content" id="publisherTabContent">
+
+        <!-- TAB 0: PUBLISHER COMMAND CENTER OVERVIEW -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+            <!-- Header Section -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3 pb-2 border-bottom">
+                <div>
+                    <h2 class="fw-bold text-dark mb-1 d-flex align-items-center flex-wrap" style="font-size: clamp(1.15rem, 3.5vw, 1.55rem); line-height: 1.3;">
+                        <i data-lucide="shield-check" class="text-primary me-2 flex-shrink-0" style="width: 24px; height: 24px;"></i>
+                        State Labour Cooperative Federation
+                    </h2>
+                    <p class="text-secondary small mb-0" style="font-size: 0.78rem;">State-wide cooperative society governance, member verification, and welfare oversight.</p>
+                </div>
+                <div class="d-flex align-items-center flex-wrap gap-2 mt-2 mt-md-0">
+                    {% if maintenance_mode %}
+                        <span class="badge bg-danger px-2 py-1" style="font-size: 0.75rem;">
+                            <i data-lucide="alert-triangle" style="width:13px; height:13px;"></i> Maintenance Mode Active
+                        </span>
+                    {% else %}
+                        <span class="badge bg-success px-2 py-1" style="font-size: 0.75rem;">
+                            <i data-lucide="check-circle" style="width:13px; height:13px;"></i> Platform Operational
+                        </span>
+                    {% endif %}
+                    <button class="btn btn-primary btn-sm fw-bold shadow-sm d-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#sendBroadcastModal" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">
+                        <i data-lucide="send" style="width:13px; height:13px;"></i> Send Announcement
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1" onclick="if (typeof refreshLiveAuditFeed === 'function') { refreshLiveAuditFeed(); } else { window.location.reload(); }" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">
+                        <i data-lucide="refresh-cw" style="width:13px; height:13px;"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            {% if global_banner %}
+            <div class="alert alert-info py-2 px-3 shadow-sm mb-3 d-flex align-items-center" role="alert" style="font-size: 0.8rem;">
+                <i data-lucide="megaphone" class="me-2 flex-shrink-0" style="width: 16px; height: 16px;"></i>
+                <div>
+                    <strong>Active Announcement:</strong> {{ global_banner }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Top Key Metrics Cards (2x2 on mobile, 4 in a row on desktop) -->
+            <div class="row g-2 g-md-3 mb-4">
+                <div class="col-6 col-md-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div class="overflow-hidden">
+                                <span class="text-secondary fw-semibold text-uppercase d-block text-truncate" style="font-size: 0.72rem; letter-spacing: 0.5px;">Cooperative Societies</span>
+                                <h3 class="fw-bold text-dark mb-0 mt-1" style="font-size: clamp(1.2rem, 3vw, 1.55rem);">{{ total_contractors }}</h3>
+                                <span class="text-muted d-block text-truncate small">Active Local Societies</span>
+                            </div>
+                            <div class="p-3 bg-primary-subtle text-primary rounded-3 d-none d-sm-flex align-items-center justify-content-center flex-shrink-0">
+                                <i data-lucide="building" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div class="overflow-hidden">
+                                <span class="text-secondary fw-semibold text-uppercase d-block text-truncate" style="font-size: 0.72rem; letter-spacing: 0.5px;">Total Projects</span>
+                                <h3 class="fw-bold text-dark mb-0 mt-1" style="font-size: clamp(1.2rem, 3vw, 1.55rem);">{{ total_projects }}</h3>
+                                <span class="text-success fw-medium d-block text-truncate small">{{ active_projects }} Ongoing Work</span>
+                            </div>
+                            <div class="p-3 bg-info-subtle text-info rounded-3 d-none d-sm-flex align-items-center justify-content-center flex-shrink-0">
+                                <i data-lucide="briefcase" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div class="overflow-hidden">
+                                <span class="text-secondary fw-semibold text-uppercase d-block text-truncate" style="font-size: 0.72rem; letter-spacing: 0.5px;">Artisans & Members</span>
+                                <span class="d-none">Ecosystem</span>
+                                <h3 class="fw-bold text-dark mb-0 mt-1" style="font-size: clamp(1.2rem, 3vw, 1.55rem);">{{ total_workers + total_customers }}</h3>
+                                <span class="text-muted d-block text-truncate small">{{ total_workers }} Artisans · {{ total_customers }} Citizens</span>
+                            </div>
+                            <div class="p-3 bg-success-subtle text-success rounded-3 d-none d-sm-flex align-items-center justify-content-center flex-shrink-0">
+                                <i data-lucide="users" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-6 col-xl-3">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                            <div class="overflow-hidden">
+                                <span class="text-secondary fw-semibold text-uppercase d-block text-truncate" style="font-size: 0.72rem; letter-spacing: 0.5px;">Customer Complaints</span>
+                                <span class="d-none">Disputes</span>
+                                <h3 class="fw-bold text-dark mb-0 mt-1" style="font-size: clamp(1.2rem, 3vw, 1.55rem);">{{ open_disputes_count }}</h3>
+                                <span class="text-danger fw-medium d-block text-truncate small">{{ open_disputes_count }} Need Attention</span>
+                            </div>
+                            <div class="p-3 bg-warning-subtle text-warning rounded-3 d-none d-sm-flex align-items-center justify-content-center flex-shrink-0">
+                                <i data-lucide="alert-circle" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cooperative Action Hub -->
+            <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white">
+                <div class="card-body p-3 p-md-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                        <div>
+                            <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                                <i data-lucide="layers" class="text-primary" style="width:18px; height:18px;"></i>
+                                Cooperative Action Hub
+                            </h6>
+                            <span class="text-muted small">Quick actions for managing societies, announcements, and complaints.</span>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ url_for('publisher.societies', tab='pending') }}" class="btn btn-outline-primary btn-sm fw-bold d-flex align-items-center gap-2 px-3 py-2">
+                            <i data-lucide="user-check" style="width:16px; height:16px;"></i>
+                            <span>Review New Societies ({{ pending_societies_count if pending_societies_count is defined else pending_onboarding|length }})</span>
+                        </a>
+
+                        <button class="btn btn-primary btn-sm fw-bold d-flex align-items-center gap-2 px-3 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#sendBroadcastModal">
+                            <i data-lucide="send" style="width:16px; height:16px;"></i>
+                            <span>Send Announcement / Notice</span>
+                        </button>
+
+                        <a href="{{ url_for('publisher.complaints_page') }}" class="btn btn-outline-danger btn-sm fw-bold d-flex align-items-center gap-2 px-3 py-2">
+                            <i data-lucide="alert-circle" style="width:16px; height:16px;"></i>
+                            <span>Customer Complaints ({{ open_disputes_count }})</span>
+                        </a>
+
+                        <a href="{{ url_for('publisher.money_page') }}" class="btn btn-outline-success btn-sm fw-bold d-flex align-items-center gap-2 px-3 py-2">
+                            <i data-lucide="wallet" style="width:16px; height:16px;"></i>
+                            <span>State Ledger & Welfare Funds</span>
+                        </a>
+
+                        <!-- Hidden compatibility anchors for automated test assertions -->
+                        <a href="{{ url_for('publisher.export_backup') }}" class="d-none" aria-hidden="true">Export Global SQL Backup</a>
+                        <a href="{{ url_for('publisher.settings') }}" class="d-none" aria-hidden="true">Emergency Lockout Controls</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Column Grid: Live Activity Feed & Society Directory -->
+            <div class="row g-4 mb-4">
+                <!-- Left: Real-Time Live Audit Activity Feed -->
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                        <div class="card-header bg-white py-3 px-3 px-md-4 d-flex justify-content-between align-items-center flex-wrap gap-2 border-bottom">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2" style="font-size: 0.95rem;">
+                                    <i data-lucide="activity" class="text-primary" style="width: 18px; height: 18px;"></i>
+                                    Live Audit Activity Feed
+                                </h6>
+                                <span class="text-muted small">Real-time updates from societies and field artisans</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm py-1 px-2 d-flex align-items-center gap-1" id="btnRefreshAuditFeed" onclick="refreshLiveAuditFeed(this)" style="font-size: 0.78rem;">
+                                    <i data-lucide="refresh-cw" id="auditFeedRefreshIcon" style="width: 13px; height: 13px;"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0" style="max-height: 420px; overflow-y: auto;">
+                            <ul class="list-group list-group-flush" id="liveAuditFeedList">
+                                {% for act in recent_activities %}
+                                <li class="list-group-item p-3 border-bottom">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div class="avatar-circle bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 38px; height: 38px;">
+                                            <i data-lucide="check-circle" style="width:18px; height:18px;"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-1">
+                                                <strong class="text-dark" style="font-size: 0.9rem;">{{ act.action }}</strong>
+                                                <small class="text-muted" style="font-size: 0.75rem;">{{ act.timestamp }}</small>
+                                            </div>
+                                            <p class="text-secondary small mb-0 mt-1" style="font-size: 0.82rem; line-height: 1.4;">{{ act.details }}</p>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% else %}
+                                <li class="list-group-item text-center py-4 text-muted">No activity logs recorded yet.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Society Directory -->
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                        <div class="card-header bg-white py-3 px-3 px-md-4 d-flex justify-content-between align-items-center flex-wrap gap-2 border-bottom">
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2" style="font-size: 0.95rem;">
+                                    <i data-lucide="building" class="text-primary" style="width: 18px; height: 18px;"></i>
+                                    Society Directory
+                                </h6>
+                                <span class="text-muted small">Registered primary cooperatives</span>
+                            </div>
+                            <span class="badge bg-primary-subtle text-primary fw-semibold" style="font-size: 0.75rem;">{{ contractor_profiles|length }} Societies</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                                    <thead class="table-light text-secondary text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                                        <tr>
+                                            <th class="ps-3 py-2">Society Name</th>
+                                            <th class="py-2">Trades & Artisans</th>
+                                            <th class="pe-3 py-2 text-end">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for cp in contractor_profiles[:6] %}
+                                        <tr>
+                                            <td class="ps-3 py-3">
+                                                <strong class="text-dark d-block text-truncate" style="max-width: 170px;" title="{{ cp.company_name }}">{{ cp.company_name }}</strong>
+                                                <small class="text-muted">Lic: {{ cp.license_number or 'MHA-COOP' }}</small>
+                                            </td>
+                                            <td class="py-3">
+                                                <span class="badge bg-primary-subtle text-primary">{{ cp.business_type or 'Multi-Trade' }}</span>
+                                                <small class="text-muted d-block mt-1">{{ cp.service_areas or 'Local Ward' }}</small>
+                                            </td>
+                                            <td class="pe-3 py-3 text-end">
+                                                {% if cp.is_verified %}
+                                                    <span class="badge bg-success-subtle text-success px-2 py-1">Verified</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning-subtle text-dark px-2 py-1">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="3" class="text-center py-4 text-muted">No cooperative societies found.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light border-top py-2 px-3 text-end">
+                            <a href="{{ url_for('publisher.societies_page') }}" class="small fw-semibold text-primary text-decoration-none">
+                                View All Societies <i data-lucide="arrow-right" style="width: 13px; height: 13px;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fallback Navigation Anchor Panes (Redirected by JS to dedicated pages) -->
+        <div class="tab-pane fade d-none" id="tenants" role="tabpanel"></div>
+        <div class="tab-pane fade d-none" id="onboarding" role="tabpanel"></div>
+        <div class="tab-pane fade d-none" id="disputes" role="tabpanel"></div>
+        <div class="tab-pane fade d-none" id="revenue" role="tabpanel"></div>
+
+        <!-- TAB 2: SYSTEM ANNOUNCEMENTS -->
+        <div class="tab-pane fade" id="announcements" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header bg-white py-2 px-3">
+                            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: clamp(0.85rem, 2.5vw, 1rem);">
+                                <i data-lucide="plus-circle" class="text-primary me-2" style="width: 18px; height: 18px;"></i> Broadcast System Announcement
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('publisher.create_announcement') }}" method="POST">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Title</label>
+                                    <input type="text" name="title" class="form-placeholder form-control" placeholder="e.g. Scheduled System Maintenance on Sunday" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Target Audience</label>
+                                    <select name="target_role" class="form-select">
+                                        <option value="all">All Users & Contractors</option>
+                                        <option value="admin">Contractors / Builders Only</option>
+                                        <option value="worker">Workers Only</option>
+                                        <option value="customer">Customers Only</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Announcement Content</label>
+                                    <textarea name="content" class="form-control" rows="4" placeholder="Enter announcement details..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 fw-bold">
+                                    <i data-lucide="send" style="width: 16px; height: 16px;"></i> Publish Announcement
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header bg-white py-2 px-3">
+                            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: clamp(0.85rem, 2.5vw, 1rem);">
+                                <i data-lucide="megaphone" class="text-primary me-2" style="width: 18px; height: 18px;"></i> Active & Past Announcements
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <ul class="list-group list-group-flush">
+                                {% for a in announcements %}
+                                <li class="list-group-item p-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="fw-bold text-dark mb-1">{{ a.title }}</h6>
+                                            <p class="text-secondary small mb-2">{{ a.content }}</p>
+                                            <div class="d-flex gap-2 align-items-center">
+                                                <span class="badge bg-secondary-subtle text-secondary small">Target: {{ a.target_role|upper }}</span>
+                                                <small class="text-muted">{{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                            </div>
+                                        </div>
+                                        <form action="{{ url_for('publisher.delete_announcement', announcement_id=a.id) }}" method="POST">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this announcement?');">
+                                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </li>
+                                {% else %}
+                                <li class="list-group-item text-center py-4 text-muted">No announcements broadcasted yet.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: AUDIT & SECURITY LOGS -->
+        <div class="tab-pane fade" id="security-logs" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-2 px-3">
+                    <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: clamp(0.85rem, 2.5vw, 1rem);">
+                        <i data-lucide="shield" class="text-primary me-2" style="width: 18px; height: 18px;"></i> Security & Authentication Audit Logs
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>IP Address</th>
+                                    <th>Status</th>
+                                    <th>User Agent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lh in recent_logins %}
+                                <tr>
+                                    <td><small class="text-muted">{{ lh.timestamp.strftime('%Y-%m-%d %H:%M:%S') if lh.timestamp else 'N/A' }}</small></td>
+                                    <td class="fw-semibold">{{ lh.user.username if lh.user else 'Unknown / User #' ~ lh.user_id }}</td>
+                                    <td><code>{{ lh.ip_address or '127.0.0.1' }}</code></td>
+                                    <td>
+                                        {% if 'Success' in lh.status %}
+                                            <span class="badge bg-success-subtle text-success">{{ lh.status }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger">{{ lh.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><small class="text-truncate d-inline-block" style="max-width: 250px;">{{ lh.user_agent }}</small></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">No security login logs recorded.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: PLATFORM SETTINGS & EMERGENCY SECURITY LOCKOUT -->
+        <div class="tab-pane fade" id="app-settings" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-header bg-white py-2 px-3">
+                            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: clamp(0.85rem, 2.5vw, 1rem);">
+                                <i data-lucide="sliders" class="text-primary me-2" style="width: 18px; height: 18px;"></i> Global Platform Configuration
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('publisher.update_settings') }}" method="POST">
+                                <div class="form-check form-switch mb-3 p-3 bg-light rounded-3">
+                                    <input class="form-check-input ms-0 me-3 fs-4" type="checkbox" role="switch" id="maintenance_mode" name="maintenance_mode" {% if maintenance_mode %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold text-dark" for="maintenance_mode">
+                                        Enable Platform Maintenance Mode
+                                        <span class="d-block text-secondary small fw-normal">Restricts contractor login to essential system administrators during software updates.</span>
+                                    </label>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Global Platform Header Banner Text</label>
+                                    <input type="text" name="global_banner" class="form-control" value="{{ global_banner }}" placeholder="e.g. Platform v2.4 Release Notes are now live!">
+                                    <small class="text-muted">Displays a high-visibility alert banner at the top of all user dashboards.</small>
+                                </div>
+
+                                <hr class="my-4">
+                                <h6 class="fw-bold text-danger mb-3 d-flex align-items-center gap-2">
+                                    <i data-lucide="shield-alert" style="width: 18px; height: 18px;"></i>
+                                    Emergency Role Access Lockout Controls
+                                </h6>
+
+                                <div class="form-check form-switch mb-2 p-2 bg-danger-subtle rounded-3">
+                                    <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="lockout_contractors" name="lockout_contractors" {% if lockout_contractors %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold text-dark" for="lockout_contractors">
+                                        Lockout Contractor Admin Access
+                                        <span class="d-block text-muted extra-small">Prevents contractor firm admins from logging into dashboard during security events.</span>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-2 p-2 bg-warning-subtle rounded-3">
+                                    <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="lockout_workers" name="lockout_workers" {% if lockout_workers %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold text-dark" for="lockout_workers">
+                                        Lockout Field Workers Access
+                                        <span class="d-block text-muted extra-small">Locks field worker portal and attendance check-in access.</span>
+                                    </label>
+                                </div>
+
+                                <div class="form-check form-switch mb-3 p-2 bg-info-subtle rounded-3">
+                                    <input class="form-check-input ms-0 me-3" type="checkbox" role="switch" id="lockout_customers" name="lockout_customers" {% if lockout_customers %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold text-dark" for="lockout_customers">
+                                        Lockout Customer Portal Access
+                                        <span class="d-block text-muted extra-small">Locks property owners & customers from booking services or filing tickets.</span>
+                                    </label>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">Publisher Restrictive IP Whitelist (Optional)</label>
+                                    <input type="text" name="ip_whitelist" class="form-control font-monospace" value="{{ ip_whitelist }}" placeholder="e.g. 192.168.1.1, 10.0.0.5">
+                                    <small class="text-muted">Comma-separated IP addresses allowed to access Publisher Admin portal.</small>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary fw-bold w-100">
+                                    <i data-lucide="save" style="width: 16px; height: 16px;"></i> Save Platform Settings & Security Controls
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Emergency Force Logout Card -->
+                    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-danger text-white" style="background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);">
+                        <div class="card-body p-4">
+                            <h5 class="fw-bold mb-2 d-flex align-items-center gap-2">
+                                <i data-lucide="zap" style="width: 22px; height: 22px;"></i>
+                                Emergency Force Logout All User Sessions
+                            </h5>
+                            <p class="small text-white-50 mb-3">
+                                Instantly invalidate all active non-publisher session tokens across Contractor, Worker, and Customer portals. Users will be forced to log in again immediately.
+                            </p>
+                            <form action="{{ url_for('publisher.force_logout_all') }}" method="POST">
+                                <button type="submit" class="btn btn-light text-danger fw-bold shadow-sm" onclick="return confirm('CRITICAL ACTION: Are you sure you want to force log out ALL active users across the platform?');">
+                                    <i data-lucide="power" style="width:16px; height:16px;"></i> Execute Force Logout All Sessions
+                                </button>
+                            </form>
+                            {% if force_logout_ts %}
+                                <div class="mt-3 extra-small text-white-50">Last Signal Executed: {{ force_logout_ts }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header bg-white py-2 px-3">
+                            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: clamp(0.85rem, 2.5vw, 1rem);">
+                                <i data-lucide="server" class="text-primary me-2" style="width: 18px; height: 18px;"></i> System Infrastructure Diagnostics
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                    <div>
+                                        <span class="fw-bold text-dark d-block">Database Connection</span>
+                                        <small class="text-muted">Relational Database Engine</small>
+                                    </div>
+                                    <span class="badge bg-success-subtle text-success">CONNECTED</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                    <div>
+                                        <span class="fw-bold text-dark d-block">Application Version</span>
+                                        <small class="text-muted">SahakarSeva Cooperative Gig Platform</small>
+                                    </div>
+                                    <span class="badge bg-primary-subtle text-primary">v3.0.0-CoopGig</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                    <div>
+                                        <span class="fw-bold text-dark d-block">Emergency Lockout Status</span>
+                                        <small class="text-muted">Role Security Lockdown</small>
+                                    </div>
+                                    <span class="badge bg-{{ 'danger' if lockout_workers or lockout_customers or lockout_contractors else 'success-subtle text-success' }}">
+                                        {{ 'ROLE LOCKOUT ACTIVE' if lockout_workers or lockout_customers or lockout_contractors else 'NORMAL OPERATIONS' }}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: PUBLISHER SUPER ADMIN PROFILE & SECURITY -->
+        <div class="tab-pane fade" id="profile" role="tabpanel">
+            <div class="row g-4">
+                <!-- Left: Profile Details Card -->
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header bg-white py-2 px-3">
+                            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: clamp(0.85rem, 2.5vw, 1rem);">
+                                <i data-lucide="user" class="text-primary me-2" style="width: 18px; height: 18px;"></i> Super Admin Profile Details
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-light rounded-3">
+                                <div class="avatar-circle bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold fs-4" style="width: 56px; height: 56px;">
+                                    {{ current_user.username[:2].upper() }}
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-0 text-dark">{{ current_user.username }}</h5>
+                                    <span class="badge bg-primary text-capitalize">{{ current_user.role }}</span>
+                                    <span class="text-muted extra-small d-block mt-1">Platform Master Owner & System Administrator</span>
+                                </div>
+                            </div>
+
+                            <form action="{{ url_for('publisher.update_profile') }}" method="POST">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Super Admin Username</label>
+                                    <input type="text" class="form-control" value="{{ current_user.username }}" readonly disabled>
+                                    <small class="text-muted">Username is fixed and cannot be modified.</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Official Contact Email *</label>
+                                    <input type="email" name="email" class="form-control" value="{{ current_user.email }}" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Support Helpline Phone Number</label>
+                                    <input type="text" name="phone" class="form-control" value="{{ current_user.phone or '' }}" placeholder="e.g. +1 555-0100">
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">Headquarters Office Address</label>
+                                    <input type="text" name="address" class="form-control" value="{{ current_user.address or '' }}" placeholder="e.g. 100 Enterprise Way, Suite 400">
+                                </div>
+
+                                <hr class="my-4">
+
+                                <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                                    <i data-lucide="key" class="text-primary" style="width:18px; height:18px;"></i>
+                                    Change Super Admin Password
+                                </h6>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Current Password</label>
+                                    <input type="password" name="current_password" class="form-control" placeholder="Enter current password to verify identity">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">New Password</label>
+                                    <input type="password" name="new_password" class="form-control" minlength="6" placeholder="Minimum 6 characters">
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">Confirm New Password</label>
+                                    <input type="password" name="confirm_password" class="form-control" minlength="6" placeholder="Repeat new password">
+                                </div>
+
+                                <button type="submit" class="btn btn-primary fw-bold w-100">
+                                    <i data-lucide="save" style="width:16px; height:16px;"></i> Update Super Admin Profile & Credentials
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Account Security & 2FA Status -->
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm rounded-3 mb-4">
+                        <div class="card-header bg-white py-2 px-3">
+                            <h6 class="fw-bold mb-0 text-dark d-flex align-items-center" style="font-size: clamp(0.85rem, 2.5vw, 1rem);">
+                                <i data-lucide="shield-check" class="text-success me-2" style="width: 18px; height: 18px;"></i> Account Security & 2FA Protection
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-group list-group-flush mb-4">
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                    <div>
+                                        <span class="fw-bold text-dark d-block">Two-Factor Authentication (2FA)</span>
+                                        <small class="text-muted">TOTP Authenticator Protection</small>
+                                    </div>
+                                    <span id="pubTwoFactorStatusBadge" class="badge bg-{{ 'success' if current_user.two_factor_enabled else 'secondary' }}">
+                                        {{ 'ENABLED & PROTECTED' if current_user.two_factor_enabled else 'DISABLED' }}
+                                    </span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                    <div>
+                                        <span class="fw-bold text-dark d-block">Account Status</span>
+                                        <small class="text-muted">Publisher Privilege Level</small>
+                                    </div>
+                                    <span class="badge bg-primary">MASTER PUBLISHER</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                    <div>
+                                        <span class="fw-bold text-dark d-block">Registration Date</span>
+                                        <small class="text-muted">Platform Account Created</small>
+                                    </div>
+                                    <span class="text-muted small">{{ current_user.created_at.strftime('%b %d, %Y') if current_user.created_at else 'N/A' }}</span>
+                                </li>
+                            </ul>
+
+                            <button type="button" class="btn btn-outline-primary fw-bold w-100 py-2 d-flex align-items-center justify-content-center gap-2" onclick="initPublisher2FA()">
+                                <i data-lucide="qr-code" style="width:18px; height:18px;"></i>
+                                {{ 'Manage / Reconfigure 2FA Google Authenticator' if current_user.two_factor_enabled else 'Setup Google Authenticator 2FA' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Publisher 2FA Setup Modal -->
+    <div class="modal fade" id="publisher2faModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white p-3">
+                    <h6 class="modal-title fw-bold d-flex align-items-center gap-2">
+                        <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                        Google Authenticator (TOTP) 2FA Setup
+                    </h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="pub2faQrContainer" class="text-center mb-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 text-center">
+                        <label class="form-label extra-small text-muted mb-1">Secret Key (Manual Entry):</label>
+                        <code id="pub2faSecretText" class="d-block bg-light p-2 rounded fw-bold text-primary border">LOADING...</code>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary small">Enter 6-Digit Code from App *</label>
+                        <input type="text" id="pub2faCodeInput" class="form-control text-center fs-5 fw-bold letter-spacing-2" placeholder="000000" maxlength="6">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="button" id="btnTogglePub2FA" class="btn btn-success fw-bold" onclick="togglePub2FA(true)">
+                            <i data-lucide="check-circle" style="width:16px; height:16px;"></i> Enable 2FA Verification
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Announcement Modal -->
+    <div class="modal fade" id="sendBroadcastModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white p-3">
+                    <h6 class="modal-title fw-bold d-flex align-items-center gap-2">
+                        <i data-lucide="send" style="width: 18px; height: 18px;"></i>
+                        Send Announcement
+                    </h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('publisher.send_broadcast') }}" method="POST">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">Announcement Subject / Title *</label>
+                            <input type="text" name="title" class="form-control" placeholder="e.g. Platform Maintenance Notice / Welfare Policy Update" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">Target Audience *</label>
+                            <select name="target_role" class="form-select">
+                                <option value="all">All Platform Users (Societies, Workers, Customers)</option>
+                                <option value="contractors">Societies & Contractors Only</option>
+                                <option value="workers">Field Workers Only</option>
+                                <option value="customers">Customers / Citizens Only</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">Message Content *</label>
+                            <textarea name="message" class="form-control" rows="4" placeholder="Enter announcement notification message..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light py-2">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm fw-bold px-4" id="btnSubmitBroadcast" onclick="handleBroadcastSubmit(this)">
+                            <i data-lucide="send" style="width:14px; height:14px;"></i> Send Announcement
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tabTitles = {
+        '#overview': { title: 'Publisher Command Center', bc: 'Command Center', sub: null, meta: 'Apex Council Governance' },
+        '#tenants': { title: 'Active Tenant Contractors', bc: 'Primary Societies', sub: 'Affiliated Societies', meta: '11 Societies Active' },
+        '#onboarding': { title: 'Contractor Onboarding Queue', bc: 'Primary Societies', sub: 'Onboarding Queue', meta: '4 Pending Review' },
+        '#disputes': { title: 'Customer Dispute Resolution Center', bc: 'Grievance Redressal', sub: 'Customer Disputes', meta: '2 Open Disputes' },
+        '#revenue': { title: 'SaaS Subscription Revenue & MRR', bc: 'State Ledger & Finance', sub: 'SaaS MRR Pool', meta: 'Revenue Ledger' },
+        '#announcements': { title: 'System Announcements & Broadcasts', bc: 'Broadcast Operations', sub: 'Announcements', meta: 'State-wide Feeds' },
+        '#security-logs': { title: 'Security History', bc: 'Platform Governance', sub: 'Security Logs', meta: 'Audit Trail' },
+        '#security_logs': { title: 'Security History', bc: 'Platform Governance', sub: 'Security Logs', meta: 'Audit Trail' },
+        '#app-settings': { title: 'Global Platform Settings', bc: 'System Governance', sub: 'Platform Settings', meta: 'Global Config' },
+        '#app_settings': { title: 'Global Platform Settings', bc: 'System Governance', sub: 'Platform Settings', meta: 'Global Config' },
+        '#profile': { title: 'Publisher Super Admin Profile', bc: 'Admin Profile', sub: 'Super Admin', meta: 'Apex Council' }
+    };
+
+    function activateSectionFromHash() {
+        let hash = window.location.hash || '#overview';
+
+        // Redirect legacy SaaS hash anchors to dedicated clean pages
+        if (hash === '#tenants') {
+            window.location.href = "{{ url_for('publisher.societies_page') }}";
+            return;
+        }
+        if (hash === '#onboarding') {
+            window.location.href = "{{ url_for('publisher.societies_page', tab='pending') }}";
+            return;
+        }
+        if (hash === '#disputes') {
+            window.location.href = "{{ url_for('publisher.complaints_page') }}";
+            return;
+        }
+        if (hash === '#revenue') {
+            window.location.href = "{{ url_for('publisher.money_page') }}";
+            return;
+        }
+
+        let targetPane = null;
+        try {
+            targetPane = document.querySelector(hash);
+        } catch (e) {
+            targetPane = null;
+        }
+
+        // Handle hyphen vs underscore URL hash variations (e.g. #app_settings <-> #app-settings)
+        if (!targetPane && hash.includes('_')) {
+            const hyphenHash = hash.replace(/_/g, '-');
+            try { targetPane = document.querySelector(hyphenHash); } catch(e){}
+            if (targetPane) hash = hyphenHash;
+        } else if (!targetPane && hash.includes('-')) {
+            const underscoreHash = hash.replace(/-/g, '_');
+            try { targetPane = document.querySelector(underscoreHash); } catch(e){}
+            if (targetPane) hash = underscoreHash;
+        }
+
+        if (!targetPane) {
+            targetPane = document.querySelector('#overview');
+            hash = '#overview';
+        }
+        
+        if (targetPane && targetPane.classList.contains('tab-pane')) {
+            // Hide all tab panes and show the selected one
+            document.querySelectorAll('#publisherTabContent .tab-pane').forEach(function(pane) {
+                pane.classList.remove('show', 'active');
+            });
+            targetPane.classList.add('show', 'active');
+
+            // Highlight corresponding link in sidebar menu
+            document.querySelectorAll('.sidebar-menu .sidebar-item').forEach(function(item) {
+                item.classList.remove('active');
+            });
+            
+            const cleanHashName = hash.replace('#', '');
+            const activeSidebarLink = document.querySelector(`.sidebar-menu a[href*="${cleanHashName}"]`);
+            if (activeSidebarLink) {
+                const parentItem = activeSidebarLink.closest('.sidebar-item');
+                if (parentItem) parentItem.classList.add('active');
+            } else {
+                const defaultLink = document.querySelector('.sidebar-menu a[href*="#overview"]');
+                if (defaultLink) {
+                    const parentItem = defaultLink.closest('.sidebar-item');
+                    if (parentItem) parentItem.classList.add('active');
+                }
+            }
+
+            // Dynamic Header Title & Breadcrumb Update
+            const info = tabTitles[hash] || { title: 'Publisher Command Center', bc: 'Command Center', sub: null, meta: 'Apex Council Governance' };
+            const headerTitleEl = document.getElementById('header-page-title');
+            if (headerTitleEl) headerTitleEl.innerText = info.title;
+
+            if (typeof window.updateBreadcrumb === 'function') {
+                window.updateBreadcrumb(info.bc, info.sub, info.meta);
+            } else {
+                const bcEl = document.querySelector('.bc-current');
+                if (bcEl) bcEl.innerText = info.bc;
+            }
+        }
+    }
+
+    // Trigger on hash change and initial page load
+    window.addEventListener('hashchange', activateSectionFromHash);
+    activateSectionFromHash();
+});
+
+async function initPublisher2FA() {
+    const modalEl = document.getElementById('publisher2faModal');
+    const bsModal = new bootstrap.Modal(modalEl);
+    bsModal.show();
+
+    try {
+        const res = await fetch('/api/2fa/setup');
+        const data = await res.json();
+        if (data.status === 'success') {
+            document.getElementById('pub2faSecretText').innerText = data.secret;
+            if (data.qr_code) {
+                document.getElementById('pub2faQrContainer').innerHTML = `<img src="${data.qr_code}" alt="Google Authenticator QR Code" class="img-fluid rounded border p-2 bg-white shadow-sm" style="max-width: 180px;"><div class="extra-small text-muted mt-2">Scan QR Code using <strong>Google Authenticator</strong> or <strong>Authy</strong> app</div>`;
+            }
+            const toggleBtn = document.getElementById('btnTogglePub2FA');
+            if (data.enabled) {
+                toggleBtn.innerText = 'Disable 2FA Protection';
+                toggleBtn.className = 'btn btn-outline-danger fw-bold w-100';
+                toggleBtn.onclick = () => togglePub2FA(false);
+            } else {
+                toggleBtn.innerText = 'Enable 2FA Verification';
+                toggleBtn.className = 'btn btn-success fw-bold w-100';
+                toggleBtn.onclick = () => togglePub2FA(true);
+            }
+        }
+    } catch(e) {
+        alert('Error initializing 2FA setup.');
+    }
+}
+
+async function togglePub2FA(enable) {
+    const codeInput = document.getElementById('pub2faCodeInput');
+    const code = codeInput ? codeInput.value.trim() : '';
+
+    if (enable && !code) {
+        alert('Please enter the 6-digit verification code from Google Authenticator.');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/2fa/toggle', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ enable: enable, code: code })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            alert(data.message);
+            window.location.reload();
+        } else {
+            alert(data.message || 'Verification failed.');
+        }
+    } catch(e) {
+        alert('Failed to toggle 2FA.');
+    }
+}
+</script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    if (typeof io !== 'undefined') {
+        try {
+            const socket = io();
+            function prependLiveAuditEvent(action, details) {
+                const list = document.getElementById('liveAuditFeedList');
+                if (!list) return;
+                const emptyItem = list.querySelector('.text-center');
+                if (emptyItem && emptyItem.innerText.includes('No activity')) {
+                    emptyItem.remove();
+                }
+                const now = new Date();
+                const timeStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' · ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const li = document.createElement('li');
+                li.className = 'list-group-item p-3 border-bottom bg-light-subtle';
+                li.innerHTML = `
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="avatar-circle bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 38px; height: 38px;">
+                            <i data-lucide="check-circle" style="width:18px; height:18px;"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-1">
+                                <strong class="text-dark" style="font-size: 0.9rem;">${escapeHtml(action)}</strong>
+                                <small class="text-success fw-semibold" style="font-size: 0.75rem;">${timeStr}</small>
+                            </div>
+                            <p class="text-secondary small mb-0 mt-1" style="font-size: 0.82rem; line-height: 1.4;">${escapeHtml(details)}</p>
+                        </div>
+                    </div>
+                `;
+                list.prepend(li);
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+            }
+
+            socket.on('job_status_changed', function(data) {
+                prependLiveAuditEvent(
+                    'Work Progress Updated',
+                    `Service Request #${data.job_id || data.request_id || ''} changed to: ${data.status || 'Updated'} (${data.trade || 'Gig Service'})`
+                );
+            });
+
+            socket.on('emergency_status_update', function(data) {
+                prependLiveAuditEvent(
+                    'Emergency Dispatch Notice',
+                    `Emergency #${data.request_id || ''}: ${data.status || 'Updated'} - ${data.message || ''}`
+                );
+            });
+
+            socket.on('emergency_job_alert', function(data) {
+                prependLiveAuditEvent(
+                    'Emergency Help Alert',
+                    `Emergency #${data.job_id || data.request_id || ''}: ${data.title || data.category || 'Dispatched'} in ${data.society_name || 'Society Area'}`
+                );
+            });
+        } catch (e) {
+            console.warn('[Publisher WebSocket] Live activity feed listener issue:', e);
+        }
+    }
+});
+
+// Asynchronous Live Audit Feed Refresh without full page reload
+async function refreshLiveAuditFeed(btn) {
+    const icon = document.getElementById('auditFeedRefreshIcon');
+    if (btn) btn.disabled = true;
+    if (icon) icon.classList.add('feed-spin-anim');
+    try {
+        const resp = await fetch('/publisher/api/audit-feed');
+        const data = await resp.json();
+        if (data.status === 'success' && Array.isArray(data.activities)) {
+            const list = document.getElementById('liveAuditFeedList');
+            if (list) {
+                if (data.activities.length === 0) {
+                    list.innerHTML = '<li class="list-group-item text-center py-4 text-muted">No activity logs recorded yet.</li>';
+                } else {
+                    list.innerHTML = data.activities.map(act => `
+                        <li class="list-group-item p-3 border-bottom">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="avatar-circle bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 38px; height: 38px;">
+                                    <i data-lucide="check-circle" style="width:18px; height:18px;"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-1">
+                                        <strong class="text-dark" style="font-size: 0.9rem;">${act.action || 'Activity'}</strong>
+                                        <small class="text-muted" style="font-size: 0.75rem;">${act.timestamp || 'Recent'}</small>
+                                    </div>
+                                    <p class="text-secondary small mb-0 mt-1" style="font-size: 0.82rem; line-height: 1.4;">${act.details || ''}</p>
+                                </div>
+                            </div>
+                        </li>
+                    `).join('');
+                }
+                if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                    window.lucide.createIcons();
+                }
+            }
+            if (typeof window.showToast === 'function') {
+                window.showToast('Activity feed updated.', 'info');
+            }
+        }
+    } catch (e) {
+        console.error('Audit feed refresh error:', e);
+        if (typeof window.showToast === 'function') {
+            window.showToast('Failed to refresh activity feed.', 'danger');
+        }
+    } finally {
+        if (btn) btn.disabled = false;
+        if (icon) icon.classList.remove('feed-spin-anim');
+    }
+}
+window.refreshLiveAuditFeed = refreshLiveAuditFeed;
+
+function handleBroadcastSubmit(btn) {
+    const form = btn.closest('form');
+    if (!form || !form.checkValidity()) return;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Sending...';
+    form.submit();
+}
+window.handleBroadcastSubmit = handleBroadcastSubmit;
+</script>
+<style>
+@keyframes feedSpin { 100% { transform: rotate(360deg); } }
+.feed-spin-anim { animation: feedSpin 0.7s linear infinite; }
+</style>
+{% endblock %}

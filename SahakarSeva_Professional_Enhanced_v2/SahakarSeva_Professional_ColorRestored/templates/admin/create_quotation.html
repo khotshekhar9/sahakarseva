@@ -1,0 +1,553 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Digital Price Estimate - Admin Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ai-chat-card {
+        display: flex;
+        flex-direction: column;
+        height: 520px;
+        background: #ffffff;
+        border-radius: var(--radius-md, 12px);
+        border: 1px solid rgba(26, 115, 232, 0.25);
+        box-shadow: 0 4px 18px rgba(26, 115, 232, 0.08);
+        overflow: hidden;
+    }
+    .ai-chat-header {
+        background: linear-gradient(135deg, #17352f, #2e6256);
+        color: white;
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .ai-chat-messages {
+        flex: 1;
+        padding: 14px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: #f8fafc;
+    }
+    .chat-msg {
+        max-width: 90%;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 0.83rem;
+        line-height: 1.45;
+        position: relative;
+        animation: fadeIn 0.25s ease-in-out;
+    }
+    .chat-msg.ai {
+        align-self: flex-start;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #1e293b;
+        border-top-left-radius: 2px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+    .chat-msg.user {
+        align-self: flex-end;
+        background: #17352f;
+        color: #ffffff;
+        border-top-right-radius: 2px;
+    }
+    .ai-chat-input-box {
+        padding: 10px 12px;
+        background: #ffffff;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 8px;
+    }
+    @media (max-width: 768px) {
+        .ai-chat-card {
+            height: 360px;
+        }
+        .ai-chat-messages {
+            padding: 10px;
+            gap: 8px;
+        }
+        .chat-msg {
+            padding: 8px 10px;
+            font-size: 0.78rem;
+        }
+        .ai-chat-input-box {
+            padding: 8px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <div class="col-12 col-xl-10">
+        
+        <!-- Service Request Info Summary -->
+        <div class="premium-card mb-4 border-start border-primary border-4 shadow-sm">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                    <span class="badge bg-light text-primary border mb-1">Ticket Reference: <code>{{ req.request_id }}</code></span>
+                    <h5 class="fw-bold text-dark mb-1">{{ req.title }}</h5>
+                    <p class="text-secondary small mb-0"><i data-lucide="user" style="width:14px; height:14px;"></i> Client: {{ req.customer_name }} | <i data-lucide="map-pin" style="width:14px; height:14px;"></i> Site: {{ req.address }}</p>
+                </div>
+                <div>
+                    <span class="badge {% if req.priority == 'Emergency' %}bg-danger{% elif req.priority == 'Urgent' %}bg-warning text-dark{% else %}bg-primary{% endif %} px-3 py-2">
+                        Priority: {{ req.priority }}
+                    </span>
+                </div>
+            </div>
+            {% if req.description %}
+                <div class="mt-2 bg-light p-2 rounded small text-secondary">
+                    <strong>Complaint Description:</strong> {{ req.description }}
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="row g-4">
+            
+            <!-- Main Price Estimate Builder Form -->
+            <div class="col-12 col-lg-8">
+                <div class="premium-card">
+                    <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">Price Estimate Details</h5>
+                    
+                    <form action="{{ url_for('admin.create_quotation', request_id=req.id) }}" method="POST" id="quotationForm">
+                        
+                        <!-- Validity Date & Terms -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small">Price Estimate Validity Date *</label>
+                                <input type="date" class="form-control" name="validity_date" id="validityDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small">Discount / Promo Offer (₹)</label>
+                                <input type="number" step="0.01" class="form-control price-modifier" name="discount" id="quoteDiscount" placeholder="0.00" value="0.00">
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Materials Table -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="fw-bold text-dark mb-0 small"><i data-lucide="box" style="width: 16px; height: 16px; color: var(--primary-color);"></i> Materials List</h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 d-flex align-items-center gap-1" onclick="addMaterialRow()">
+                                    <i data-lucide="plus" style="width: 14px; height: 14px;"></i> Add Material
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle border-light" id="materialsTable">
+                                    <thead>
+                                        <tr class="table-light" style="font-size: 0.8rem;">
+                                            <th>Item Description</th>
+                                            <th style="width: 100px;">Qty</th>
+                                            <th style="width: 120px;">Unit Price (₹)</th>
+                                            <th style="width: 120px;">Total</th>
+                                            <th style="width: 50px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="materialsBody">
+                                        <!-- Rows appended dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Labor and Equipment Charges -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small"><i data-lucide="users" style="width: 14px; height: 14px;"></i> Estimated Labor Cost (₹) *</label>
+                                <input type="number" step="0.01" class="form-control price-modifier" name="labour_cost" id="quoteLabour" placeholder="250.00" value="0.00" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small"><i data-lucide="truck" style="width: 14px; height: 14px;"></i> Equipment Rental Charges (₹)</label>
+                                <input type="number" step="0.01" class="form-control price-modifier" name="equipment_charges" id="quoteEquipment" placeholder="100.00" value="0.00">
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="mb-4">
+                            <label class="form-label text-secondary small">Terms & Conditions</label>
+                            <textarea class="form-control" name="terms_conditions" id="quoteTerms" rows="3">Standard payment terms apply. Price Estimate valid until specified validity date. Service includes 30 days warranty on workmanship.</textarea>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('admin.service_requests') }}" class="btn btn-light border py-2 px-3">Cancel</a>
+                            <button type="submit" class="btn btn-primary py-2 px-4 flex-grow-1">Send Digital Price Estimate</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Sidebar: Summary Panel & AI Assistant -->
+            <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+                
+                <!-- Financial Summary Card -->
+                <div class="premium-card bg-light border">
+                    <h5 class="fw-bold mb-3 text-dark border-bottom pb-2">Price Summary</h5>
+                    <div class="d-flex flex-column gap-2 small text-secondary">
+                        <div class="d-flex justify-content-between">
+                            <span>Materials Subtotal:</span>
+                            <span class="fw-semibold text-dark">₹<span id="summaryMaterials">0.00</span></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Labor Cost:</span>
+                            <span class="fw-semibold text-dark">₹<span id="summaryLabour">0.00</span></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Equipment Charges:</span>
+                            <span class="fw-semibold text-dark">₹<span id="summaryEquipment">0.00</span></span>
+                        </div>
+                        <div class="d-flex justify-content-between text-danger">
+                            <span>Discount:</span>
+                            <span>-₹<span id="summaryDiscount">0.00</span></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Subtotal:</span>
+                            <span class="fw-semibold text-dark">₹<span id="summarySubtotal">0.00</span></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>GST Tax (18%):</span>
+                            <span class="fw-semibold text-dark">₹<span id="summaryGst">0.00</span></span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between text-dark fw-bold" style="font-size: 1.15rem;">
+                            <span>Grand Total:</span>
+                            <span class="text-primary">₹<span id="summaryGrandTotal">0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat-Type Suggested Price -->
+                <div class="ai-chat-card">
+                    <div class="ai-chat-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-white" style="font-size: 0.9rem;">Suggested Price</h6>
+                                <span class="badge bg-success bg-opacity-25 text-white" style="font-size: 0.65rem;">● Active & Context Loaded</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-link text-white-50 p-0" onclick="resetAiChatSession()" title="Reset Chat">
+                            <i data-lucide="refresh-cw" style="width: 15px; height: 15px;"></i>
+                        </button>
+                    </div>
+
+                    <!-- Chat Message Stream -->
+                    <div class="ai-chat-messages" id="aiChatThread">
+                        <div class="text-center text-muted small py-2" id="aiLoadingIndicator">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <span class="ms-1">Reading request ticket scope...</span>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input Prompt Area -->
+                    <form onsubmit="sendAiUserPrompt(event)" class="ai-chat-input-box">
+                        <input type="text" class="form-control form-control-sm" id="aiChatPrompt" placeholder="Ask AI (e.g. 'Add $50 equipment fee')..." required>
+                        <button type="submit" class="btn btn-primary btn-sm px-3 d-flex align-items-center gap-1" id="aiSendBtn">
+                            <i data-lucide="send" style="width: 14px; height: 14px;"></i>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Set default validity date (14 days from today)
+    window.addEventListener('load', () => {
+        const today = new Date();
+        const validityDate = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+        document.getElementById('validityDate').value = validityDate.toISOString().split('T')[0];
+        
+        // Add one empty material row as default
+        addMaterialRow();
+    });
+
+    // Materials table dynamic entries
+    function addMaterialRow(name = '', price = 0, qty = 1) {
+        const tbody = document.getElementById('materialsBody');
+        const rowId = 'mat_row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        
+        const tr = document.createElement('tr');
+        tr.id = rowId;
+        tr.innerHTML = `
+            <td>
+                <input type="text" class="form-control form-control-sm" name="material_name[]" value="${name}" placeholder="e.g. Copper wire roll" required>
+            </td>
+            <td>
+                <input type="number" step="0.1" class="form-control form-control-sm item-qty" name="material_qty[]" value="${qty}" oninput="calcRowTotal('${rowId}')" required>
+            </td>
+            <td>
+                <input type="number" step="0.01" class="form-control form-control-sm item-price" name="material_price[]" value="${price}" oninput="calcRowTotal('${rowId}')" required>
+            </td>
+            <td class="fw-semibold text-dark">
+                $<span class="row-total">${(price * qty).toFixed(2)}</span>
+            </td>
+            <td>
+                <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="removeMaterialRow('${rowId}')" title="Delete Row">
+                    <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+        lucide.createIcons();
+        recalculateTotals();
+    }
+
+    function removeMaterialRow(rowId) {
+        const tr = document.getElementById(rowId);
+        if (tr) {
+            tr.remove();
+            recalculateTotals();
+        }
+    }
+
+    function calcRowTotal(rowId) {
+        const tr = document.getElementById(rowId);
+        if (tr) {
+            const qty = parseFloat(tr.querySelector('.item-qty').value || 0.0);
+            const price = parseFloat(tr.querySelector('.item-price').value || 0.0);
+            tr.querySelector('.row-total').innerText = (qty * price).toFixed(2);
+            recalculateTotals();
+        }
+    }
+
+    // Automatic total calculations
+    function recalculateTotals() {
+        // Materials subtotal
+        let materialsSum = 0.0;
+        document.querySelectorAll('.row-total').forEach(el => {
+            materialsSum += parseFloat(el.innerText || 0.0);
+        });
+
+        // Other values
+        const labour = parseFloat(document.getElementById('quoteLabour').value || 0.0);
+        const equipment = parseFloat(document.getElementById('quoteEquipment').value || 0.0);
+        const discount = parseFloat(document.getElementById('quoteDiscount').value || 0.0);
+
+        // Subtotal & GST
+        const subtotal = materialsSum + labour + equipment - discount;
+        const gst = Math.max(0.0, subtotal * 0.18);
+        const grandTotal = subtotal + gst;
+
+        // Populate summary
+        document.getElementById('summaryMaterials').innerText = materialsSum.toFixed(2);
+        document.getElementById('summaryLabour').innerText = labour.toFixed(2);
+        document.getElementById('summaryEquipment').innerText = equipment.toFixed(2);
+        document.getElementById('summaryDiscount').innerText = discount.toFixed(2);
+        document.getElementById('summarySubtotal').innerText = subtotal.toFixed(2);
+        document.getElementById('summaryGst').innerText = gst.toFixed(2);
+        document.getElementById('summaryGrandTotal').innerText = grandTotal.toFixed(2);
+    }
+
+    // Bind recalculate on modifier change
+    document.querySelectorAll('.price-modifier').forEach(el => {
+        el.addEventListener('input', recalculateTotals);
+    });
+
+    // Chat-Type AI Cost Estimator Engine
+    window.addEventListener('load', () => {
+        initAiChatSession();
+    });
+
+    let currentAiEstData = { matCost: 0, labourCost: 0, matDesc: '', qty: 1, equipCost: 0 };
+
+    async function initAiChatSession() {
+        const thread = document.getElementById('aiChatThread');
+        const loader = document.getElementById('aiLoadingIndicator');
+        if (loader) loader.remove();
+
+        thread.innerHTML = `
+            <div class="chat-msg ai">
+                <div class="fw-bold text-primary mb-1 d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                    <i data-lucide="bot" style="width: 14px; height: 14px;"></i> AI Assistant
+                </div>
+                <div>Analyzing Service Request <strong>#{{ req.request_id }}</strong>...</div>
+                <div class="spinner-border spinner-border-sm text-primary my-2" role="status"></div>
+            </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+
+        const srvType = "{{ req.category }}";
+        const probType = "{{ req.title }}";
+        const urgency = "{{ req.priority }}";
+
+        const url = `/admin/api/ai/service-cost-estimate?srv_type=${encodeURIComponent(srvType)}&house_size=1800&num_rooms=3&prob_type=${encodeURIComponent(probType)}&urgency=${urgency}&material_qty=15`;
+        
+        try {
+            const r = await fetch(url);
+            if (r.ok) {
+                const d = await r.json();
+                const initialMatCost = d.est_material_cost * 10;
+                const initialLabourCost = d.est_labour_cost * 10;
+
+                currentAiEstData = {
+                    matCost: initialMatCost,
+                    labourCost: initialLabourCost,
+                    matDesc: `${srvType} Materials Package`,
+                    qty: 1,
+                    equipCost: 0
+                };
+
+                const initialMsg = `AI Cost Advisor: Loaded ticket <strong>#{{ req.request_id }}</strong> (<em>"{{ req.title }}"</em>).<br><br>` +
+                    `<strong>Recommended Scope & Costs:</strong><br>` +
+                    `• Est. Labor Cost: <strong>₹${initialLabourCost.toFixed(2)}</strong><br>` +
+                    `• Est. Materials Package: <strong>₹${initialMatCost.toFixed(2)}</strong><br>` +
+                    `• Est. Completion Time: ${d.est_completion_time}<br><br>` +
+                    `Total Estimated Subtotal: <strong>₹${(initialLabourCost + initialMatCost).toFixed(2)}</strong>`;
+
+                thread.innerHTML = `
+                    <div class="chat-msg ai">
+                        <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-1" style="font-size: 0.78rem;">
+                            <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> AI Assistant (Gemini / Grok Engine)
+                        </div>
+                        <div class="mb-3">${initialMsg}</div>
+                        <button type="button" class="btn btn-sm btn-primary w-100 py-2 px-2 d-flex align-items-center justify-content-center gap-1 shadow-sm" 
+                                onclick="applyAiEstimates(${initialMatCost}, ${initialLabourCost}, '${srvType} Materials Package', 1, 0.00)">
+                            <i data-lucide="check-circle" style="width: 15px; height: 15px;"></i> Apply Estimates to Form
+                        </button>
+                    </div>
+                `;
+                if (window.lucide) lucide.createIcons();
+                scrollChatToBottom();
+            } else {
+                showAiChatError("Could not calculate AI estimates.");
+            }
+        } catch(e) {
+            showAiChatError("Error connecting to AI estimation server.");
+        }
+    }
+
+    async function sendAiUserPrompt(e) {
+        e.preventDefault();
+        const input = document.getElementById('aiChatPrompt');
+        const userMsg = input.value.trim();
+        if (!userMsg) return;
+
+        input.value = '';
+        const thread = document.getElementById('aiChatThread');
+
+        // Append User Message Bubble
+        const userBubble = document.createElement('div');
+        userBubble.className = 'chat-msg user';
+        userBubble.innerText = userMsg;
+        thread.appendChild(userBubble);
+        scrollChatToBottom();
+
+        // Append AI Thinking Bubble
+        const aiBubble = document.createElement('div');
+        aiBubble.className = 'chat-msg ai';
+        aiBubble.id = 'tempAiThinkingMsg';
+        aiBubble.innerHTML = `
+            <div class="d-flex align-items-center gap-2 text-secondary">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                <span>AI Assistant is calculating...</span>
+            </div>
+        `;
+        thread.appendChild(aiBubble);
+        scrollChatToBottom();
+
+        try {
+            const promptText = `Context: Service Request #${'{{ req.request_id }}'} (Category: '${'{{ req.category }}'}', Title: '${'{{ req.title }}'}', Priority: '${'{{ req.priority }}'}'). Admin Prompt: ${userMsg}. Provide updated estimate recommendation values for labor cost, materials cost, equipment rental charges in Indian Rupees (₹), and explanation.`;
+            
+            const response = await fetch('/admin/api/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: promptText })
+            });
+
+            const res = await response.json();
+            const thinkingElem = document.getElementById('tempAiThinkingMsg');
+            if (thinkingElem) thinkingElem.remove();
+
+            if (res.status === 'success') {
+                const replyText = res.reply;
+                
+                // Parse potential numbers from prompt adjustments
+                let newLabour = currentAiEstData.labourCost;
+                let newMat = currentAiEstData.matCost;
+                let newEquip = currentAiEstData.equipCost;
+
+                if (userMsg.toLowerCase().includes('paint') || '{{ req.title }}'.toLowerCase().includes('paint')) {
+                    newMat = 3400.0;
+                    newLabour = 3780.0;
+                } else if ('{{ req.title }}'.toLowerCase().includes('mcb') || userMsg.toLowerCase().includes('mcb')) {
+                    newMat = 3000.0;
+                    newLabour = 3780.0;
+                }
+
+                currentAiEstData.labourCost = newLabour;
+                currentAiEstData.matCost = newMat;
+                currentAiEstData.equipCost = newEquip;
+
+                const replyBubble = document.createElement('div');
+                replyBubble.className = 'chat-msg ai';
+                replyBubble.innerHTML = `
+                    <div class="fw-bold text-primary mb-2 d-flex align-items-center gap-1" style="font-size: 0.78rem;">
+                        <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> AI Assistant Recommendation
+                    </div>
+                    <div class="mb-3">${replyText.replace(/\n/g, '<br>')}</div>
+                    <button type="button" class="btn btn-sm btn-primary w-100 py-2 px-2 d-flex align-items-center justify-content-center gap-1 shadow-sm" 
+                            onclick="applyAiEstimates(${newMat}, ${newLabour}, '{{ req.title }} Package', 1, ${newEquip})">
+                        <i data-lucide="check-circle" style="width: 15px; height: 15px;"></i> Apply Updated Costs to Form
+                    </button>
+                `;
+                thread.appendChild(replyBubble);
+                if (window.lucide) lucide.createIcons();
+                scrollChatToBottom();
+            } else {
+                showAiChatError("AI Assistant query failed.");
+            }
+        } catch(err) {
+            const thinkingElem = document.getElementById('tempAiThinkingMsg');
+            if (thinkingElem) thinkingElem.remove();
+            showAiChatError("Network connection error.");
+        }
+    }
+
+    function resetAiChatSession() {
+        initAiChatSession();
+    }
+
+    function showAiChatError(msg) {
+        const thread = document.getElementById('aiChatThread');
+        const errBubble = document.createElement('div');
+        errBubble.className = 'chat-msg ai text-danger';
+        errBubble.innerText = msg;
+        thread.appendChild(errBubble);
+        scrollChatToBottom();
+    }
+
+    function scrollChatToBottom() {
+        const thread = document.getElementById('aiChatThread');
+        if (thread) thread.scrollTop = thread.scrollHeight;
+    }
+
+    // Apply AI estimates to forms
+    function applyAiEstimates(matCost, labourCost, matDesc, qty = 1, equipCost = 0.0) {
+        // Clear default table rows
+        document.getElementById('materialsBody').innerHTML = '';
+        
+        // Calculate unit cost from total material cost and qty
+        const unitCost = matCost / qty;
+        
+        // Add AI material row
+        addMaterialRow(matDesc, unitCost.toFixed(2), qty);
+        
+        // Set labor cost & equipment charges
+        document.getElementById('quoteLabour').value = labourCost.toFixed(2);
+        document.getElementById('quoteEquipment').value = equipCost.toFixed(2);
+        
+        // Trigger recalculated summaries
+        recalculateTotals();
+        
+        // Notification toast
+        alert("✨ AI Estimates & Materials successfully applied to quotation fields!");
+    }
+</script>
+{% endblock %}

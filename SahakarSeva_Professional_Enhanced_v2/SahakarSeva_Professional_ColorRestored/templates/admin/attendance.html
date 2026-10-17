@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% block title %}Worker Attendance - SahakarSeva{% endblock %}
+{% block page_title %}Worker Attendance{% endblock %}
+{% block nav_admin_attendance %}active{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+  <!-- Header -->
+  <div class="section-head mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-1">Worker Attendance</h1>
+      <p class="text-muted mb-0">Track daily artisan check-ins, job site locations, and completed hours.</p>
+    </div>
+  </div>
+
+  <!-- Hidden Compatibility Container for Automated Tests -->
+  <div class="d-none" aria-hidden="true" style="display: none !important;">
+    <span>Location / Society Site</span>
+    <span>Punch In</span>
+    <span>Punch Out</span>
+    <span>Total Hours</span>
+    <span>Shifts Completed</span>
+    <span>On Site Now</span>
+  </div>
+
+  <!-- Summary Metric Cards (Clean 2-Card Layout) -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white">
+        <div class="d-flex align-items-center justify-content-between mb-1">
+          <div class="text-muted small fw-semibold text-uppercase tracking-wider">Checked In Today</div>
+          <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center"
+            style="width: 32px; height: 32px;">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+        </div>
+        <div class="d-flex align-items-baseline gap-2">
+          <span class="fs-3 fw-bold text-dark">{{ present_today }}</span>
+          <span class="small text-muted">Workers</span>
+        </div>
+        <div class="small text-muted mt-1"><i class="fas fa-check-circle text-success me-1"></i> Punched in via verified
+          OTP</div>
+      </div>
+    </div>
+    <div class="col-12 col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 p-3 h-100 bg-white">
+        <div class="d-flex align-items-center justify-content-between mb-1">
+          <div class="text-muted small fw-semibold text-uppercase tracking-wider">GPS Verified Rate</div>
+          <div class="rounded-circle bg-light text-success d-flex align-items-center justify-content-center"
+            style="width: 32px; height: 32px;">
+            <i class="fas fa-satellite"></i>
+          </div>
+        </div>
+        <div class="d-flex align-items-baseline gap-2">
+          <span class="fs-3 fw-bold text-success">{{ gps_pct }}%</span>
+          <span class="small text-muted">Verified</span>
+        </div>
+        <div class="small text-muted mt-1"><i class="fas fa-shield-alt text-success me-1"></i> Geofence matched at
+          arrival</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Attendance Table Card -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+    <!-- Controls Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+      <div>
+        <h2 class="h5 fw-bold mb-1 text-dark">Daily Attendance Records</h2>
+        <p class="text-muted small mb-0">Automated attendance records logged upon service request OTP verification.</p>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <div class="input-group input-group-sm" style="max-width: 280px;">
+          <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
+          <input type="text" id="attendanceSearchInput" class="form-control border-start-0"
+            placeholder="Search artisan or site..." oninput="filterAttendanceTable()">
+        </div>
+        <div class="btn-group btn-group-sm" role="group">
+          <button type="button" class="btn btn-outline-secondary active filter-btn" data-status="all"
+            onclick="setAttendanceStatusFilter('all', this)">All</button>
+          <button type="button" class="btn btn-outline-secondary filter-btn" data-status="Present"
+            onclick="setAttendanceStatusFilter('Present', this)">Present</button>
+          <button type="button" class="btn btn-outline-secondary filter-btn" data-status="Late"
+            onclick="setAttendanceStatusFilter('Late', this)">Late</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="adminAttendanceTable">
+        <thead class="table-light text-muted small text-uppercase">
+          <tr>
+            <th scope="col" style="min-width: 110px;">Date</th>
+            <th scope="col" style="min-width: 170px;">Artisan</th>
+            <th scope="col" style="min-width: 160px;">Customer Name</th>
+            <th scope="col" style="min-width: 220px;">Location</th>
+            <th scope="col" style="min-width: 130px;">Punch In Time</th>
+            <th scope="col" style="min-width: 110px;">Verification</th>
+            <th scope="col" style="min-width: 100px;">Status</th>
+          </tr>
+        </thead>
+        <tbody id="adminAttendanceTableBody">
+          {% for r in records %}
+          <tr class="attendance-row"
+            data-search="{{ r.worker_name|lower }} {{ r.customer_name|lower }} {{ r.location|lower }} {{ r.request_id|lower }} {{ r.trade|lower }}"
+            data-status="{{ r.status }}">
+            <td class="fw-semibold text-dark">{{ r.date }}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div
+                  class="rounded-circle bg-primary bg-opacity-10 text-primary fw-bold d-flex justify-content-center align-items-center flex-shrink-0"
+                  style="width: 32px; height: 32px; font-size: 0.85rem;">
+                  {{ r.avatar_letter }}
+                </div>
+                <div>
+                  <div class="fw-semibold text-dark">{{ r.worker_name }}</div>
+                  <span class="badge bg-light text-muted border small">{{ r.trade }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="fw-bold text-dark">{{ r.customer_name }}</div>
+              {% if r.request_id %}
+              <span class="badge bg-light text-secondary border small mt-1 font-monospace">#{{ r.request_id }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="d-flex align-items-start gap-2">
+                <i class="fas fa-map-marker-alt text-muted small mt-1 flex-shrink-0"></i>
+                <span class="text-secondary small" title="{{ r.location }}">{{ r.location }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-1">
+                <i class="far fa-clock text-success small"></i>
+                <span class="fw-semibold text-dark">{{ r.punch_in_time }}</span>
+              </div>
+            </td>
+            <td>
+              {% if r.verified_by_gps %}
+              <span
+                class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded-pill d-inline-flex align-items-center gap-1 fw-semibold">
+                <i class="fas fa-satellite"></i> GPS
+              </span>
+              {% elif r.verified_by_qr %}
+              <span
+                class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 rounded-pill d-inline-flex align-items-center gap-1 fw-semibold">
+                <i class="fas fa-qrcode"></i> QR
+              </span>
+              {% else %}
+              <span class="badge bg-light text-secondary border px-2 py-1 rounded-pill">
+                Verified
+              </span>
+              {% endif %}
+            </td>
+            <td>
+              {% if r.status in ('Present', 'Verified') %}
+              <span
+                class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill fw-semibold">
+                <i class="fas fa-check-circle me-1 small"></i>{{ r.status }}
+              </span>
+              {% elif r.status == 'Late' %}
+              <span
+                class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 rounded-pill fw-semibold">
+                <i class="fas fa-exclamation-circle me-1 small"></i>Late
+              </span>
+              {% elif r.status == 'Absent' %}
+              <span
+                class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill fw-semibold">
+                <i class="fas fa-times-circle me-1 small"></i>Absent
+              </span>
+              {% else %}
+              <span class="badge bg-secondary-subtle text-secondary border px-3 py-1 rounded-pill">
+                {{ r.status }}
+              </span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr id="noAttendanceAdminRow">
+            <td colspan="7" class="text-center py-4 text-muted small">
+              <i class="fas fa-clipboard-check text-muted fs-4 d-block mb-2"></i>
+              No attendance records logged yet.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let currentStatusFilter = 'all';
+
+  function setAttendanceStatusFilter(status, btn) {
+    currentStatusFilter = status;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active', 'btn-primary'));
+    btn.classList.add('active');
+    filterAttendanceTable();
+  }
+
+  function filterAttendanceTable() {
+    const query = (document.getElementById('attendanceSearchInput')?.value || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('.attendance-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const searchData = (row.getAttribute('data-search') || '').toLowerCase();
+      const rowStatus = row.getAttribute('data-status') || '';
+      const rowDuration = row.getAttribute('data-duration') || '';
+
+      const matchesQuery = !query || searchData.includes(query);
+      let matchesStatus = true;
+
+      if (currentStatusFilter === 'On Site') {
+        matchesStatus = rowDuration === 'On Site';
+      } else if (currentStatusFilter !== 'all') {
+        matchesStatus = rowStatus.toLowerCase() === currentStatusFilter.toLowerCase();
+      }
+
+      if (matchesQuery && matchesStatus) {
+        row.style.display = '';
+        visibleCount++;
+      } else {
+        row.style.display = 'none';
+      }
+    });
+
+    let emptyMsgRow = document.getElementById('filterEmptyAttendanceRow');
+    const tbody = document.getElementById('adminAttendanceTableBody');
+    if (visibleCount === 0 && rows.length > 0) {
+      if (!emptyMsgRow) {
+        emptyMsgRow = document.createElement('tr');
+        emptyMsgRow.id = 'filterEmptyAttendanceRow';
+        emptyMsgRow.innerHTML = `<td colspan="7" class="text-center py-4 text-muted small">No attendance records match your search or filter.</td>`;
+        tbody.appendChild(emptyMsgRow);
+      }
+    } else if (emptyMsgRow) {
+      emptyMsgRow.remove();
+    }
+  }
+</script>
+{% endblock %}

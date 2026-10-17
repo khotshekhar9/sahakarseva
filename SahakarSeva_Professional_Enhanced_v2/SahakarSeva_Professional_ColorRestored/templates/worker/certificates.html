@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% block title %}Trade Skills & Certifications - Worker Portal{% endblock %}
+{% block page_title %}Trade Skills & Certifications{% endblock %}
+{% block page_title_bc %}Certificates{% endblock %}
+{% block nav_worker_certificates %}active{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+    <!-- Top Skill Profiling Header Card -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4" style="background: var(--card-bg, #fff); border-left: 4px solid #10b981 !important;">
+        <div class="card-body p-3 p-md-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="p-3 rounded-circle text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; background: linear-gradient(135deg, #104c39, #17654d);">
+                    <i class="fas fa-award fa-lg"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-1 text-dark">{{ current_user.username|title }} &bull; Skill Profile</h5>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-1">
+                        <span class="badge bg-light text-dark border px-2 py-1">
+                            <i class="fas fa-tools text-success me-1"></i> {{ worker.skills or 'General Cooperative Artisan' }}
+                        </span>
+                        <span class="badge bg-light text-dark border px-2 py-1">
+                            <i class="fas fa-business-time text-primary me-1"></i> {{ worker.experience_years or 0 }} Years Experience
+                        </span>
+                        <span class="badge bg-light text-dark border px-2 py-1">
+                            <i class="fas fa-star text-warning me-1"></i> {{ worker.performance_rating or '5.0' }} Rating
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button type="button" class="btn btn-success d-flex align-items-center gap-2 px-3 py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#uploadCertModal">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Upload New Certificate</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verified Skill Badges Strip -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 h-100" style="background: var(--card-bg, #fff);">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="fas fa-certificate text-primary"></i>
+                    <span class="small fw-semibold text-secondary">NSQF / NSDC</span>
+                </div>
+                <div class="fw-bold text-dark">Trade Aligned</div>
+                <div class="small text-success mt-1"><i class="fas fa-check-circle me-1"></i>Skill India Recognized</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 h-100" style="background: var(--card-bg, #fff);">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="fas fa-id-badge text-success"></i>
+                    <span class="small fw-semibold text-secondary">Cooperative KYC</span>
+                </div>
+                <div class="fw-bold text-dark">Society Verified</div>
+                <div class="small text-success mt-1"><i class="fas fa-check-circle me-1"></i>Primary Society Vetted</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 h-100" style="background: var(--card-bg, #fff);">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="fas fa-hard-hat text-warning"></i>
+                    <span class="small fw-semibold text-secondary">Safety Level</span>
+                </div>
+                <div class="fw-bold text-dark">Workplace Safety</div>
+                <div class="small text-muted mt-1">OSHA & Tool Protocols</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 p-3 h-100" style="background: var(--card-bg, #fff);">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="fas fa-medal text-info"></i>
+                    <span class="small fw-semibold text-secondary">Artisan Tier</span>
+                </div>
+                <div class="fw-bold text-dark">
+                    {% if (worker.experience_years or 0) >= 5 %}Master Artisan{% elif (worker.experience_years or 0) >= 2 %}Journeyman{% else %}Apprentice{% endif %}
+                </div>
+                <div class="small text-muted mt-1">Tier-Based Living Wage</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Certifications List -->
+    <div class="card border-0 shadow-sm rounded-3" style="background: var(--card-bg, #fff);">
+        <div class="card-header bg-transparent border-0 pt-4 pb-2 px-3 px-md-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold text-dark mb-1">Trade Certificates & Credentials</h5>
+                <p class="text-secondary small mb-0">Government licenses, trade diplomas, and safety certificates verified by your cooperative society.</p>
+            </div>
+            <span class="badge bg-light text-secondary border rounded-pill px-3 py-1">{{ certifications|length }} Total</span>
+        </div>
+        <div class="card-body p-0">
+            {% if certifications %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+                    <thead class="table-light text-secondary small text-uppercase">
+                        <tr>
+                            <th class="ps-4 py-3">Certificate Title</th>
+                            <th class="py-3">Issuing Authority</th>
+                            <th class="py-3">License / Cert No</th>
+                            <th class="py-3">Status</th>
+                            <th class="py-3">Uploaded Date</th>
+                            <th class="text-end pe-4 py-3">Document</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cert in certifications %}
+                        <tr>
+                            <td class="ps-4 py-3">
+                                <div class="fw-bold text-dark">{{ cert.cert_title }}</div>
+                                {% if cert.issue_date %}
+                                <div class="small text-muted">Issued: {{ cert.issue_date.strftime('%d %b %Y') }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 text-secondary">{{ cert.issuing_body or 'State Vocational Board' }}</td>
+                            <td class="py-3 font-monospace small text-dark">{{ cert.cert_number or '—' }}</td>
+                            <td class="py-3">
+                                {% if cert.status == 'Verified' %}
+                                <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1">
+                                    <i class="fas fa-check-circle me-1"></i>Verified
+                                </span>
+                                {% elif cert.status == 'Rejected' %}
+                                <span class="badge bg-danger-subtle text-danger rounded-pill px-2 py-1">
+                                    <i class="fas fa-times-circle me-1"></i>Rejected
+                                </span>
+                                {% else %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-2 py-1">
+                                    <i class="fas fa-clock me-1"></i>Pending Approval
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 text-secondary small">{{ cert.created_at.strftime('%d %b %Y') if cert.created_at else '—' }}</td>
+                            <td class="text-end pe-4 py-3">
+                                {% if cert.document_file %}
+                                <a href="{{ cert.document_file }}" target="_blank" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1">
+                                    <i class="fas fa-external-link-alt"></i>
+                                    <span>View File</span>
+                                </a>
+                                {% else %}
+                                <span class="text-muted small">No file attached</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 px-3">
+                <div class="p-3 rounded-circle bg-light d-inline-flex text-muted mb-3">
+                    <i class="fas fa-file-certificate fa-2x"></i>
+                </div>
+                <h6 class="fw-bold text-dark">No Certifications Uploaded Yet</h6>
+                <p class="text-secondary small mb-3">Upload your trade certificates and licenses to receive verified badges and more job requests.</p>
+                <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#uploadCertModal">
+                    <i class="fas fa-plus me-1"></i> Upload First Certificate
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Upload Certificate Modal -->
+<div class="modal fade" id="uploadCertModal" tabindex="-1" aria-labelledby="uploadCertModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <div class="modal-header border-bottom px-4 py-3">
+                <h5 class="modal-title fw-bold text-dark" id="uploadCertModalLabel">
+                    <i class="fas fa-award text-success me-2"></i>Upload Trade Certificate
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('worker.upload_certificates') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body px-4 py-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Certificate / License Title <span class="text-danger">*</span></label>
+                        <input type="text" name="cert_title" class="form-control" placeholder="e.g. ITI National Trade Certificate (Electrician)" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">Issuing Authority / Institution</label>
+                        <input type="text" name="issuing_body" class="form-control" placeholder="e.g. Directorate General of Training (DGT) / NSDC">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small text-secondary">License / Certificate Number</label>
+                        <input type="text" name="cert_number" class="form-control" placeholder="e.g. NTC-2024-MH-4921">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold small text-secondary">Issue Date</label>
+                            <input type="date" name="issue_date" class="form-control">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold small text-secondary">Expiry Date (if any)</label>
+                            <input type="date" name="expiry_date" class="form-control">
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold small text-secondary">Certificate Document (PDF / JPG / PNG)</label>
+                        <input type="file" name="document_file" class="form-control" accept=".pdf,.png,.jpg,.jpeg">
+                        <div class="form-text small">Upload clear scan or photo of your license for Society Admin approval.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top px-4 py-3">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success fw-semibold px-4">
+                        <i class="fas fa-check me-1"></i> Submit for Verification
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

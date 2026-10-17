@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Create Account — SahakarSeva Cooperative Platform</title>
+    <meta name="description" content="Register as a household resident, primary labour cooperative society, or skilled artisan on SahakarSeva.">
+
+    <!-- Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --reg-bg: #f8fafc;
+            --reg-card-bg: #ffffff;
+            --reg-text-main: #0f172a;
+            --reg-text-muted: #64748b;
+            --reg-border: #e2e8f0;
+            --reg-primary: #0d6efd;
+            --reg-primary-hover: #1d4ed8;
+            --reg-radius: 20px;
+            --reg-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--reg-bg);
+            color: var(--reg-text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 2rem 1rem;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 1100px;
+            height: 380px;
+            background: radial-gradient(ellipse at center, rgba(13, 110, 253, 0.07) 0%, rgba(5, 150, 105, 0.04) 45%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .reg-container {
+            width: 100%;
+            max-width: 680px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .reg-card {
+            background: var(--reg-card-bg);
+            border: 1px solid var(--reg-border);
+            border-radius: var(--reg-radius);
+            box-shadow: var(--reg-shadow);
+            padding: clamp(1.75rem, 4vw, 2.75rem);
+        }
+
+        .brand-emblem {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0d6efd 0%, #059669 100%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.25);
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.45rem;
+            color: var(--reg-text-main);
+            letter-spacing: -0.03em;
+            text-decoration: none;
+        }
+
+        .reg-heading {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.65rem;
+            color: var(--reg-text-main);
+            margin-top: 0.75rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .reg-subheading {
+            font-size: 0.92rem;
+            color: var(--reg-text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Tabs styling */
+        .reg-nav-tabs {
+            border: 1px solid var(--reg-border);
+            background: #f1f5f9;
+            border-radius: 14px;
+            padding: 4px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4px;
+            margin-bottom: 1.75rem;
+        }
+
+        .reg-tab-btn {
+            border: 0;
+            background: transparent;
+            padding: 0.65rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #64748b;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+
+        .reg-tab-btn:hover:not(.active) {
+            color: var(--reg-primary);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .reg-tab-btn.active {
+            background: #ffffff;
+            color: var(--reg-primary);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+        }
+
+        .form-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 0.35rem;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid var(--reg-border);
+            border-radius: 11px;
+            padding: 0.68rem 0.95rem;
+            font-size: 0.92rem;
+            color: var(--reg-text-main);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
+        }
+
+        .btn-submit {
+            background-color: var(--reg-primary);
+            color: #ffffff;
+            border: 1px solid var(--reg-primary);
+            border-radius: 12px;
+            font-weight: 700;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.98rem;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--reg-primary-hover);
+            border-color: var(--reg-primary-hover);
+            transform: translateY(-1px);
+            color: #ffffff;
+        }
+
+        .society-box {
+            background: #f8fafc;
+            border: 1px solid var(--reg-border);
+            border-radius: 16px;
+            padding: 1.75rem;
+            text-align: center;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            color: var(--reg-text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            transition: color 0.15s ease;
+        }
+
+        .back-link:hover {
+            color: var(--reg-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="reg-container">
+        
+        <a href="{{ url_for('auth.login') }}" class="back-link">
+            <i class="fas fa-arrow-left"></i> <span>Back to Sign In</span>
+        </a>
+
+        <div class="reg-card">
+            
+            <!-- Flashed Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, msg in messages %}
+                        <div class="alert alert-{{ 'danger' if category in ('danger', 'error') else 'success' if category == 'success' else 'primary' }} alert-dismissible fade show py-2 px-3 small rounded-3 mb-3" role="alert">
+                            <i class="fas {{ 'fa-circle-exclamation' if category in ('danger', 'error') else 'fa-circle-check' if category == 'success' else 'fa-info-circle' }} me-1"></i>
+                            {{ msg }}
+                            <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="text-center">
+                <div class="brand-emblem">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <div>
+                    <a href="{{ url_for('public.index') }}" class="brand-title">SahakarSeva</a>
+                </div>
+                <h1 class="reg-heading">Create Account</h1>
+                <p class="reg-subheading">Choose your registration role in the cooperative gig network.</p>
+            </div>
+
+            <!-- Tabbed Navigation -->
+            <div class="reg-nav-tabs">
+                <button type="button" class="reg-tab-btn active" id="tab-btn-customer" onclick="switchRegTab('customer')">
+                    <i class="fas fa-house-chimney me-1"></i> Citizen / Client
+                </button>
+                <button type="button" class="reg-tab-btn" id="tab-btn-society" onclick="switchRegTab('society')">
+                    <i class="fas fa-building-columns me-1"></i> Labour Society
+                </button>
+                <button type="button" class="reg-tab-btn" id="tab-btn-artisan" onclick="switchRegTab('artisan')">
+                    <i class="fas fa-toolbox me-1"></i> Artisan
+                </button>
+            </div>
+
+            <!-- Tab 1: Customer Registration Form -->
+            <div id="tab-pane-customer">
+                <form action="{{ url_for('auth.register') }}" method="POST">
+                    <input type="hidden" name="role" value="customer">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name or Username *</label>
+                            <input type="text" class="form-control" name="username" placeholder="e.g. anita_deshmukh" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" name="email" placeholder="name@example.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="text" class="form-control" name="phone" placeholder="10-digit mobile number" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Password *</label>
+                            <input type="password" class="form-control" name="password" placeholder="Create password" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Apartment / Housing Society Name (Optional)</label>
+                            <input type="text" class="form-control" name="company_name" placeholder="e.g. Sea View Heights CHS, Flat 402">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Residential Address</label>
+                            <textarea class="form-control" name="address" rows="2" placeholder="Street, Area, Mumbai Ward"></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-submit mt-4">
+                        <span>Register as Citizen / Household Client</span> <i class="fas fa-arrow-right ms-1"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tab 2: Primary Cooperative Society Onboarding -->
+            <div id="tab-pane-society" style="display: none;">
+                <div class="society-box">
+                    <div class="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-3 mb-2 rounded-pill small">
+                        <i class="fas fa-scale-balanced me-1"></i> STATUTORY COOPERATIVE ONBOARDING
+                    </div>
+                    <h3 class="h5 fw-bold text-dark mb-2">Register Primary Labour Cooperative Society</h3>
+                    <p class="text-secondary small mb-4" style="line-height: 1.6;">
+                        Accredited under the Maharashtra Cooperative Societies Act. Onboard your society, administer ward-level service work orders, manage verified artisan rosters, and participate in the statutory 88/8/4 settlement ledger.
+                    </p>
+
+                    <div class="row g-2 text-start small mb-4">
+                        <div class="col-sm-6">
+                            <div class="p-2 border rounded bg-white">
+                                <i class="fas fa-check-circle text-success me-1"></i> <strong>8% Society Operations:</strong> Regular operational funding from completed jobs.
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="p-2 border rounded bg-white">
+                                <i class="fas fa-check-circle text-success me-1"></i> <strong>Suraksha Nidhi Pool:</strong> Direct 4% health & PMSBY insurance integration.
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="{{ url_for('auth.register_contractor') }}" class="btn btn-primary px-4 py-2 fw-bold w-100" style="border-radius: 12px;">
+                        <span>Start Society Onboarding Wizard</span> <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tab 3: Cooperative Member Artisan Registration Form -->
+            <div id="tab-pane-artisan" style="display: none;">
+                <form action="{{ url_for('auth.register') }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="role" value="worker">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Artisan Name / Username *</label>
+                            <input type="text" class="form-control" name="username" placeholder="e.g. sunil_patil" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" name="email" placeholder="sunil@example.com" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="text" class="form-control" name="phone" placeholder="10-digit mobile number" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Password *</label>
+                            <input type="password" class="form-control" name="password" placeholder="Create password" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Affiliated Labour Cooperative Society *</label>
+                            <select class="form-select" name="contractor_id" required>
+                                <option value="" disabled selected>-- Select Local Cooperative Society --</option>
+                                {% for c in contractor_companies or [] %}
+                                    <option value="{{ c.id }}">{{ c.company_name }} ({{ c.business_type }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Primary Trade Skill *</label>
+                            <input type="text" class="form-control" name="skills" placeholder="e.g. Electrician, Plumber, Painter" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Experience (Yrs)</label>
+                            <input type="number" class="form-control" name="experience_years" min="0" value="3">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Daily Wage (₹)</label>
+                            <input type="number" class="form-control" name="salary_rate" min="100" value="450">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Identity / Trade Proof (Aadhaar or Labour Card)</label>
+                            <input type="file" class="form-control" name="id_proof_file" accept=".pdf,.png,.jpg,.jpeg">
+                            <div class="form-text extra-small" style="font-size: 0.74rem;">
+                                🛡️ Auto-enrolled in PMSBY (₹2 Lakh) & Cooperative Welfare Fund upon society verification.
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-submit mt-4">
+                        <span>Enroll as Cooperative Artisan</span> <i class="fas fa-arrow-right ms-1"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Footer Link -->
+            <div class="text-center mt-4 pt-2 border-top small text-muted">
+                Already have an account? 
+                <a href="{{ url_for('auth.login') }}" class="text-primary fw-bold text-decoration-none">Sign In</a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function switchRegTab(tab) {
+            const tabs = ['customer', 'society', 'artisan'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-btn-${t}`);
+                const pane = document.getElementById(`tab-pane-${t}`);
+                if (btn && pane) {
+                    if (t === tab) {
+                        btn.classList.add('active');
+                        pane.style.display = 'block';
+                    } else {
+                        btn.classList.remove('active');
+                        pane.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // Check URL parameters (e.g. ?role=society or ?role=worker)
+        const params = new URLSearchParams(window.location.search);
+        const roleParam = params.get('role');
+        if (roleParam === 'society') {
+            switchRegTab('society');
+        } else if (roleParam === 'worker' || roleParam === 'artisan') {
+            switchRegTab('artisan');
+        }
+    </script>
+</body>
+</html>

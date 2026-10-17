@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Complaints - SahakarSeva Apex Federation{% endblock %}
+{% block page_title %}Customer Complaints{% endblock %}
+{% block nav_publisher_disputes %}active{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-2 border-bottom">
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                <i data-lucide="alert-circle" class="text-danger" style="width: 28px; height: 28px;"></i>
+                Customer Complaints
+            </h1>
+            <p class="text-secondary small mb-0">Review and resolve escalated customer grievances against local societies.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('publisher.dashboard') }}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Command Center
+            </a>
+        </div>
+    </div>
+
+    <!-- 3 Minimal Top Cards -->
+    <div class="row g-3 mb-4">
+        <!-- Card 1: Total Complaints -->
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-secondary fw-semibold text-uppercase d-block" style="font-size: 0.72rem; letter-spacing: 0.5px;">Total Complaints</span>
+                        <h3 class="fw-bold text-dark mb-0 mt-1">{{ total_count }}</h3>
+                        <span class="text-muted small">Total grievances escalated</span>
+                    </div>
+                    <div class="p-3 bg-light text-secondary rounded-3">
+                        <i data-lucide="inbox" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2: Pending Review -->
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm rounded-3 h-100 bg-white border-start border-4 border-warning">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-warning fw-semibold text-uppercase d-block" style="font-size: 0.72rem; letter-spacing: 0.5px;">Pending Review</span>
+                        <h3 class="fw-bold text-warning mb-0 mt-1">{{ pending_count }}</h3>
+                        <span class="text-muted small">Awaiting resolution</span>
+                    </div>
+                    <div class="p-3 bg-warning-subtle text-warning rounded-3">
+                        <i data-lucide="clock" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3: Resolved -->
+        <div class="col-12 col-md-4">
+            <div class="card border-0 shadow-sm rounded-3 h-100 bg-white border-start border-4 border-success">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-success fw-semibold text-uppercase d-block" style="font-size: 0.72rem; letter-spacing: 0.5px;">Resolved</span>
+                        <h3 class="fw-bold text-success mb-0 mt-1">{{ resolved_count }}</h3>
+                        <span class="text-muted small">Cases settled successfully</span>
+                    </div>
+                    <div class="p-3 bg-success-subtle text-success rounded-3">
+                        <i data-lucide="check-circle-2" style="width: 24px; height: 24px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Streamlined Complaints Table -->
+    <div class="card border-0 shadow-sm rounded-3 bg-white mb-4">
+        <div class="card-header bg-white border-bottom py-3 px-3 px-md-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                    <i data-lucide="list" class="text-primary" style="width: 18px; height: 18px;"></i>
+                    Complaints List
+                </h5>
+                <span class="text-muted small">Escalated customer issues requiring review and resolution</span>
+            </div>
+            <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-semibold">
+                {{ complaints|length }} Complaints
+            </span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+                    <thead class="table-light text-secondary text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                        <tr>
+                            <th class="ps-3 ps-md-4 py-3">Complaint ID & Date</th>
+                            <th class="py-3">Customer</th>
+                            <th class="py-3">Society Involved</th>
+                            <th class="py-3" style="min-width: 250px;">Issue / Problem</th>
+                            <th class="py-3 text-center">Status</th>
+                            <th class="pe-3 pe-md-4 py-3 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in complaints %}
+                        <tr>
+                            <!-- Complaint ID & Date -->
+                            <td class="ps-3 ps-md-4 py-3">
+                                <span class="badge bg-dark-subtle text-dark fw-bold font-monospace d-block mb-1" style="font-size: 0.78rem; width: fit-content;">
+                                    {{ c.ticket_code }}
+                                </span>
+                                <span class="text-muted small" style="font-size: 0.75rem;">
+                                    {{ c.created_at.strftime('%d %b %Y') if c.created_at else 'Recent' }}
+                                </span>
+                            </td>
+
+                            <!-- Customer -->
+                            <td class="py-3">
+                                <div class="fw-bold text-dark">{{ c.customer_name }}</div>
+                                <span class="text-muted small d-block" style="font-size: 0.75rem;">
+                                    {{ c.customer_phone }}
+                                </span>
+                            </td>
+
+                            <!-- Society Involved -->
+                            <td class="py-3">
+                                <div class="d-flex align-items-center gap-1 fw-semibold text-primary">
+                                    <i data-lucide="building" style="width: 14px; height: 14px;"></i>
+                                    {{ c.society_name }}
+                                </div>
+                            </td>
+
+                            <!-- Issue / Problem -->
+                            <td class="py-3">
+                                <div class="fw-semibold text-dark mb-1">{{ c.issue }}</div>
+                                {% if c.description and c.description != c.issue %}
+                                <div class="text-muted small text-truncate-2" style="max-width: 320px; line-height: 1.35;">
+                                    {{ c.description }}
+                                </div>
+                                {% endif %}
+                            </td>
+
+                            <!-- Status -->
+                            <td class="py-3 text-center">
+                                {% if c.is_resolved %}
+                                <span class="badge bg-success-subtle text-success px-2 py-1 fw-semibold d-inline-flex align-items-center gap-1">
+                                    <i data-lucide="check" style="width: 12px; height: 12px;"></i> Resolved
+                                </span>
+                                {% else %}
+                                <span class="badge bg-warning-subtle text-warning px-2 py-1 fw-semibold d-inline-flex align-items-center gap-1">
+                                    <i data-lucide="clock" style="width: 12px; height: 12px;"></i> Pending
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Action -->
+                            <td class="pe-3 pe-md-4 py-3 text-end">
+                                {% if not c.is_resolved %}
+                                <button type="button" 
+                                        class="btn btn-sm btn-primary fw-semibold d-inline-flex align-items-center gap-1 px-3 py-1" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#resolveModal{{ c.uid }}">
+                                    <i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Resolve Complaint
+                                </button>
+                                {% else %}
+                                <span class="text-success small fw-semibold d-inline-flex align-items-center gap-1">
+                                    <i data-lucide="check-check" style="width: 14px; height: 14px;"></i> Solved
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Resolve Complaint Modal -->
+                        {% if not c.is_resolved %}
+                        <div class="modal fade" id="resolveModal{{ c.uid }}" tabindex="-1" aria-labelledby="modalLabel{{ c.uid }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
+                                    <div class="modal-header bg-light border-bottom">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-dark font-monospace">{{ c.ticket_code }}</span>
+                                            <h5 class="modal-title fw-bold text-dark mb-0" id="modalLabel{{ c.uid }}">Resolve Complaint</h5>
+                                        </div>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form method="POST" action="{{ url_for('publisher.arbitrate_dispute', ticket_id=c.id) }}">
+                                        <input type="hidden" name="action" value="resolve_customer">
+                                        <div class="modal-body p-4 text-start">
+                                            <!-- Summary Box -->
+                                            <div class="p-3 bg-light rounded-3 mb-3">
+                                                <div class="row g-2">
+                                                    <div class="col-6">
+                                                        <span class="text-muted small d-block" style="font-size: 0.72rem;">CUSTOMER</span>
+                                                        <strong class="text-dark">{{ c.customer_name }}</strong>
+                                                        <div class="small text-secondary">{{ c.customer_phone }}</div>
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <span class="text-muted small d-block" style="font-size: 0.72rem;">SOCIETY</span>
+                                                        <strong class="text-primary">{{ c.society_name }}</strong>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <span class="text-muted small d-block mb-1" style="font-size: 0.72rem;">ISSUE SUMMARY</span>
+                                                <div class="p-2 border rounded-2 bg-white small text-dark fw-medium">
+                                                    {{ c.issue }}
+                                                </div>
+                                            </div>
+
+                                            <!-- Resolution Notes -->
+                                            <div class="mb-2">
+                                                <label class="form-label fw-semibold text-dark small mb-1">Resolution Notes</label>
+                                                <textarea name="publisher_notes" class="form-control" rows="3" 
+                                                          placeholder="Describe how the complaint was resolved (e.g., Refund issued, remedial repair scheduled)...">Complaint reviewed and resolved in customer favor.</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer bg-light border-top">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-success btn-sm fw-semibold d-inline-flex align-items-center gap-1">
+                                                <i data-lucide="check" style="width: 14px; height: 14px;"></i> Mark as Resolved
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="py-3">
+                                    <i data-lucide="check-circle" class="text-success mb-2" style="width: 44px; height: 44px;"></i>
+                                    <h5 class="fw-bold text-dark">No Customer Complaints</h5>
+                                    <p class="text-secondary small mb-0">All customer grievances have been resolved or no new complaints escalated.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

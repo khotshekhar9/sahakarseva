@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SahakarSeva — Statutory Cooperative Gig Platform</title>
+    <meta name="description"
+        content="Directly hire verified artisans backed by local primary labour cooperatives with statutory 88/8/4 wage protection and Suraksha Nidhi social security.">
+
+    <!-- Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --cp-bg: #f8fafc;
+            --cp-surface: #ffffff;
+            --cp-surface-subtle: #f1f5f9;
+            --cp-text-primary: #0f172a;
+            --cp-text-secondary: #475569;
+            --cp-text-muted: #64748b;
+            --cp-border: #e2e8f0;
+            --cp-border-subtle: #cbd5e1;
+            --cp-primary: #0d6efd;
+            --cp-primary-dark: #1d4ed8;
+            --cp-primary-light: #eff6ff;
+            --cp-emerald: #059669;
+            --cp-emerald-light: #ecfdf5;
+            --cp-warning-light: #fffbeb;
+            --cp-radius-sm: 8px;
+            --cp-radius-md: 14px;
+            --cp-radius-lg: 20px;
+            --cp-radius-xl: 28px;
+            --cp-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+            --cp-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+            --cp-shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+            --cp-shadow-xl: 0 24px 48px -12px rgba(15, 23, 42, 0.12);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--cp-bg);
+            color: var(--cp-text-primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        .brand-font {
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: -0.025em;
+        }
+
+        /* Top Sticky Glassmorphic Navigation Bar */
+        .cp-navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1040;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--cp-border);
+            transition: all 0.25s ease;
+        }
+
+        .cp-brand-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            text-decoration: none;
+            color: var(--cp-text-primary);
+            font-weight: 800;
+            font-size: 1.35rem;
+            letter-spacing: -0.03em;
+        }
+
+        .cp-brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--cp-radius-sm);
+            background: linear-gradient(135deg, #0d6efd 0%, #059669 100%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.25);
+        }
+
+        .cp-brand-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            border-radius: 999px;
+            padding: 3px 8px;
+            text-transform: uppercase;
+        }
+
+        .cp-nav-link {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: var(--cp-text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 0.85rem;
+            border-radius: var(--cp-radius-sm);
+            transition: all 0.15s ease;
+        }
+
+        .cp-nav-link:hover {
+            color: var(--cp-primary);
+            background: rgba(13, 110, 253, 0.05);
+        }
+
+        .cp-btn-primary {
+            background-color: var(--cp-primary);
+            color: #ffffff !important;
+            border: 1px solid var(--cp-primary);
+            border-radius: var(--cp-radius-md);
+            font-weight: 700;
+            padding: 0.58rem 1.25rem;
+            font-size: 0.92rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(13, 110, 253, 0.25);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .cp-btn-primary:hover {
+            background-color: var(--cp-primary-dark);
+            border-color: var(--cp-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(13, 110, 253, 0.32);
+        }
+
+        .cp-btn-outline {
+            background-color: transparent;
+            color: var(--cp-text-primary) !important;
+            border: 1px solid var(--cp-border);
+            border-radius: var(--cp-radius-md);
+            font-weight: 600;
+            padding: 0.58rem 1.15rem;
+            font-size: 0.92rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .cp-btn-outline:hover {
+            background-color: var(--cp-surface);
+            border-color: var(--cp-border-subtle);
+            color: var(--cp-primary) !important;
+            box-shadow: var(--cp-shadow-sm);
+        }
+
+        /* Hero Section */
+        .cp-hero-section {
+            padding: clamp(3.5rem, 7vw, 6.5rem) 0 3.5rem;
+            position: relative;
+            background: radial-gradient(circle at 50% 0%, rgba(13, 110, 253, 0.06) 0%, transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(5, 150, 105, 0.05) 0%, transparent 40%);
+        }
+
+        .cp-hero-pill {
+            display: inline-flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid var(--cp-border);
+            border-radius: 999px;
+            padding: 0.45rem 1.15rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--cp-primary);
+            box-shadow: var(--cp-shadow-sm);
+            margin-bottom: 1.5rem;
+        }
+
+        .cp-hero-headline {
+            font-size: clamp(2.4rem, 5.2vw, 4.2rem);
+            font-weight: 800;
+            line-height: 1.12;
+            color: var(--cp-text-primary);
+            max-width: 900px;
+            margin: 0 auto 1.5rem;
+            letter-spacing: -0.04em;
+        }
+
+        .cp-hero-headline span.gradient-text {
+            background: linear-gradient(135deg, #0f172a 0%, #0d6efd 60%, #059669 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cp-hero-subheadline {
+            font-size: clamp(1.05rem, 1.8vw, 1.28rem);
+            color: var(--cp-text-secondary);
+            max-width: 760px;
+            margin: 0 auto 2.25rem;
+            line-height: 1.68;
+        }
+
+        .cp-hero-tagline {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--cp-text-muted);
+            letter-spacing: 0.02em;
+        }
+
+        /* 4 Live Platform Snapshot Metric Cards */
+        .cp-metrics-container {
+            margin-top: 3.5rem;
+        }
+
+        .cp-metric-card {
+            background: #ffffff;
+            border: 1px solid var(--cp-border);
+            border-radius: var(--cp-radius-lg);
+            padding: 1.6rem 1.25rem;
+            text-align: center;
+            box-shadow: var(--cp-shadow-sm);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .cp-metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--cp-shadow-md);
+            border-color: #cbd5e1;
+        }
+
+        .cp-metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #0d6efd, #059669);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .cp-metric-card:hover::before {
+            opacity: 1;
+        }
+
+        .cp-metric-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(1.85rem, 3.2vw, 2.5rem);
+            font-weight: 800;
+            color: var(--cp-text-primary);
+            line-height: 1.1;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.03em;
+        }
+
+        .cp-metric-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--cp-text-secondary);
+            line-height: 1.4;
+        }
+
+        .cp-metric-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            margin-top: 0.6rem;
+        }
+
+        /* 6 Capabilities Grid */
+        .cp-section {
+            padding: clamp(4rem, 6vw, 6rem) 0;
+            position: relative;
+        }
+
+        .cp-section-header {
+            max-width: 720px;
+            margin: 0 auto 3.5rem;
+            text-align: center;
+        }
+
+        .cp-section-tag {
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: var(--cp-primary);
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .cp-section-title {
+            font-size: clamp(1.85rem, 3.5vw, 2.75rem);
+            font-weight: 800;
+            color: var(--cp-text-primary);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .cp-section-desc {
+            font-size: 1.05rem;
+            color: var(--cp-text-secondary);
+        }
+
+        .cp-feature-card {
+            background: #ffffff;
+            border: 1px solid var(--cp-border);
+            border-radius: var(--cp-radius-lg);
+            padding: 2rem 1.75rem;
+            box-shadow: var(--cp-shadow-sm);
+            transition: all 0.25s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .cp-feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--cp-shadow-lg);
+            border-color: #cbd5e1;
+        }
+
+        .cp-feature-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: var(--cp-radius-md);
+            background: var(--cp-surface-subtle);
+            border: 1px solid var(--cp-border);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            color: var(--cp-primary);
+            margin-bottom: 1.35rem;
+            transition: all 0.2s ease;
+        }
+
+        .cp-feature-card:hover .cp-feature-icon {
+            background: var(--cp-primary);
+            color: #ffffff;
+            border-color: var(--cp-primary);
+            box-shadow: 0 6px 16px rgba(13, 110, 253, 0.25);
+        }
+
+        .cp-feature-title {
+            font-size: 1.22rem;
+            font-weight: 700;
+            color: var(--cp-text-primary);
+            margin-bottom: 0.65rem;
+        }
+
+        .cp-feature-text {
+            font-size: 0.92rem;
+            color: var(--cp-text-secondary);
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+        /* Interactive 4-Step Process Section */
+        .cp-step-card {
+            background: #ffffff;
+            border: 1px solid var(--cp-border);
+            border-radius: var(--cp-radius-lg);
+            padding: 2.2rem 1.75rem;
+            position: relative;
+            box-shadow: var(--cp-shadow-sm);
+            height: 100%;
+            transition: all 0.25s ease;
+        }
+
+        .cp-step-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--cp-shadow-md);
+            border-color: var(--cp-primary);
+        }
+
+        .cp-step-num {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #e2e8f0;
+            line-height: 1;
+            margin-bottom: 1rem;
+            display: block;
+            transition: color 0.2s ease;
+        }
+
+        .cp-step-card:hover .cp-step-num {
+            color: #bfdbfe;
+        }
+
+        .cp-step-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--cp-text-primary);
+            margin-bottom: 0.65rem;
+        }
+
+        .cp-step-text {
+            font-size: 0.88rem;
+            color: var(--cp-text-secondary);
+            line-height: 1.55;
+            margin-bottom: 0;
+        }
+
+        /* Statutory 88/8/4 Financial Model Spotlight */
+        .cp-model-box {
+            background: #ffffff;
+            border: 1px solid var(--cp-border);
+            border-radius: var(--cp-radius-xl);
+            padding: clamp(2rem, 4vw, 3.5rem);
+            box-shadow: var(--cp-shadow-md);
+        }
+
+        .cp-progress-statutory {
+            height: 28px;
+            border-radius: 999px;
+            overflow: hidden;
+            background-color: #f1f5f9;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+            display: flex;
+        }
+
+        .cp-bar-artisan {
+            background: linear-gradient(90deg, #10b981, #059669);
+            color: #fff;
+            font-weight: 800;
+            font-size: 0.78rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cp-bar-ops {
+            background: linear-gradient(90deg, #3b82f6, #2563eb);
+            color: #fff;
+            font-weight: 800;
+            font-size: 0.78rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cp-bar-welfare {
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+            color: #fff;
+            font-weight: 800;
+            font-size: 0.78rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Trade Services Grid */
+        .cp-trade-card {
+            background: #ffffff;
+            border: 1px solid var(--cp-border);
+            border-radius: var(--cp-radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--cp-shadow-sm);
+            transition: all 0.2s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .cp-trade-card:hover {
+            border-color: #cbd5e1;
+            box-shadow: var(--cp-shadow-md);
+        }
+
+        .cp-trade-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--cp-radius-sm);
+            background: #eff6ff;
+            color: #1d4ed8;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* 10-Trade Quick Category Filter Pills */
+        .cp-trade-chips {
+            margin: 1.25rem 0 1.5rem;
+        }
+
+        .cp-chip-pill {
+            background: #ffffff;
+            border: 1px solid var(--cp-border);
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--cp-text-secondary);
+            padding: 0.35rem 0.85rem;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            white-space: nowrap;
+        }
+
+        .cp-chip-pill:hover {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #1d4ed8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.12);
+        }
+
+        /* 1-Click Demo Logins Bar (in Modal & Page) */
+        .cp-demo-bar {
+            background: #f8fafc;
+            border: 1px solid var(--cp-border);
+            border-radius: var(--cp-radius-md);
+            padding: 1rem;
+        }
+
+        .cp-demo-pill {
+            background: #ffffff;
+            border: 1px solid var(--cp-border);
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--cp-text-primary);
+            padding: 0.38rem 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            text-decoration: none;
+        }
+
+        .cp-demo-pill:hover {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        /* Footer */
+        .cp-footer {
+            background: #ffffff;
+            border-top: 1px solid var(--cp-border);
+            padding: 4.5rem 0 2.5rem;
+            font-size: 0.9rem;
+            color: var(--cp-text-secondary);
+        }
+
+        .cp-footer-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--cp-text-primary);
+            margin-bottom: 1.15rem;
+        }
+
+        .cp-footer-link {
+            color: var(--cp-text-secondary);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.6rem;
+            transition: color 0.15s ease;
+        }
+
+        .cp-footer-link:hover {
+            color: var(--cp-primary);
+        }
+
+        /* Prevent awkward line breaks in buttons and brand logo across mobile viewports */
+        .cp-btn-primary,
+        .cp-btn-outline,
+        .cp-nav-cta,
+        .cp-demo-pill,
+        .cp-brand-logo {
+            white-space: nowrap !important;
+        }
+
+        /* Mobile Hamburger Navigation Button */
+        .cp-mobile-toggle {
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            border: 1px solid var(--cp-border);
+            border-radius: var(--cp-radius-sm);
+            color: var(--cp-text-primary);
+            font-size: 1.05rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            padding: 0;
+            box-shadow: var(--cp-shadow-sm);
+            flex-shrink: 0;
+        }
+
+        .cp-mobile-toggle:hover,
+        .cp-mobile-toggle:focus {
+            background: var(--cp-surface-subtle);
+            border-color: var(--cp-primary);
+            color: var(--cp-primary);
+        }
+
+        /* Offcanvas Mobile Navigation Drawer */
+        .cp-offcanvas {
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+            box-shadow: -10px 0 30px rgba(15, 23, 42, 0.12);
+        }
+
+        .cp-offcanvas-link {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.8rem 1rem;
+            color: var(--cp-text-primary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            text-decoration: none;
+            border-radius: var(--cp-radius-md);
+            transition: all 0.15s ease;
+        }
+
+        .cp-offcanvas-link i {
+            width: 22px;
+            color: var(--cp-primary);
+            font-size: 1.05rem;
+            text-align: center;
+        }
+
+        .cp-offcanvas-link:hover,
+        .cp-offcanvas-link:active {
+            background: var(--cp-primary-light);
+            color: var(--cp-primary);
+        }
+
+        /* Tablet & Large Mobile Adjustments (<= 991px) */
+        @media (max-width: 991px) {
+            .cp-navbar-nav {
+                padding: 1rem 0;
+            }
+
+            .cp-hero-headline {
+                font-size: 2.2rem;
+            }
+
+            .cp-section {
+                padding: 3.5rem 0;
+            }
+        }
+
+        /* Mobile Medium Devices (<= 768px) */
+        @media (max-width: 768px) {
+            .cp-brand-logo {
+                font-size: 1.2rem;
+                gap: 0.5rem;
+            }
+
+            .cp-brand-icon {
+                width: 34px;
+                height: 34px;
+                font-size: 0.95rem;
+            }
+
+            .cp-nav-cta {
+                padding: 0.45rem 0.85rem;
+                font-size: 0.84rem;
+            }
+
+            .cp-hero-section {
+                padding: 3rem 0 2.5rem;
+            }
+
+            .cp-hero-headline {
+                font-size: 2rem;
+            }
+
+            .cp-section-header {
+                margin-bottom: 2.5rem;
+            }
+
+            .cp-section-title {
+                font-size: 1.85rem;
+            }
+        }
+
+        /* Mobile Standard Devices (<= 576px - smartphones like screenshot) */
+        @media (max-width: 576px) {
+            .cp-navbar .container {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .cp-brand-group {
+                gap: 0.45rem !important;
+            }
+
+            .cp-navbar-cta-group {
+                gap: 0.35rem !important;
+            }
+
+            .cp-brand-logo {
+                font-size: 1.1rem;
+                gap: 0.45rem;
+                min-width: 0;
+            }
+
+            .cp-brand-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 0.88rem;
+                border-radius: 8px;
+                flex-shrink: 0;
+            }
+
+            .cp-nav-cta {
+                padding: 0.38rem 0.65rem !important;
+                font-size: 0.78rem !important;
+                border-radius: 9px !important;
+                gap: 0.3rem !important;
+            }
+
+            .cp-mobile-toggle {
+                width: 34px;
+                height: 34px;
+                font-size: 0.95rem;
+                border-radius: 8px;
+            }
+
+            .cp-hero-section {
+                padding: 2.25rem 0 2rem;
+            }
+
+            .cp-hero-pill {
+                font-size: 0.72rem;
+                padding: 0.35rem 0.85rem;
+                margin-bottom: 1rem;
+            }
+
+            .cp-hero-headline {
+                font-size: 1.75rem;
+                line-height: 1.22;
+                margin-bottom: 0.85rem;
+            }
+
+            .cp-hero-subheadline {
+                font-size: 0.92rem;
+                line-height: 1.55;
+                margin-bottom: 1.5rem;
+                padding: 0 4px;
+            }
+
+            .cp-hero-actions {
+                width: 100%;
+            }
+
+            .cp-hero-actions .cp-btn-primary,
+            .cp-hero-actions .cp-btn-outline {
+                width: 100%;
+                max-width: 340px;
+                justify-content: center;
+                padding: 0.75rem 1.25rem !important;
+                font-size: 0.95rem !important;
+                min-height: 48px;
+            }
+
+            .cp-hero-tagline {
+                font-size: 0.75rem;
+                line-height: 1.4;
+                padding: 0 6px;
+            }
+
+            /* Platform Snapshot Metric Cards on Mobile */
+            .cp-metrics-container {
+                margin-top: 2rem;
+            }
+
+            .cp-metric-card {
+                padding: 0.9rem 0.5rem;
+                border-radius: var(--cp-radius-md);
+            }
+
+            .cp-metric-value {
+                font-size: 1.35rem;
+                margin-bottom: 0.2rem;
+            }
+
+            .cp-metric-label {
+                font-size: 0.74rem;
+                line-height: 1.3;
+            }
+
+            .cp-metric-badge {
+                font-size: 0.64rem;
+                padding: 2px 6px;
+                margin-top: 0.35rem;
+                white-space: nowrap;
+            }
+
+            /* Section padding & titles */
+            .cp-section {
+                padding: 2.5rem 0;
+            }
+
+            .cp-section-header {
+                margin-bottom: 1.75rem;
+            }
+
+            .cp-section-title {
+                font-size: 1.55rem;
+                line-height: 1.25;
+            }
+
+            .cp-section-desc {
+                font-size: 0.88rem;
+            }
+
+            .cp-feature-card,
+            .cp-step-card {
+                padding: 1.35rem 1.15rem;
+                border-radius: var(--cp-radius-md);
+            }
+
+            .cp-step-num {
+                font-size: 2rem;
+                margin-bottom: 0.5rem;
+            }
+
+            /* Model Box 88/8/4 on Mobile */
+            .cp-model-box {
+                padding: 1.25rem 1rem;
+                border-radius: var(--cp-radius-lg);
+            }
+
+            .cp-progress-statutory {
+                height: 24px;
+            }
+
+            .cp-bar-artisan,
+            .cp-bar-ops,
+            .cp-bar-welfare {
+                font-size: 0.68rem;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            /* Modal on Mobile */
+            #quickLoginModal .modal-dialog {
+                margin: 0.65rem auto;
+                max-width: calc(100% - 1.3rem) !important;
+            }
+
+            #quickLoginModal .modal-content {
+                border-radius: 20px !important;
+            }
+
+            #quickLoginModal .modal-header {
+                padding: 1.25rem 1.25rem 0.5rem !important;
+            }
+
+            #quickLoginModal .modal-body {
+                padding: 1.25rem !important;
+            }
+
+            .cp-demo-bar {
+                padding: 0.85rem 0.5rem;
+            }
+
+            .cp-demo-pill {
+                font-size: 0.72rem;
+                padding: 0.32rem 0.65rem;
+            }
+
+            /* Footer on Mobile */
+            .cp-footer {
+                padding: 2.75rem 0 2rem;
+            }
+        }
+
+        /* Small Phones (<= 380px - iPhone SE, small Androids) */
+        @media (max-width: 380px) {
+            .cp-brand-logo {
+                font-size: 1.02rem;
+                gap: 0.35rem;
+            }
+
+            .cp-brand-icon {
+                width: 28px;
+                height: 28px;
+                font-size: 0.8rem;
+            }
+
+            .cp-nav-cta {
+                padding: 0.32rem 0.5rem !important;
+                font-size: 0.74rem !important;
+            }
+
+            .cp-mobile-toggle {
+                width: 32px;
+                height: 32px;
+                font-size: 0.88rem;
+            }
+
+            .cp-hero-headline {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 1. Top Navigation Bar (Sticky, Clean, Off-White/Glassmorphism) -->
+    <header class="cp-navbar">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between py-2 py-lg-3">
+
+                <!-- Brand Identity -->
+                <div class="d-flex align-items-center gap-2 cp-brand-group">
+                    <a href="{{ url_for('public.index') }}" class="cp-brand-logo">
+                        <span class="cp-brand-icon">
+                            <i class="fas fa-handshake"></i>
+                        </span>
+                        <span>SahakarSeva</span>
+                    </a>
+                    <span class="cp-brand-badge d-none d-sm-inline-block">
+                        COOPERATIVE GIG PLATFORM
+                    </span>
+                </div>
+
+                <!-- Center Navigation Anchors -->
+                <nav class="d-none d-lg-flex align-items-center gap-1">
+                    <a href="#features" class="cp-nav-link">Features</a>
+                    <a href="#how-it-works" class="cp-nav-link">How It Works</a>
+                    <a href="#societies" class="cp-nav-link">Cooperative Societies</a>
+                    <a href="#suraksha-nidhi" class="cp-nav-link">Suraksha Nidhi</a>
+                </nav>
+
+                <!-- Right CTA Group -->
+                <div class="d-flex align-items-center gap-1 gap-sm-2 cp-navbar-cta-group">
+                    {% if current_user.is_authenticated %}
+                    {% if current_user.role in ('publisher', 'super_admin') %}
+                    <a href="{{ url_for('publisher.dashboard') }}" class="cp-btn-primary cp-nav-cta">
+                        <i class="fas fa-gauge me-1"></i> <span class="d-none d-sm-inline">Federation </span>Admin
+                    </a>
+                    {% elif current_user.role in ('admin', 'manager', 'supervisor') %}
+                    <a href="{{ url_for('admin.dashboard') }}" class="cp-btn-primary cp-nav-cta">
+                        <i class="fas fa-gauge me-1"></i> <span class="d-none d-sm-inline">Society </span>Portal
+                    </a>
+                    {% elif current_user.role == 'worker' %}
+                    <a href="{{ url_for('worker.dashboard') }}" class="cp-btn-primary cp-nav-cta">
+                        <i class="fas fa-gauge me-1"></i> <span class="d-none d-sm-inline">Artisan </span>Portal
+                    </a>
+                    {% elif current_user.role == 'customer' %}
+                    <a href="{{ url_for('customer.dashboard') }}" class="cp-btn-primary cp-nav-cta">
+                        <i class="fas fa-gauge me-1"></i> <span class="d-none d-sm-inline">Citizen </span>Portal
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}" class="cp-btn-outline cp-nav-cta" title="Sign Out">
+                        <i class="fas fa-arrow-right-from-bracket"></i>
+                    </a>
+                    {% else %}
+                    <button type="button" class="cp-btn-outline cp-nav-cta" data-bs-toggle="modal"
+                        data-bs-target="#quickLoginModal">
+                        <i class="fas fa-arrow-right-to-bracket me-1 text-primary"></i> <span>Sign In</span>
+                    </button>
+                    <a href="{{ url_for('auth.login') }}" class="cp-btn-primary cp-nav-cta">
+                        <span class="d-none d-sm-inline">Book a Service</span><span class="d-inline d-sm-none">Book
+                            Now</span> <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                    {% endif %}
+
+                    <!-- Mobile Hamburger Menu Toggle Button -->
+                    <button type="button" class="cp-mobile-toggle d-lg-none" data-bs-toggle="offcanvas"
+                        data-bs-target="#mobileNavOffcanvas" aria-controls="mobileNavOffcanvas"
+                        aria-label="Toggle navigation">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. Hero Section (Centered Typography & Call-to-Actions) -->
+    <section class="cp-hero-section text-center">
+        <div class="container">
+
+            <!-- Category Pill -->
+            <div>
+                <span class="badge rounded-pill bg-light text-primary border px-3 py-2">
+                    <i class="fas fa-handshake me-1"></i> STATUTORY COOPERATIVE GIG PLATFORM
+                </span>
+            </div>
+
+            <!-- Headline -->
+            <h1 class="cp-hero-headline mt-3">
+                Empowering Local Artisans.<br>
+                <span class="gradient-text">Fair Gig Services for Communities.</span>
+            </h1>
+
+            <!-- Subheadline -->
+            <p class="cp-hero-subheadline">
+                Directly hire verified electricians, plumbers, and cleaning technicians backed by local primary labour
+                cooperatives. Transparent 88/8/4 statutory wage protection with zero commercial aggregator commissions.
+            </p>
+
+            <!-- Action Buttons -->
+            <div
+                class="d-flex flex-column flex-sm-row align-items-center justify-content-center gap-2 gap-sm-3 mb-3 cp-hero-actions">
+                {% if current_user.is_authenticated and current_user.role == 'customer' %}
+                <a href="{{ url_for('customer.book_service') }}" class="cp-btn-primary px-4 py-3"
+                    style="font-size: 1.05rem;">
+                    <span>Book a Service</span> <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}" class="cp-btn-primary px-4 py-3" style="font-size: 1.05rem;">
+                    <span>Book a Service</span> <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('auth.register_contractor') }}" class="cp-btn-outline px-4 py-3"
+                    style="font-size: 1.05rem;">
+                    <i class="fas fa-building-columns text-primary me-2"></i> Register Cooperative Society
+                </a>
+            </div>
+
+            <!-- 10 SIH Trade Category Instant Quick-Filters -->
+            <div class="cp-trade-chips">
+                <div class="d-flex align-items-center justify-content-center flex-wrap gap-2">
+                    <span class="text-muted small fw-bold me-1"><i class="fas fa-bolt text-warning me-1"></i> Quick
+                        Book:</span>
+                    {% if current_user.is_authenticated and current_user.role == 'customer' %}
+                    <a href="{{ url_for('customer.book_service') }}?category=Electrical" class="cp-chip-pill">⚡
+                        Electrical</a>
+                    <a href="{{ url_for('customer.book_service') }}?category=Plumbing" class="cp-chip-pill">💧
+                        Plumbing</a>
+                    <a href="{{ url_for('customer.book_service') }}?category=Carpentry" class="cp-chip-pill">🔨
+                        Carpentry</a>
+                    <a href="{{ url_for('customer.book_service') }}?category=Painting" class="cp-chip-pill">🎨
+                        Painting</a>
+                    <a href="{{ url_for('customer.book_service') }}?category=Housekeeping" class="cp-chip-pill">✨
+                        Cleaning</a>
+                    <a href="{{ url_for('customer.book_service') }}?category=Housekeeping" class="cp-chip-pill">🏠
+                        Domestic Help</a>
+                    <a href="{{ url_for('customer.book_service') }}?category=Caregiving" class="cp-chip-pill">❤️
+                        Caregiver</a>
+                    <a href="{{ url_for('customer.book_service') }}?category=Drivers" class="cp-chip-pill">🚗 Driver</a>
+                    <a href="{{ url_for('customer.book_service') }}?category=Gardening" class="cp-chip-pill">🌿
+                        Gardener</a>
+                    <a href="{{ url_for('customer.book_service') }}?category=Appliance" class="cp-chip-pill">🔧
+                        Technician</a>
+                    {% else %}
+                    <a href="#services" class="cp-chip-pill">⚡ Electrical</a>
+                    <a href="#services" class="cp-chip-pill">💧 Plumbing</a>
+                    <a href="#services" class="cp-chip-pill">🔨 Carpentry</a>
+                    <a href="#services" class="cp-chip-pill">🎨 Painting</a>
+                    <a href="#services" class="cp-chip-pill">✨ Cleaning</a>
+                    <a href="#services" class="cp-chip-pill">🏠 Domestic Help</a>
+                    <a href="#services" class="cp-chip-pill">❤️ Caregiver</a>
+                    <a href="#services" class="cp-chip-pill">🚗 Driver</a>
+                    <a href="#services" class="cp-chip-pill">🌿 Gardener</a>
+                    <a href="#services" class="cp-chip-pill">🔧 Technician</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Statutory Compliance Tagline -->
+            <p class="cp-hero-tagline mb-0">
+                <i class="fas fa-shield-halved text-success me-1"></i> Regulated Under Maharashtra Cooperative Societies
+                Framework — Ward-Level Artisan Protection
+            </p>
+
+            <!-- 3. Live Platform Snapshot (4 Centered Metric Cards) -->
+            <div class="cp-metrics-container">
+                <div class="row g-3 g-lg-4">
+                    <div class="col-6 col-lg-3">
+                        <div class="cp-metric-card">
+                            <div class="cp-metric-value text-primary">{{ metrics.wages_distributed }}</div>
+                            <div class="cp-metric-label">Direct Artisan Wages Distributed</div>
+                            <span class="cp-metric-badge bg-primary-subtle text-primary border border-primary-subtle">
+                                <i class="fas fa-check-circle me-1"></i> 88% Living Payout
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="cp-metric-card">
+                            <div class="cp-metric-value text-success">{{ metrics.jobs_completed }}</div>
+                            <div class="cp-metric-label">Verified Cooperative Jobs Completed</div>
+                            <span class="cp-metric-badge bg-success-subtle text-success border border-success-subtle">
+                                <i class="fas fa-shield-halved me-1"></i> Ward Verified
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="cp-metric-card">
+                            <div class="cp-metric-value text-warning">{{ metrics.social_security_coverage }}</div>
+                            <div class="cp-metric-label">Social Security & Suraksha Nidhi Coverage</div>
+                            <span class="cp-metric-badge bg-warning-subtle text-warning border border-warning-subtle">
+                                <i class="fas fa-heart-pulse me-1"></i> 4% Statutory Pool
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-lg-3">
+                        <div class="cp-metric-card">
+                            <div class="cp-metric-value text-info">{{ metrics.avg_dispatch_time|safe }}</div>
+                            <div class="cp-metric-label">Average Local Dispatch Time</div>
+                            <span class="cp-metric-badge bg-info-subtle text-info border border-info-subtle">
+                                <i class="fas fa-bolt me-1"></i> Ward-Level Dispatch
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 4. Capabilities Grid (6 Clean Cards) -->
+    <section id="features" class="cp-section bg-white">
+        <div class="container">
+
+            <div class="cp-section-header">
+                <span class="cp-section-tag">Cooperative Architecture</span>
+                <h2 class="cp-section-title">Built for Dignity, Fair Pay & Statutory Trust</h2>
+                <p class="cp-section-desc">
+                    Unlike exploitative venture aggregators charging 25–35% commissions, SahakarSeva operates as a
+                    democratic digital public infrastructure governed by registered labour societies.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Card 1 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="cp-feature-card">
+                        <div class="cp-feature-icon">
+                            <i class="fas fa-users-rectangle"></i>
+                        </div>
+                        <h3 class="cp-feature-title">Direct Cooperative Hiring</h3>
+                        <p class="cp-feature-text">
+                            Eliminate commercial middlemen. Citizen service requests dispatch straight to primary
+                            ward-level labour cooperatives, guaranteeing local talent retention and community
+                            accountability.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="cp-feature-card">
+                        <div class="cp-feature-icon" style="color: #059669;">
+                            <i class="fas fa-scale-balanced"></i>
+                        </div>
+                        <h3 class="cp-feature-title">Statutory 88/8/4 Wage Split</h3>
+                        <p class="cp-feature-text">
+                            88% goes directly into the worker's pocket, 8% sustains primary cooperative society
+                            operations, and 4% is automatically reserved in the Suraksha Nidhi worker welfare trust
+                            fund.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="cp-feature-card">
+                        <div class="cp-feature-icon" style="color: #d97706;">
+                            <i class="fas fa-shield-heart"></i>
+                        </div>
+                        <h3 class="cp-feature-title">Suraksha Nidhi Insurance</h3>
+                        <p class="cp-feature-text">
+                            Automated 4% micro-cess funding PMJJBY life cover, PMSBY accidental disability coverage
+                            (₹2,00,000 policy), and emergency medical assistance with zero deduction from base wages.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="cp-feature-card">
+                        <div class="cp-feature-icon" style="color: #6366f1;">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <h3 class="cp-feature-title">QR-Verified Site Attendance</h3>
+                        <p class="cp-feature-text">
+                            Geo-fenced, cryptographic QR check-ins and check-outs protect housing societies and
+                            residential complexes against unverified contractor substitution and attendance fraud.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="cp-feature-card">
+                        <div class="cp-feature-icon" style="color: #0284c7;">
+                            <i class="fas fa-tower-broadcast"></i>
+                        </div>
+                        <h3 class="cp-feature-title">Real-Time WebSocket Dispatch</h3>
+                        <p class="cp-feature-text">
+                            Sub-second bidirectional socket notifications stream job postings, arrival updates, and
+                            milestone completions simultaneously across citizen, worker, and society supervisor portals.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 6 -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="cp-feature-card">
+                        <div class="cp-feature-icon" style="color: #dc2626;">
+                            <i class="fas fa-gavel"></i>
+                        </div>
+                        <h3 class="cp-feature-title">Apex Federation Governance</h3>
+                        <p class="cp-feature-text">
+                            Statutory conciliation, quality audits, and dispute mediation backed by the State
+                            Cooperative Labour Federation under statutory bylaws and transparent digital audit trails.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 5. "How It Works" 4-Step Process Section -->
+    <section id="how-it-works" class="cp-section">
+        <div class="container">
+
+            <div class="cp-section-header">
+                <span class="cp-section-tag">Frictionless Workflow</span>
+                <h2 class="cp-section-title">How SahakarSeva Delivers in 4 Simple Steps</h2>
+                <p class="cp-section-desc">
+                    Transparent, verifiable, and equitable for citizens, artisans, and housing societies from request to
+                    final payout.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Step 1 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="cp-step-card">
+                        <span class="cp-step-num">01</span>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-primary-subtle text-primary px-2 py-1 small">Citizen</span>
+                        </div>
+                        <h3 class="cp-step-title">Citizen Request</h3>
+                        <p class="cp-step-text">
+                            Select a trade service (electrician, plumber, cleaning) with fixed, transparent cooperative
+                            schedules and zero surge pricing.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="cp-step-card">
+                        <span class="cp-step-num">02</span>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-success-subtle text-success px-2 py-1 small">Society</span>
+                        </div>
+                        <h3 class="cp-step-title">Cooperative Dispatch</h3>
+                        <p class="cp-step-text">
+                            The ward-level primary society matches an accredited, police-verified artisan with
+                            documented trade certifications.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="cp-step-card">
+                        <span class="cp-step-num">03</span>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-info-subtle text-info px-2 py-1 small">On-Site</span>
+                        </div>
+                        <h3 class="cp-step-title">Verified Execution</h3>
+                        <p class="cp-step-text">
+                            Artisan checks in at your doorstep via secure QR verification, executes the requested job,
+                            and uploads completion proof.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="col-md-6 col-lg-3">
+                    <div class="cp-step-card">
+                        <span class="cp-step-num">04</span>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-warning-subtle text-warning px-2 py-1 small">Ledger</span>
+                        </div>
+                        <h3 class="cp-step-title">Transparent Split</h3>
+                        <p class="cp-step-text">
+                            Payment settles instantly through the statutory 88/8/4 ledger: 88% to artisan, 8% to society
+                            ops, and 4% to Suraksha Nidhi.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Statutory 88/8/4 Financial Transparency Spotlight -->
+    <section class="cp-section bg-white">
+        <div class="container">
+            <div class="cp-model-box">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-6">
+                        <span class="cp-section-tag">Statutory Financial Blueprint</span>
+                        <h2 class="h1 fw-bold text-dark mb-3">The 88 / 8 / 4 Statutory Payout Standard</h2>
+                        <p class="text-secondary mb-4">
+                            Commercial aggregator apps deduct up to 35% in corporate platform commissions, leaving gig
+                            workers with substandard take-home earnings and zero health security.
+                        </p>
+
+                        <div class="d-flex flex-column gap-3">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="badge bg-success rounded-circle p-2 mt-1"><i class="fas fa-check"></i></div>
+                                <div>
+                                    <strong class="text-dark d-block">88% Direct Artisan Living Wage</strong>
+                                    <span class="text-muted small">Immediate settlement into worker bank accounts upon
+                                        citizen sign-off.</span>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="badge bg-primary rounded-circle p-2 mt-1"><i class="fas fa-check"></i></div>
+                                <div>
+                                    <strong class="text-dark d-block">8% Cooperative Society Operations</strong>
+                                    <span class="text-muted small">Funds ward office coordination, tools inspection, and
+                                        quality oversight.</span>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="badge bg-warning text-dark rounded-circle p-2 mt-1"><i
+                                        class="fas fa-check"></i></div>
+                                <div>
+                                    <strong class="text-dark d-block">4% Suraksha Nidhi Worker Social Security</strong>
+                                    <span class="text-muted small">Continuous micro-cess dedicated to PMSBY, medical
+                                        welfare, and artisan children scholarships.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="card border bg-light p-4 rounded-4 shadow-sm">
+                            <h4 class="h5 fw-bold mb-3">Statutory Wage Settlement Visualization</h4>
+                            <div class="cp-progress-statutory mb-3">
+                                <div class="cp-bar-artisan" style="width: 88%;"><span class="d-none d-sm-inline">88%
+                                        Artisan Pay</span><span class="d-inline d-sm-none">88%</span></div>
+                                <div class="cp-bar-ops" style="width: 8%;"><span class="d-none d-sm-inline">8%</span>
+                                </div>
+                                <div class="cp-bar-welfare" style="width: 4%;"><span
+                                        class="d-none d-sm-inline">4%</span></div>
+                            </div>
+
+                            <div class="row g-2 text-center small mt-2">
+                                <div class="col-4">
+                                    <div class="p-2 border rounded bg-white">
+                                        <div class="text-success fw-bold">88%</div>
+                                        <div class="text-muted" style="font-size: 0.72rem;">Artisan Direct</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 border rounded bg-white">
+                                        <div class="text-primary fw-bold">8%</div>
+                                        <div class="text-muted" style="font-size: 0.72rem;">Society Ops</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 border rounded bg-white">
+                                        <div class="text-warning fw-bold">4%</div>
+                                        <div class="text-muted" style="font-size: 0.72rem;">Suraksha Nidhi</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div
+                                class="alert alert-success border-0 mt-4 mb-0 py-2 px-3 small d-flex align-items-center gap-2">
+                                <i class="fas fa-shield-halved text-success fs-5"></i>
+                                <div>
+                                    <strong>Zero Aggregator Extraction:</strong> 100% of consumer billing remains within
+                                    the cooperative ecosystem.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cooperative Services Trade Explorer -->
+    <section id="services" class="cp-section">
+        <div class="container">
+            <div class="cp-section-header">
+                <span class="cp-section-tag">Essential Community Trades</span>
+                <h2 class="cp-section-title">Verified Services Backed by Cooperatives</h2>
+                <p class="cp-section-desc">
+                    Transparent trade schedules regulated by local cooperative societies. No hidden fees or arbitrary
+                    surge charges.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                {% for s in services %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="cp-trade-card">
+                        <div>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="cp-trade-icon">
+                                    <i data-lucide="{{ s.icon }}" style="width: 22px; height: 22px;"></i>
+                                </div>
+                                <span class="badge bg-light text-primary border py-1 px-2 small">
+                                    <i class="fas fa-clock me-1"></i> {{ s.turnaround }}
+                                </span>
+                            </div>
+                            <h3 class="h5 fw-bold text-dark mb-2">{{ s.title }}</h3>
+                            <p class="text-secondary small mb-3">{{ s.description }}</p>
+                        </div>
+
+                        <div class="pt-3 border-top d-flex align-items-center justify-content-between mt-2">
+                            <div>
+                                <span class="text-muted extra-small d-block" style="font-size: 0.72rem;">Base
+                                    Schedule</span>
+                                <span class="fw-bold text-dark fs-5">{{ s.base_rate }}</span>
+                            </div>
+                            {% if current_user.is_authenticated and current_user.role == 'customer' %}
+                            <a href="{{ url_for('customer.book_service') }}?category={{ s.category }}"
+                                class="btn btn-sm btn-outline-primary fw-semibold px-3" style="border-radius: 8px;">
+                                Book Trade <i class="fas fa-chevron-right ms-1 small"></i>
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('auth.login') }}"
+                                class="btn btn-sm btn-outline-primary fw-semibold px-3" style="border-radius: 8px;">
+                                Book Trade <i class="fas fa-chevron-right ms-1 small"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Accredited Societies Showcase (anchor #societies) -->
+    <section id="societies" class="cp-section bg-white border-top">
+        <div class="container">
+            <div class="cp-section-header">
+                <span class="cp-section-tag">Accredited Primary Societies</span>
+                <h2 class="cp-section-title">Governed by Local Labour Cooperatives</h2>
+                <p class="cp-section-desc">
+                    Each municipal ward is supported by registered primary cooperative societies accredited under the
+                    State Cooperative Societies Act.
+                </p>
+            </div>
+
+            <div class="row g-3 g-lg-4 justify-content-center">
+                {% if societies %}
+                {% for soc in societies %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border p-3 rounded-4 shadow-sm">
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <div class="bg-primary-subtle text-primary rounded-3 p-3">
+                                <i class="fas fa-building-columns fs-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="h6 fw-bold mb-1 text-dark">{{ soc.company_name }}</h4>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle small">
+                                    <i class="fas fa-shield-check me-1"></i> Accredited Society
+                                </span>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">
+                            {{ soc.description[:110] ~ '...' if soc.description and soc.description|length > 110 else
+                            (soc.description or 'Ward-level multi-trade cooperative providing verified electrical,
+                            plumbing, and building services.') }}
+                        </p>
+                        <div
+                            class="mt-auto pt-2 border-top d-flex align-items-center justify-content-between text-muted small">
+                            <span><i class="fas fa-map-pin me-1 text-danger"></i> {{ soc.service_areas or 'Mumbai
+                                Region' }}</span>
+                            <span class="fw-semibold text-primary">Reg #{{ soc.license_number or 'MH-COOP-2026'
+                                }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border p-3 rounded-4 shadow-sm">
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <div class="bg-primary-subtle text-primary rounded-3 p-3">
+                                <i class="fas fa-building-columns fs-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="h6 fw-bold mb-1 text-dark">Chembur Labour Cooperative Society</h4>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle small">
+                                    <i class="fas fa-shield-check me-1"></i> Ward M-West
+                                </span>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Ward-level multi-trade cooperative with 140+ verified
+                            electrical and plumbing artisans.</p>
+                        <div
+                            class="mt-auto pt-2 border-top d-flex align-items-center justify-content-between text-muted small">
+                            <span><i class="fas fa-map-pin me-1 text-danger"></i> Chembur / Kurla</span>
+                            <span class="fw-semibold text-primary">Reg #MH-COOP-4491</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border p-3 rounded-4 shadow-sm">
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <div class="bg-primary-subtle text-primary rounded-3 p-3">
+                                <i class="fas fa-building-columns fs-4"></i>
+                            </div>
+                            <div>
+                                <h4 class="h6 fw-bold mb-1 text-dark">Kurla Artisan Welfare Cooperative</h4>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle small">
+                                    <i class="fas fa-shield-check me-1"></i> Ward L
+                                </span>
+                            </div>
+                        </div>
+                        <p class="text-secondary small mb-3">Specialized in residential building maintenance, carpentry,
+                            and environmental sanitation.</p>
+                        <div
+                            class="mt-auto pt-2 border-top d-flex align-items-center justify-content-between text-muted small">
+                            <span><i class="fas fa-map-pin me-1 text-danger"></i> Kurla West / East</span>
+                            <span class="fw-semibold text-primary">Reg #MH-COOP-3820</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="{{ url_for('auth.register_contractor') }}" class="btn btn-primary px-4 py-2 fw-bold"
+                    style="border-radius: 12px;">
+                    <i class="fas fa-plus-circle me-1"></i> Register Your Labour Society
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Suraksha Nidhi & Social Security (anchor #suraksha-nidhi) -->
+    <section id="suraksha-nidhi" class="cp-section bg-light border-top">
+        <div class="container">
+            <div class="cp-section-header">
+                <span class="cp-section-tag">Worker Social Safety</span>
+                <h2 class="cp-section-title">Suraksha Nidhi: Real Protection for Unorganized Labor</h2>
+                <p class="cp-section-desc">
+                    Every service request contributes 4% into a dedicated social security pool, delivering guaranteed
+                    life and accidental insurance under statutory cooperative mandates.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card border-0 p-4 rounded-4 shadow-sm h-100 bg-white">
+                        <div class="mb-3 text-primary"><i class="fas fa-hand-holding-medical fs-1"></i></div>
+                        <h4 class="h5 fw-bold mb-2">PMSBY Accidental Insurance</h4>
+                        <p class="text-secondary small mb-0">
+                            Automatic ₹2,00,000 accidental death and disability coverage for every registered
+                            cooperative artisan active on the platform.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-0 p-4 rounded-4 shadow-sm h-100 bg-white">
+                        <div class="mb-3 text-success"><i class="fas fa-umbrella fs-1"></i></div>
+                        <h4 class="h5 fw-bold mb-2">PMJJBY Life Cover</h4>
+                        <p class="text-secondary small mb-0">
+                            Guaranteed term life insurance protection funded by the 4% collective reserve without
+                            deducting a single rupee from worker take-home wages.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-0 p-4 rounded-4 shadow-sm h-100 bg-white">
+                        <div class="mb-3 text-warning"><i class="fas fa-graduation-cap fs-1"></i></div>
+                        <h4 class="h5 fw-bold mb-2">Artisan Family Support</h4>
+                        <p class="text-secondary small mb-0">
+                            Educational grants, skill upgrading workshops, and emergency medical advances disbursed with
+                            digital oversight by the Federation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Clean Footer -->
+    <footer class="cp-footer">
+        <div class="container">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="cp-brand-icon" style="width: 32px; height: 32px; font-size: 0.9rem;">
+                            <i class="fas fa-handshake"></i>
+                        </span>
+                        <span class="fw-bold fs-5 text-dark">SahakarSeva</span>
+                    </div>
+                    <p class="text-secondary small mb-3">
+                        India's statutory digital platform for primary labour cooperative societies. Bridging citizens
+                        with accredited local artisans while upholding living wages and social security.
+                    </p>
+                    <div class="text-muted extra-small" style="font-size: 0.78rem;">
+                        Regulated Under Maharashtra Cooperative Societies Act<br>
+                        State Labour Federation Digital Infrastructure
+                    </div>
+                </div>
+
+                <div class="col-6 col-lg-2 offset-lg-1">
+                    <div class="cp-footer-title">Platform</div>
+                    <a href="#features" class="cp-footer-link">Features</a>
+                    <a href="#how-it-works" class="cp-footer-link">How It Works</a>
+                    <a href="#societies" class="cp-footer-link">Societies</a>
+                    <a href="#suraksha-nidhi" class="cp-footer-link">Suraksha Nidhi</a>
+                </div>
+
+                <div class="col-6 col-lg-2">
+                    <div class="cp-footer-title">Portals</div>
+                    <a href="{{ url_for('auth.login') }}" class="cp-footer-link">Sign In</a>
+                    <a href="{{ url_for('auth.register') }}" class="cp-footer-link">Citizen Account</a>
+                    <a href="{{ url_for('auth.register_contractor') }}" class="cp-footer-link">Society Onboarding</a>
+                    <a href="{{ url_for('auth.register') }}?role=worker" class="cp-footer-link">Artisan Enrollment</a>
+                </div>
+
+                <div class="col-lg-3">
+                    <div class="cp-footer-title">Quick Role Access</div>
+                    <p class="text-muted small mb-2">
+                        Fast portal access for registered ecosystem participants:
+                    </p>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="pt-4 border-top d-flex flex-wrap align-items-center justify-content-between gap-3 text-muted small">
+            <div>
+                &copy; 2026 SahakarSeva Cooperative Platform. Governed under the Maharashtra Cooperative Societies Act.
+            </div>
+            <div class="d-flex gap-3">
+                <a href="{{ url_for('public.index') }}" class="text-muted text-decoration-none">Terms of Service</a>
+                <a href="{{ url_for('public.index') }}" class="text-muted text-decoration-none">Privacy Policy</a>
+                <a href="{{ url_for('public.index') }}" class="text-muted text-decoration-none">Statutory Bylaws</a>
+            </div>
+        </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Offcanvas Navigation Drawer -->
+    <div class="offcanvas offcanvas-end cp-offcanvas" tabindex="-1" id="mobileNavOffcanvas"
+        aria-labelledby="mobileNavOffcanvasLabel">
+        <div class="offcanvas-header border-bottom py-3 px-4">
+            <div class="d-flex align-items-center gap-2">
+                <span class="cp-brand-icon" style="width: 32px; height: 32px; font-size: 0.85rem;">
+                    <i class="fas fa-handshake"></i>
+                </span>
+                <span class="fw-bold fs-5 text-dark" id="mobileNavOffcanvasLabel">SahakarSeva</span>
+            </div>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-4 d-flex flex-column">
+            <!-- Navigation Links -->
+            <div class="mb-4">
+                <div class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 0.06em;">
+                    Platform Sections</div>
+                <nav class="d-flex flex-column gap-1">
+                    <a href="#features" class="cp-offcanvas-link" data-bs-dismiss="offcanvas">
+                        <i class="fas fa-cubes"></i> <span>Features & Architecture</span>
+                    </a>
+                    <a href="#how-it-works" class="cp-offcanvas-link" data-bs-dismiss="offcanvas">
+                        <i class="fas fa-diagram-project"></i> <span>How It Works</span>
+                    </a>
+                    <a href="#societies" class="cp-offcanvas-link" data-bs-dismiss="offcanvas">
+                        <i class="fas fa-building-columns"></i> <span>Cooperative Societies</span>
+                    </a>
+                    <a href="#suraksha-nidhi" class="cp-offcanvas-link" data-bs-dismiss="offcanvas">
+                        <i class="fas fa-shield-heart"></i> <span>Suraksha Nidhi</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Primary Actions -->
+            <div class="mb-4">
+                <div class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 0.06em;">
+                    Quick Actions</div>
+                <div class="d-flex flex-column gap-2">
+                    <a href="{{ url_for('auth.login') }}" class="cp-btn-primary justify-content-center py-2.5"
+                        style="border-radius: 12px; font-size: 0.92rem;">
+                        <i class="fas fa-calendar-check me-2"></i> Book a Service
+                    </a>
+                    <a href="{{ url_for('auth.register_contractor') }}"
+                        class="cp-btn-outline justify-content-center py-2.5"
+                        style="border-radius: 12px; font-size: 0.92rem;">
+                        <i class="fas fa-building-columns text-primary me-2"></i> Register Society
+                    </a>
+                    {% if not current_user.is_authenticated %}
+                    <button type="button" class="cp-btn-outline justify-content-center py-2.5" data-bs-toggle="modal"
+                        data-bs-target="#quickLoginModal" data-bs-dismiss="offcanvas"
+                        style="border-radius: 12px; font-size: 0.92rem;">
+                        <i class="fas fa-arrow-right-to-bracket text-primary me-2"></i> Sign In to Portal
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Role Demo Access -->
+            <div class="mb-4">
+                <div class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 0.06em;">
+                    1-Click Role Access</div>
+
+            </div>
+        </div>
+
+        <!-- Statutory Compliance Footer -->
+        <div class="mt-auto pt-3 border-top text-center text-muted" style="font-size: 0.75rem;">
+            <div class="d-flex align-items-center justify-content-center gap-1 text-success fw-bold mb-1">
+                <i class="fas fa-shield-halved"></i> Statutory Cooperative Model
+            </div>
+            <div>Maharashtra Cooperative Societies Framework</div>
+            <div>Ward-Level Artisan Protection & 88/8/4 Split</div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Interactive Quick Sign-In Modal (Standalone / Modal Authentication) -->
+    <div class="modal fade" id="quickLoginModal" tabindex="-1" aria-labelledby="quickLoginModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 24px; overflow: hidden;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4 d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="cp-brand-icon" style="width: 32px; height: 32px;">
+                                <i class="fas fa-handshake"></i>
+                            </span>
+                            <span class="fw-bold fs-5 text-dark">SahakarSeva</span>
+                        </div>
+                        <h3 class="h4 fw-bold mb-1" id="quickLoginModalLabel">Sign In</h3>
+                        <p class="text-muted small mb-0">Access your cooperative dashboard or services portal</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <form id="modal-auth-form" action="{{ url_for('auth.login') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="modalUsername" class="form-label small fw-bold text-secondary">Username or
+                                Email</label>
+                            <input type="text" class="form-control py-2 px-3" id="modalUsername" name="username"
+                                placeholder="e.g. publisher, admin, jdoe, anita_deshmukh" required
+                                style="border-radius: 12px;">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="modalPassword"
+                                    class="form-label small fw-bold text-secondary mb-0">Password</label>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" class="form-control py-2 px-3" id="modalPassword" name="password"
+                                    placeholder="Enter password" required
+                                    style="border-top-left-radius: 12px; border-bottom-left-radius: 12px;">
+                                <button class="btn btn-outline-secondary border" type="button"
+                                    onclick="toggleModalPassword()"
+                                    style="border-top-right-radius: 12px; border-bottom-right-radius: 12px;">
+                                    <i class="fas fa-eye" id="modalPasswordIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="cp-btn-primary w-100 justify-content-center py-2 fs-6 mb-3"
+                            style="border-radius: 12px;">
+                            <span>Sign In</span> <i class="fas fa-arrow-right ms-1"></i>
+                        </button>
+
+
+                    </form>
+                </div>
+
+                <div class="modal-footer border-top bg-light py-3 px-4 justify-content-center small">
+                    <span class="text-secondary">Don't have an account?</span>
+                    <a href="{{ url_for('auth.register') }}" class="fw-bold text-primary text-decoration-none">Create
+                        Account</a>
+                    <span class="text-muted mx-1">·</span>
+                    <a href="{{ url_for('auth.register_contractor') }}"
+                        class="fw-bold text-success text-decoration-none">Register Society</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+
+        function toggleModalPassword() {
+            const pwd = document.getElementById('modalPassword');
+            const icon = document.getElementById('modalPasswordIcon');
+            if (!pwd) return;
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                pwd.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // Quick fill and immediately auto-submit from the modal
+        function quickFillModal(u, p) {
+            const uInput = document.getElementById('modalUsername');
+            const pInput = document.getElementById('modalPassword');
+            const form = document.getElementById('modal-auth-form');
+            if (uInput && pInput && form) {
+                uInput.value = u;
+                pInput.value = p;
+                form.submit();
+            }
+        }
+
+        // Trigger demo from footer by opening modal and auto-submitting
+        function triggerQuickDemo(u, p) {
+            const modalEl = document.getElementById('quickLoginModal');
+            if (modalEl) {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+                setTimeout(() => {
+                    quickFillModal(u, p);
+                }, 200);
+            }
+        }
+    </script>
+</body>
+
+</html>

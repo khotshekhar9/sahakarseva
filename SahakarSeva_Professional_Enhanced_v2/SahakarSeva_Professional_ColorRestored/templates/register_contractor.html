@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Labour Cooperative Society Registration | SahakarSeva</title>
+    <!-- Google Fonts Inter & Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Main Style -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=3.2">
+    
+    <style>
+        :root {
+            --primary-blue: #2e6256;
+            --dark-navy: #0f172a;
+            --slate-bg: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--slate-bg);
+            color: #334155;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .onboarding-navbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 2rem;
+        }
+
+        .brand-logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--dark-navy);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .brand-logo i {
+            color: var(--primary-blue);
+        }
+
+        .stepper-container {
+            max-width: 850px;
+            margin: 2.5rem auto 1.5rem;
+            width: 100%;
+        }
+
+        /* Process Stepper Header */
+        .stepper-header {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin-bottom: 2.5rem;
+        }
+
+        .stepper-header::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 10%;
+            right: 10%;
+            height: 3px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+
+        .stepper-progress-line {
+            position: absolute;
+            top: 24px;
+            left: 10%;
+            height: 3px;
+            background: var(--primary-blue);
+            z-index: 2;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        .step-item {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            text-align: center;
+        }
+
+        .step-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 3px solid #cbd5e1;
+            color: #64748b;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .step-item.active .step-circle {
+            border-color: var(--primary-blue);
+            background: var(--primary-blue);
+            color: #ffffff;
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+        }
+
+        .step-item.completed .step-circle {
+            border-color: #10b981;
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .step-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .step-item.active .step-label {
+            color: var(--dark-navy);
+            font-weight: 700;
+        }
+
+        /* Form Card Styling */
+        .onboarding-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .step-panel {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .step-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control, .form-select {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+        }
+
+        .nav-btn {
+            padding: 0.75rem 1.75rem;
+            font-weight: 600;
+            border-radius: 10px;
+        }
+
+        .summary-box {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 768px) {
+            .onboarding-navbar {
+                padding: 0.6rem 1rem;
+            }
+            .brand-logo {
+                font-size: 1.1rem;
+            }
+            .stepper-container {
+                margin: 1rem auto 0.75rem;
+                padding: 0 0.5rem;
+            }
+            .stepper-header {
+                margin-bottom: 1.25rem;
+            }
+            .stepper-header::before, .stepper-progress-line {
+                top: 18px;
+            }
+            .step-circle {
+                width: 36px;
+                height: 36px;
+                font-size: 0.85rem;
+                border-width: 2px;
+            }
+            .step-label {
+                font-size: 0.7rem;
+            }
+            .onboarding-card {
+                padding: 1rem 0.75rem;
+                margin-bottom: 1.5rem;
+                border-radius: 12px;
+            }
+            .form-control, .form-select {
+                padding: 0.35rem 0.6rem;
+                font-size: 0.82rem;
+                min-height: 32px;
+            }
+            .nav-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.82rem;
+            }
+            .summary-box {
+                padding: 0.75rem !important;
+            }
+        }
+        @media (max-width: 576px) {
+            .onboarding-card {
+                padding: 0.85rem 0.55rem;
+            }
+            .step-circle {
+                width: 30px;
+                height: 30px;
+                font-size: 0.75rem;
+            }
+            .stepper-header::before, .stepper-progress-line {
+                top: 15px;
+            }
+            .step-label {
+                font-size: 0.62rem;
+            }
+            input.form-control:not([type="file"]), .form-select {
+                padding: 0.22rem 0.5rem !important;
+                font-size: 0.78rem !important;
+                height: 29px !important;
+                min-height: 29px !important;
+                max-height: 29px !important;
+            }
+            textarea.form-control {
+                padding: 0.35rem 0.5rem !important;
+                font-size: 0.78rem !important;
+                height: auto !important;
+                min-height: 58px !important;
+                max-height: none !important;
+            }
+            input[type="file"].form-control {
+                padding: 0.25rem 0.5rem !important;
+                font-size: 0.75rem !important;
+                height: auto !important;
+                min-height: 32px !important;
+                max-height: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation Bar -->
+    <header class="onboarding-navbar d-flex justify-content-between align-items-center">
+        <a href="/" class="brand-logo">
+            <i data-lucide="handshake" style="width: 28px; height: 28px;"></i>
+            SahakarSeva <span class="badge bg-primary-subtle text-primary fs-6 px-2 py-1 ms-1 rounded-pill fw-bold">Cooperative Federation</span>
+        </a>
+        <div class="d-flex align-items-center gap-2">
+            <!-- Language Switcher -->
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 py-1 px-2 border" data-bs-toggle="dropdown" aria-expanded="false" id="lang-switcher-btn" style="border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: #fff;">
+                    <i data-lucide="languages" style="width: 14px; height: 14px;"></i>
+                    <span id="current-lang-label">English</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-1" style="min-width: 130px; font-size: 0.85rem;">
+                    <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="setAppLanguage('en')">🇬🇧 English</a></li>
+                    <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="setAppLanguage('hi')">🇮🇳 हिंदी (Hindi)</a></li>
+                    <li><a class="dropdown-item py-1" href="javascript:void(0)" onclick="setAppLanguage('mr')">🇮🇳 मराठी (Marathi)</a></li>
+                </ul>
+            </div>
+            <span class="text-secondary small d-none d-md-inline">Already registered?</span>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-sm fw-bold px-3">
+                <i data-lucide="log-in" style="width: 14px; height: 14px;" class="me-1"></i> Sign In to Portal
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Stepper Content Area -->
+    <div class="container flex-grow-1">
+        <div class="stepper-container">
+            
+            <!-- Process Stepper Visual Header -->
+            <div class="stepper-header">
+                <div class="stepper-progress-line" id="progressLine"></div>
+
+                <div class="step-item active" id="stepIndicator1">
+                    <div class="step-circle" id="circle1">1</div>
+                    <span class="step-label">Society Details</span>
+                </div>
+
+                <div class="step-item" id="stepIndicator2">
+                    <div class="step-circle" id="circle2">2</div>
+                    <span class="step-label">Admin Account</span>
+                </div>
+
+                <div class="step-item" id="stepIndicator3">
+                    <div class="step-circle" id="circle3">3</div>
+                    <span class="step-label">Review & Submit</span>
+                </div>
+            </div>
+
+            <!-- Flash Error Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Multi-Step Registration Form -->
+            <form action="{{ url_for('auth.register_contractor') }}" method="POST" enctype="multipart/form-data" id="onboardingForm" class="onboarding-card">
+                
+                <!-- Quick Demo Fill Header Utility -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4 pb-2 border-bottom">
+                    <span class="badge bg-primary-subtle text-primary px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 0.78rem;">
+                        <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i> Primary Labour Cooperative Onboarding
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1 shadow-sm" onclick="fillDemoSociety()" id="btnAutoFillDemo">
+                        <i data-lucide="sparkles" style="width: 14px; height: 14px;" class="text-warning"></i>
+                        <span>Auto-Fill Chembur Cooperative</span>
+                    </button>
+                </div>
+
+                <!-- STEP 1: SOCIETY DETAILS & REGISTRATION -->
+                <div class="step-panel active" id="panel1">
+                    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                        <div class="p-3 bg-primary-subtle text-primary rounded-3">
+                            <i data-lucide="building-2" style="width: 28px; height: 28px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1 text-dark">Step 1: Society Details & Registration</h5>
+                            <p class="text-secondary small mb-0">Register your primary Labour Cooperative Society and provide operating ward details.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Society Name *</label>
+                            <input type="text" class="form-control" name="company_name" id="inp_company_name" required placeholder="e.g., Kurla Labour Cooperative Society">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Primary Trade / Service *</label>
+                            <select class="form-select" name="business_type" id="inp_business_type" required>
+                                <option value="Multi-Trade Household Services" selected>Multi-Trade Household Services</option>
+                                <option value="Electrical & Plumbing">Electrical & Plumbing</option>
+                                <option value="Home Care & Cleaning">Home Care & Cleaning</option>
+                                <option value="Civil Construction & Carpentry">Civil Construction & Carpentry</option>
+                                <option value="Elderly & Patient Care">Elderly & Patient Care</option>
+                                <option value="Transport & Heavy Drivers">Transport & Heavy Drivers</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Registration License No. *</label>
+                            <input type="text" class="form-control font-monospace" name="license_number" id="inp_license_number" required placeholder="e.g., MH/MUM/COOP/2026/102">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold d-flex justify-content-between">
+                                <span>Upload Registration Certificate (PDF or Image)</span>
+                                <span class="badge bg-light text-secondary border fw-normal" style="font-size:0.7rem;">Optional for Demo</span>
+                            </label>
+                            <input type="file" class="form-control" name="license_document" id="inp_license_document" accept="image/*,application/pdf">
+                            <div class="mt-1 extra-small text-muted" style="font-size:0.75rem;">
+                                Upload registration certificate or bye-laws (PDF/Image). If omitted, a verified sample certificate is auto-attached.
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Operating Ward / Areas *</label>
+                            <input type="text" class="form-control" name="service_areas" id="inp_service_areas" required placeholder="e.g., Kurla, Chembur, Govandi">
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold text-secondary">Worker Welfare & Society Overview <span class="fw-normal">(Optional)</span></label>
+                            <textarea class="form-control" name="description" id="inp_description" rows="2" placeholder="Brief summary of member artisans, welfare fund initiatives, trades covered, and service history..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-primary nav-btn shadow-sm" onclick="nextStep(2)">
+                            Next: Admin Account <i data-lucide="arrow-right" class="ms-1" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: SOCIETY SECRETARY / ADMIN ACCOUNT -->
+                <div class="step-panel" id="panel2">
+                    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                        <div class="p-3 bg-success-subtle text-success rounded-3">
+                            <i data-lucide="user-check" style="width: 28px; height: 28px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1 text-dark">Step 2: Society Secretary / Admin Account</h5>
+                            <p class="text-secondary small mb-0">Create the primary administrator credentials to manage society rosters, bookings, and worker welfare.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Admin Username *</label>
+                            <input type="text" class="form-control" name="username" id="inp_username" required placeholder="e.g., society_admin">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email Address *</label>
+                            <input type="email" class="form-control" name="email" id="inp_email" required placeholder="e.g., contact@society.org">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Mobile / Helpline *</label>
+                            <input type="text" class="form-control" name="phone" id="inp_phone" required placeholder="e.g., +91 98765 43210">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Password *</label>
+                            <input type="password" class="form-control" name="password" id="inp_password" required minlength="6" placeholder="Minimum 6 characters">
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Office Address</label>
+                            <input type="text" class="form-control" name="office_address" id="inp_office_address" placeholder="e.g., Office 101, Sahakar Bhavan, Kurla West, Mumbai 400070">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                        <button type="button" class="btn btn-outline-secondary nav-btn" onclick="prevStep(1)">
+                            <i data-lucide="arrow-left" class="me-1" style="width: 16px; height: 16px;"></i> Back
+                        </button>
+                        <button type="button" class="btn btn-primary nav-btn shadow-sm" onclick="nextStep(3)">
+                            Next: Review & Submit <i data-lucide="arrow-right" class="ms-1" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: REVIEW & SUBMIT -->
+                <div class="step-panel" id="panel3">
+                    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                        <div class="p-3 bg-warning-subtle text-warning rounded-3">
+                            <i data-lucide="check-square" style="width: 28px; height: 28px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1 text-dark">Step 3: Review Application & Submit</h5>
+                            <p class="text-secondary small mb-0">Review your cooperative society registration details before submitting to the Apex Federation.</p>
+                        </div>
+                    </div>
+
+                    <div class="summary-box mb-4">
+                        <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Primary Cooperative Society Details</h6>
+                        <div class="row g-3 small">
+                            <div class="col-md-6">
+                                <span class="text-muted d-block">Society Name</span>
+                                <strong class="text-dark fs-6" id="sum_company_name">Primary Cooperative Society</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted d-block">Primary Trade / Service</span>
+                                <span class="badge bg-primary" id="sum_business_type">Multi-Trade Household Services</span>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted d-block">Registration License No.</span>
+                                <code id="sum_license_number">-</code>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted d-block">Operating Ward / Areas</span>
+                                <span id="sum_service_areas">-</span>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted d-block">Admin Username</span>
+                                <strong class="text-primary" id="sum_username">-</strong>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted d-block">Email Address</span>
+                                <span id="sum_email">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-check mb-4 p-3 bg-light rounded-3 border">
+                        <input class="form-check-input ms-0 me-3" type="checkbox" id="termsCheck" required>
+                        <label class="form-check-label small fw-semibold text-secondary" for="termsCheck">
+                            I declare that all information provided is accurate and authentic. I agree to SahakarSeva Labour Cooperative Federation bylaws, transparent booking policies, and fair artisan wage standards.
+                        </label>
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 pt-2">
+                        <button type="button" class="btn btn-outline-secondary nav-btn" onclick="prevStep(2)">
+                            <i data-lucide="arrow-left" class="me-1" style="width: 16px; height: 16px;"></i> Back to Edit
+                        </button>
+                        <button type="submit" class="btn btn-success nav-btn shadow-lg px-4 fw-bold" id="btnSubmitRegistration">
+                            <i data-lucide="send" class="me-1" style="width: 16px; height: 16px;"></i> Submit Registration to Apex Federation
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Lucide Icons & Multi-step JS -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+
+        let currentStep = 1;
+
+        function updateStepUI(step) {
+            currentStep = step;
+
+            // Hide all panels and show current
+            document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(`panel${step}`).classList.add('active');
+
+            // Update Progress Header Line
+            const progressLine = document.getElementById('progressLine');
+            if (step === 1) progressLine.style.width = '0%';
+            else if (step === 2) progressLine.style.width = '50%';
+            else if (step === 3) progressLine.style.width = '100%';
+
+            // Update Indicators
+            for (let i = 1; i <= 3; i++) {
+                const item = document.getElementById(`stepIndicator${i}`);
+                const circle = document.getElementById(`circle${i}`);
+                item.classList.remove('active', 'completed');
+
+                if (i < step) {
+                    item.classList.add('completed');
+                    circle.innerHTML = '✓';
+                } else if (i === step) {
+                    item.classList.add('active');
+                    circle.innerText = i;
+                } else {
+                    circle.innerText = i;
+                }
+            }
+
+            // Populate Summary on Step 3
+            if (step === 3) {
+                document.getElementById('sum_company_name').innerText = document.getElementById('inp_company_name').value || 'Primary Cooperative Society';
+                document.getElementById('sum_business_type').innerText = document.getElementById('inp_business_type').value || 'Multi-Trade Household Services';
+                document.getElementById('sum_license_number').innerText = document.getElementById('inp_license_number').value || 'MH/MUM/COOP/2026/102';
+                document.getElementById('sum_service_areas').innerText = document.getElementById('inp_service_areas').value || 'Kurla, Chembur, Govandi';
+                document.getElementById('sum_username').innerText = '@' + (document.getElementById('inp_username').value || 'society_admin');
+                document.getElementById('sum_email').innerText = document.getElementById('inp_email').value || 'contact@society.org';
+            }
+
+            lucide.createIcons();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function fillDemoSociety() {
+            const randomSuffix = Math.floor(100 + Math.random() * 900);
+
+            // Step 1: Society Details
+            const comp = document.getElementById('inp_company_name');
+            if (comp) comp.value = "Chembur Shramik Labour Cooperative Society Ltd.";
+
+            const trade = document.getElementById('inp_business_type');
+            if (trade) trade.value = "Multi-Trade Household Services";
+
+            const lic = document.getElementById('inp_license_number');
+            if (lic) lic.value = "MH/MUM/COOP/2026/102";
+
+            const areas = document.getElementById('inp_service_areas');
+            if (areas) areas.value = "Kurla, Chembur, Govandi, Ghatkopar";
+
+            const desc = document.getElementById('inp_description');
+            if (desc) desc.value = "Affiliated primary labour cooperative delivering electrical, plumbing, sanitation, and domestic home care with 45 verified artisan members.";
+
+            // Step 2: Admin Account
+            const user = document.getElementById('inp_username');
+            if (user) user.value = `chembur_admin_${randomSuffix}`;
+
+            const email = document.getElementById('inp_email');
+            if (email) email.value = `admin_${randomSuffix}@chemburcoop.org`;
+
+            const phone = document.getElementById('inp_phone');
+            if (phone) phone.value = "+91 98201 54321";
+
+            const pass = document.getElementById('inp_password');
+            if (pass) pass.value = "SocietyPass123!";
+
+            const addr = document.getElementById('inp_office_address');
+            if (addr) addr.value = "Office 12, Sahakar Bhavan, R.C. Marg, Chembur, Mumbai 400071";
+
+            // Step 3: Terms
+            const terms = document.getElementById('termsCheck');
+            if (terms) terms.checked = true;
+
+            // Refresh UI bindings
+            updateStepUI(currentStep);
+
+            // Button feedback
+            const btn = document.getElementById('btnAutoFillDemo');
+            if (btn) {
+                const origHtml = btn.innerHTML;
+                btn.classList.remove('btn-outline-secondary');
+                btn.classList.add('btn-success', 'text-white');
+                btn.innerHTML = '<i data-lucide="check" style="width: 14px; height: 14px;" class="me-1"></i> Filled Chembur Demo!';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                setTimeout(() => {
+                    btn.classList.remove('btn-success', 'text-white');
+                    btn.classList.add('btn-outline-secondary');
+                    btn.innerHTML = origHtml;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }, 2200);
+            }
+        }
+
+        function nextStep(targetStep) {
+            // Validate required inputs of current step before proceeding
+            const currentPanel = document.getElementById(`panel${currentStep}`);
+            const inputs = currentPanel.querySelectorAll('input[required], select[required]');
+            
+            let isValid = true;
+            inputs.forEach(inp => {
+                if (!inp.checkValidity()) {
+                    inp.reportValidity();
+                    isValid = false;
+                    return false;
+                }
+            });
+
+            if (isValid) {
+                updateStepUI(targetStep);
+            }
+        }
+
+        function prevStep(targetStep) {
+            updateStepUI(targetStep);
+        }
+    </script>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Comprehensive Multilingual Translation Engine -->
+    <script src="{{ url_for('static', filename='js/translations.js') }}?v=3.4"></script>
+</body>
+</html>

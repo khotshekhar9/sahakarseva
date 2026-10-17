@@ -1,0 +1,593 @@
+{% extends 'base.html' %}
+
+{% block title %}Primary Societies Governance - SahakarSeva Apex Council{% endblock %}
+{% block page_title %}Primary Societies{% endblock %}
+{% block page_title_bc %}Primary Societies{% endblock %}
+{% block nav_publisher_societies %}active{% endblock %}
+
+{% block content %}
+<div class="w-100">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4 pb-2 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1" style="font-size: 0.75rem;">Apex Council Oversight</span>
+            </div>
+            <h1 class="h3 fw-bold text-dark mb-1 d-flex align-items-center gap-2">
+                <i data-lucide="building" class="text-primary" style="width: 28px; height: 28px;"></i>
+                Primary Cooperative Societies
+            </h1>
+            <p class="text-secondary small mb-0">Affiliated primary labour cooperatives, onboarding verification, and operational oversight.</p>
+        </div>
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <a href="{{ url_for('publisher.dashboard') }}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                <i data-lucide="arrow-left" style="width: 14px; height: 14px;"></i> Command Center
+            </a>
+            <a href="{{ url_for('publisher.export_backup') }}" class="btn btn-outline-primary btn-sm fw-semibold d-flex align-items-center gap-1">
+                <i data-lucide="download" style="width: 14px; height: 14px;"></i> Export Societies Roster
+            </a>
+        </div>
+    </div>
+
+    <!-- Metric Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-secondary fw-semibold text-uppercase d-block" style="font-size: 0.7rem;">Total Cooperatives</span>
+                        <h3 class="fw-bold text-dark mb-0 mt-1">{{ societies|length }}</h3>
+                        <span class="text-muted small">Registered in platform</span>
+                    </div>
+                    <div class="p-3 bg-primary-subtle text-primary rounded-3">
+                        <i data-lucide="building" style="width: 22px; height: 22px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-secondary fw-semibold text-uppercase d-block" style="font-size: 0.7rem;">Active & Verified</span>
+                        <h3 class="fw-bold text-success mb-0 mt-1">{{ active_societies|length }}</h3>
+                        <span class="text-success small fw-medium">Operational Societies</span>
+                    </div>
+                    <div class="p-3 bg-success-subtle text-success rounded-3">
+                        <i data-lucide="check-circle" style="width: 22px; height: 22px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-secondary fw-semibold text-uppercase d-block" style="font-size: 0.7rem;">Pending Verification</span>
+                        <h3 class="fw-bold text-warning mb-0 mt-1">{{ pending_societies|length }}</h3>
+                        <span class="text-warning small fw-medium">Awaiting Apex review</span>
+                    </div>
+                    <div class="p-3 bg-warning-subtle text-warning rounded-3">
+                        <i data-lucide="clock" style="width: 22px; height: 22px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 bg-white">
+                <div class="card-body p-3 d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-secondary fw-semibold text-uppercase d-block" style="font-size: 0.7rem;">Federation Coverage</span>
+                        <h3 class="fw-bold text-info mb-0 mt-1">Maharashtra</h3>
+                        <span class="text-muted small">Mumbai, Pune, Thane & beyond</span>
+                    </div>
+                    <div class="p-3 bg-info-subtle text-info rounded-3">
+                        <i data-lucide="map-pin" style="width: 22px; height: 22px;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dual-Tab Navigation Bar -->
+    <ul class="nav nav-tabs mb-4 border-bottom flex-nowrap overflow-x-auto text-nowrap pb-1 gap-2" id="societiesTabs" role="tablist" style="-webkit-overflow-scrolling: touch;">
+        <li class="nav-item flex-shrink-0" role="presentation">
+            <button class="nav-link fw-semibold px-3 px-md-4 py-2 py-md-3 d-flex align-items-center gap-2 {% if active_tab != 'pending' %}active{% endif %}" 
+                    id="tab-active-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-active" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="tab-active" 
+                    aria-selected="{% if active_tab != 'pending' %}true{% else %}false{% endif %}">
+                <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                <span>Active Registered Societies</span>
+                <span class="badge bg-success ms-1 rounded-pill">{{ active_societies|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item flex-shrink-0" role="presentation">
+            <button class="nav-link fw-semibold px-3 px-md-4 py-2 py-md-3 d-flex align-items-center gap-2 {% if active_tab == 'pending' %}active{% endif %}" 
+                    id="tab-pending-btn" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#tab-pending" 
+                    type="button" 
+                    role="tab" 
+                    aria-controls="tab-pending" 
+                    aria-selected="{% if active_tab == 'pending' %}true{% else %}false{% endif %}">
+                <i data-lucide="user-check" style="width: 18px; height: 18px;"></i>
+                <span>Pending Onboarding Queue</span>
+                {% if pending_societies|length > 0 %}
+                <span class="badge bg-warning text-dark ms-1 rounded-pill px-2">{{ pending_societies|length }}</span>
+                {% else %}
+                <span class="badge bg-secondary ms-1 rounded-pill">0</span>
+                {% endif %}
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="societiesTabsContent">
+
+        <!-- TAB 1: ACTIVE REGISTERED SOCIETIES -->
+        <div class="tab-pane fade {% if active_tab != 'pending' %}show active{% endif %}" id="tab-active" role="tabpanel" aria-labelledby="tab-active-btn">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                            <i data-lucide="building" class="text-success" style="width: 20px; height: 20px;"></i>
+                            Affiliated Cooperative Societies Roster
+                        </h5>
+                        <small class="text-secondary">Fully verified and legally registered under Maharashtra Cooperative Societies Act</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill">
+                            {{ active_societies|length }} Active Cooperatives
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Desktop/Tablet Table -->
+                    <div class="table-responsive d-none d-md-block">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+                            <thead class="table-light text-secondary text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                <tr>
+                                    <th class="ps-4 py-3">Cooperative Society</th>
+                                    <th class="py-3">Admin Contact</th>
+                                    <th class="py-3">Reg & License No.</th>
+                                    <th class="py-3">Specialty & Coverage</th>
+                                    <th class="py-3">Artisans Enrolled</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="text-end pe-4 py-3">Verification</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in active_societies %}
+                                <tr>
+                                    <td class="ps-4 py-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-circle bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 36px; height: 36px;">
+                                                <i data-lucide="building" style="width: 16px; height: 16px;"></i>
+                                            </div>
+                                            <div>
+                                                <strong class="text-dark d-block">{{ s.company_name }}</strong>
+                                                <small class="text-muted">{{ s.federation_name or 'State Labour Cooperative Federation' }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3">
+                                        <div class="small fw-semibold text-dark">{{ s.user.username if s.user else 'Admin' }}</div>
+                                        <div class="small text-muted">{{ s.contact_email or (s.user.email if s.user else 'N/A') }}</div>
+                                        {% if s.contact_phone %}
+                                        <div class="small text-muted"><i data-lucide="phone" style="width:11px; height:11px;"></i> {{ s.contact_phone }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="badge bg-light text-dark border font-monospace" style="font-size: 0.74rem;">{{ s.cooperative_reg_no or s.license_number or 'MHA-COOP-GEN' }}</span>
+                                        {% if s.established_year %}
+                                        <div class="small text-muted mt-1">Est. {{ s.established_year }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="badge bg-primary-subtle text-primary">{{ s.business_type or 'Multi-Trade' }}</span>
+                                        <div class="small text-secondary mt-1 text-truncate" style="max-width: 180px;">
+                                            <i data-lucide="map-pin" style="width:11px; height:11px;"></i> {{ s.service_areas or 'Mumbai Suburban' }}
+                                        </div>
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="badge bg-primary-subtle text-primary fw-semibold">{{ s.worker_count }} Artisans</span>
+                                        <div class="small text-muted mt-1">Certified members</div>
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="badge bg-success-subtle text-success d-inline-flex align-items-center gap-1">
+                                            <i data-lucide="check" style="width: 12px; height: 12px;"></i> Verified
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4 py-3">
+                                        <form method="POST" action="{{ url_for('publisher.verify_contractor', contractor_id=s.id) }}" class="d-inline" onsubmit="return confirm('Toggle verification status for {{ s.company_name }}?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Revoke or toggle status" style="font-size: 0.8rem;">
+                                                <i data-lucide="sliders" style="width: 13px; height: 13px;"></i> Manage
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i data-lucide="building" style="width: 44px; height: 44px; opacity: 0.3;" class="mb-2"></i>
+                                            <h6 class="fw-bold text-dark mb-1">No Active Registered Societies Found</h6>
+                                            <p class="small text-secondary mb-0">Newly approved cooperatives from the Pending Queue will appear here.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Mobile Cards (< 768px) -->
+                    <div class="d-md-none p-3">
+                        {% for s in active_societies %}
+                        <div class="card border border-success-subtle shadow-sm rounded-3 mb-3 bg-white">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-start justify-content-between gap-2 mb-2 pb-2 border-bottom">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-circle bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 36px; height: 36px;">
+                                            <i data-lucide="building" style="width: 16px; height: 16px;"></i>
+                                        </div>
+                                        <div>
+                                            <strong class="text-dark d-block" style="font-size: 0.95rem;">{{ s.company_name }}</strong>
+                                            <small class="text-muted">{{ s.federation_name or 'State Labour Cooperative Federation' }}</small>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill" style="font-size: 0.68rem;">Verified</span>
+                                </div>
+                                <div class="bg-light rounded-2 p-2 mb-3" style="font-size: 0.8rem;">
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+                                        <span class="text-muted">Admin User:</span>
+                                        <span class="fw-semibold text-dark">{{ s.user.username if s.user else 'Admin' }}</span>
+                                    </div>
+                                    {% if s.contact_phone %}
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+                                        <span class="text-muted">Phone:</span>
+                                        <span><a href="tel:{{ s.contact_phone }}" class="text-decoration-none fw-semibold text-primary"><i data-lucide="phone" style="width:11px; height:11px;"></i> {{ s.contact_phone }}</a></span>
+                                    </div>
+                                    {% endif %}
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+                                        <span class="text-muted">Reg No:</span>
+                                        <span class="font-monospace fw-semibold">{{ s.cooperative_reg_no or s.license_number or 'MHA-COOP-GEN' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+                                        <span class="text-muted">Trade / Areas:</span>
+                                        <span class="text-dark text-end ms-2">{{ s.business_type or 'Multi-Trade' }} · {{ s.service_areas or 'Mumbai Suburban' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-1">
+                                        <span class="text-muted">Artisans:</span>
+                                        <span class="badge bg-primary-subtle text-primary fw-semibold">{{ s.worker_count }} Certified Artisans</span>
+                                    </div>
+                                </div>
+                                <form method="POST" action="{{ url_for('publisher.verify_contractor', contractor_id=s.id) }}" class="m-0" onsubmit="return confirm('Toggle verification status for {{ s.company_name }}?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-1" style="font-size: 0.82rem;">
+                                        <i data-lucide="sliders" style="width: 14px; height: 14px;"></i> Manage Verification
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4 text-muted">
+                            <i data-lucide="building" style="width: 40px; height: 40px; opacity: 0.3;" class="mb-2"></i>
+                            <h6 class="fw-bold text-dark mb-1">No Active Societies</h6>
+                            <p class="small text-secondary mb-0">Newly approved cooperatives will appear here.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: PENDING ONBOARDING QUEUE -->
+        <div class="tab-pane fade {% if active_tab == 'pending' %}show active{% endif %}" id="tab-pending" role="tabpanel" aria-labelledby="tab-pending-btn">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                            <i data-lucide="user-check" class="text-warning" style="width: 20px; height: 20px;"></i>
+                            Society Applications Requiring Approval
+                        </h5>
+                        <small class="text-secondary">Review registration certificates, bylaws, and committee credentials.</small>
+                    </div>
+                    <div>
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 rounded-pill fw-semibold">
+                            {{ pending_societies|length }} Applications Pending
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <!-- DESKTOP & TABLET VIEW (Compact, No Overflow, Reject Button Fits) -->
+                    <div class="table-responsive d-none d-md-block">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+                            <thead class="table-light text-secondary text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                <tr>
+                                    <th class="ps-4 py-3" style="min-width: 220px;">Company / Society Name</th>
+                                    <th class="py-3" style="min-width: 170px;">Owner / Admin</th>
+                                    <th class="py-3" style="min-width: 180px;">License No & Document</th>
+                                    <th class="text-end pe-4 py-3 text-nowrap" style="width: 210px; min-width: 200px;">Onboarding Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for c in pending_societies %}
+                                <tr id="pending-society-{{ c.id }}">
+                                    <td class="ps-4 py-3">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="avatar-circle bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 36px; height: 36px;">
+                                                <i data-lucide="clock" style="width: 16px; height: 16px;"></i>
+                                            </div>
+                                            <div style="min-width: 0;">
+                                                <strong class="text-dark d-block text-truncate" style="max-width: 240px;" title="{{ c.company_name }}">{{ c.company_name }}</strong>
+                                                <div class="d-flex align-items-center gap-1 flex-wrap mt-0">
+                                                    <span class="badge bg-primary-subtle text-primary py-0 px-1" style="font-size: 0.68rem;">{{ c.business_type or 'General Trades' }}</span>
+                                                    <small class="text-muted" style="font-size: 0.72rem;">Applied {{ c.created_at.strftime('%b %d, %Y') if c.created_at else 'Recent' }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3">
+                                        <div class="fw-semibold text-dark text-truncate" style="max-width: 160px;">{{ c.user.username if c.user else 'Admin' }}</div>
+                                        <div class="small text-muted text-truncate" style="max-width: 160px;" title="{{ c.contact_email or (c.user.email if c.user else '') }}">
+                                            <i data-lucide="mail" style="width: 11px; height: 11px;"></i> {{ c.contact_email or (c.user.email if c.user else 'No email') }}
+                                        </div>
+                                        <div class="small text-muted">
+                                            <i data-lucide="phone" style="width: 11px; height: 11px;"></i> {{ c.contact_phone or (c.user.phone if c.user else 'No phone') }}
+                                        </div>
+                                    </td>
+                                    <td class="py-3">
+                                        <div><span class="badge bg-light text-dark border font-monospace" style="font-size: 0.74rem;">{{ c.license_number or c.cooperative_reg_no or 'Lic-Pending' }}</span></div>
+                                        <div class="d-flex align-items-center gap-1 mt-1 flex-wrap">
+                                            {% if c.license_document %}
+                                            <a href="{{ c.license_document }}" target="_blank" class="badge bg-info-subtle text-info border-0 text-decoration-none d-inline-flex align-items-center gap-1 py-1 px-2" style="font-size: 0.7rem;">
+                                                <i data-lucide="file-text" style="width: 10px; height: 10px;"></i> Document
+                                            </a>
+                                            {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary" style="font-size: 0.68rem;">Self-Certified</span>
+                                            {% endif %}
+                                            <span class="small text-muted text-truncate" style="max-width: 130px;" title="{{ c.service_areas or 'State-Wide' }}">
+                                                <i data-lucide="map-pin" style="width: 10px; height: 10px;"></i> {{ c.service_areas or 'State-Wide' }}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="text-end pe-4 py-3 text-nowrap">
+                                        <div class="d-inline-flex align-items-center gap-2">
+                                            <form method="POST" action="{{ url_for('publisher.approve_contractor_onboarding', contractor_id=c.id) }}" class="d-inline m-0" onsubmit="return confirm('Approve & Verify cooperative society {{ c.company_name }} for full platform operation?');">
+                                                <button type="submit" class="btn btn-sm btn-success d-inline-flex align-items-center gap-1 px-2 py-1 shadow-sm fw-semibold" style="font-size: 0.78rem;">
+                                                    <i data-lucide="check" style="width: 13px; height: 13px;"></i> Approve<span class="d-none d-lg-inline"> & Verify</span>
+                                                </button>
+                                            </form>
+                                            <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1 px-2 py-1 fw-semibold" style="font-size: 0.78rem;" data-bs-toggle="modal" data-bs-target="#rejectSocietyModal-{{ c.id }}">
+                                                <i data-lucide="x" style="width: 13px; height: 13px;"></i> Reject
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i data-lucide="check-circle" style="width: 44px; height: 44px; color: var(--bs-success);" class="mb-2"></i>
+                                            <h6 class="fw-bold text-dark mb-1">No Pending Cooperative Applications</h6>
+                                            <p class="small text-secondary mb-0">All primary societies have been reviewed and verified. The queue is fully clear.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- MOBILE CARD VIEW (< 768px: Touch-Friendly, Native App Layout) -->
+                    <div class="d-md-none p-3">
+                        {% for c in pending_societies %}
+                        <div class="card border border-warning-subtle shadow-sm rounded-3 mb-3 bg-white" id="pending-society-mob-{{ c.id }}">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-start justify-content-between gap-2 mb-2 pb-2 border-bottom">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-circle bg-warning-subtle text-warning rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 36px; height: 36px;">
+                                            <i data-lucide="clock" style="width: 16px; height: 16px;"></i>
+                                        </div>
+                                        <div>
+                                            <strong class="text-dark d-block" style="font-size: 0.95rem;">{{ c.company_name }}</strong>
+                                            <div class="d-flex align-items-center gap-1 flex-wrap mt-0">
+                                                <span class="badge bg-primary-subtle text-primary py-0 px-1" style="font-size: 0.68rem;">{{ c.business_type or 'General Trades' }}</span>
+                                                <small class="text-muted" style="font-size: 0.72rem;">Applied {{ c.created_at.strftime('%b %d, %Y') if c.created_at else 'Recent' }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2 py-1 rounded-pill" style="font-size: 0.68rem;">Pending</span>
+                                </div>
+
+                                <div class="bg-light rounded-2 p-2 mb-3" style="font-size: 0.8rem;">
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+                                        <span class="text-muted">Admin User:</span>
+                                        <span class="fw-semibold text-dark">{{ c.user.username if c.user else 'Admin' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+                                        <span class="text-muted">Contact Phone:</span>
+                                        <span>
+                                            {% if c.contact_phone or (c.user.phone if c.user else '') %}
+                                            <a href="tel:{{ c.contact_phone or c.user.phone }}" class="text-decoration-none fw-semibold text-primary">
+                                                <i data-lucide="phone" style="width: 11px; height: 11px;"></i> {{ c.contact_phone or c.user.phone }}
+                                            </a>
+                                            {% else %}
+                                            <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+                                        <span class="text-muted">Email:</span>
+                                        <span class="text-truncate text-end ms-2" style="max-width: 180px;">
+                                            {% if c.contact_email or (c.user.email if c.user else '') %}
+                                            <a href="mailto:{{ c.contact_email or c.user.email }}" class="text-decoration-none text-secondary">
+                                                {{ c.contact_email or c.user.email }}
+                                            </a>
+                                            {% else %}
+                                            <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-1 border-bottom border-light-subtle">
+                                        <span class="text-muted">License No:</span>
+                                        <span class="font-monospace fw-semibold">{{ c.license_number or c.cooperative_reg_no or 'Lic-Pending' }}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-1">
+                                        <span class="text-muted">Service Areas:</span>
+                                        <span class="text-dark text-end ms-2">{{ c.service_areas or 'Mumbai Suburban' }}</span>
+                                    </div>
+                                    {% if c.license_document %}
+                                    <div class="pt-2 border-top mt-1">
+                                        <a href="{{ c.license_document }}" target="_blank" class="btn btn-sm btn-outline-info w-100 d-flex align-items-center justify-content-center gap-1 py-1" style="font-size: 0.76rem;">
+                                            <i data-lucide="file-text" style="width: 12px; height: 12px;"></i> View Registration Document
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <form method="POST" action="{{ url_for('publisher.approve_contractor_onboarding', contractor_id=c.id) }}" class="flex-grow-1 m-0" onsubmit="return confirm('Approve & Verify cooperative society {{ c.company_name }} for full platform operation?');">
+                                        <button type="submit" class="btn btn-success btn-sm w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-1 shadow-sm" style="font-size: 0.85rem;">
+                                            <i data-lucide="check" style="width: 15px; height: 15px;"></i> Approve & Verify
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-outline-danger btn-sm px-3 py-2 fw-semibold d-flex align-items-center justify-content-center gap-1" style="font-size: 0.85rem;" data-bs-toggle="modal" data-bs-target="#rejectSocietyModal-{{ c.id }}">
+                                        <i data-lucide="x" style="width: 15px; height: 15px;"></i> Reject
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4 text-muted">
+                            <i data-lucide="check-circle" style="width: 40px; height: 40px; color: var(--bs-success);" class="mb-2"></i>
+                            <h6 class="fw-bold text-dark mb-1">No Pending Applications</h6>
+                            <p class="small text-secondary mb-0">The onboarding queue is clear.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Shared Rejection Modals for each Pending Society -->
+                    {% for c in pending_societies %}
+                    <div class="modal fade" id="rejectSocietyModal-{{ c.id }}" tabindex="-1" aria-labelledby="rejectModalLabel-{{ c.id }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered text-start">
+                            <div class="modal-content border-0 shadow-lg rounded-3">
+                                <div class="modal-header bg-danger text-white py-3 px-4">
+                                    <h5 class="modal-title fw-bold mb-0 text-white" id="rejectModalLabel-{{ c.id }}">
+                                        Reject Onboarding Application
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <form method="POST" action="{{ url_for('publisher.reject_contractor_onboarding', contractor_id=c.id) }}">
+                                    <div class="modal-body p-4">
+                                        <p class="text-secondary small mb-3">
+                                            You are rejecting the onboarding application for <strong class="text-dark">{{ c.company_name }}</strong>. Please supply a clear reason for statutory audit and notifications.
+                                        </p>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold small text-secondary">Rejection Reason</label>
+                                            <textarea class="form-control" name="rejection_reason" rows="3" required placeholder="Specify why the cooperative registration or documents were rejected...">Cooperative registration certificate or society bylaws could not be verified.</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer bg-light border-top px-4 py-3 d-flex justify-content-end gap-2">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-danger btn-sm fw-bold">Confirm Rejection</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if rejected_societies and rejected_societies|length > 0 %}
+            <!-- Rejected Applications Audit Table -->
+            <div class="card border-0 shadow-sm rounded-3 mt-4">
+                <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2">
+                            <i data-lucide="x-circle" class="text-danger" style="width: 20px; height: 20px;"></i>
+                            Rejected Applications
+                        </h5>
+                        <small class="text-secondary">Societies whose onboarding applications were declined during verification</small>
+                    </div>
+                    <span class="badge bg-danger-subtle text-danger px-3 py-1 rounded-pill fw-semibold">
+                        {{ rejected_societies|length }} Rejected
+                    </span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+                            <thead class="table-light text-secondary text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                                <tr>
+                                    <th class="ps-4 py-3">Company / Society Name</th>
+                                    <th class="py-3">Owner / Admin</th>
+                                    <th class="py-3">Rejection Reason</th>
+                                    <th class="py-3 text-center">Status</th>
+                                    <th class="text-end pe-4 py-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in rejected_societies %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark">{{ r.company_name }}</div>
+                                        <small class="text-muted">{{ r.service_areas or 'State-Wide' }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">{{ r.user.username if r.user else 'Admin' }}</div>
+                                        <small class="text-muted">{{ r.contact_phone or 'No phone' }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="text-danger small" style="max-width: 350px;">
+                                            <i data-lucide="alert-triangle" style="width: 12px; height: 12px;"></i>
+                                            {{ r.rejection_reason or 'Documents verification failed' }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger-subtle text-danger px-2 py-1 fw-semibold">
+                                            Rejected
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <form method="POST" action="{{ url_for('publisher.approve_contractor_onboarding', contractor_id=r.id) }}" class="d-inline" onsubmit="return confirm('Re-evaluate and approve {{ r.company_name }}?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1 px-3 py-1">
+                                                <i data-lucide="check" style="width: 14px; height: 14px;"></i> Re-Approve
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Deep-linking URL tab activation support
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabParam = urlParams.get('tab');
+        if (tabParam === 'pending') {
+            const pendingTabTrigger = document.getElementById('tab-pending-btn');
+            if (pendingTabTrigger && window.bootstrap) {
+                const tabInstance = new bootstrap.Tab(pendingTabTrigger);
+                tabInstance.show();
+            }
+        }
+    });
+</script>
+{% endblock %}

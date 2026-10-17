@@ -1,0 +1,552 @@
+{% extends 'base.html' %}
+
+{% block title %}Service Requests - Admin Portal{% endblock %}
+
+{% block page_title %}Service Requests Board{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12 d-flex flex-column gap-3">
+        
+        <!-- Search and Filters -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 bg-white p-2 p-md-3 rounded shadow-sm border border-light">
+            <div class="d-flex align-items-center flex-wrap gap-2 w-100">
+                <div class="header-search flex-grow-1" style="min-width: 180px;">
+                    <i data-lucide="search" class="search-icon" style="width: 16px; height: 16px;"></i>
+                    <input type="text" id="serviceRequestSearch" placeholder="Search by name, ID or title..." onkeyup="filterRequests()">
+                </div>
+                <select class="form-select form-select-sm" id="serviceRequestStatusFilter" onchange="filterRequests()" style="width: auto; min-width: 130px;">
+                    <option value="ALL">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Assigned">Assigned</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Service Requests Table Card -->
+        <div class="premium-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="requestsTable">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Customer Info</th>
+                            <th>Service Category</th>
+                            <th>Service Title</th>
+                            <th>Priority</th>
+                            <th>Visit Date</th>
+                            <th>Estimated Cost</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in requests %}
+                            <tr class="request-row-item" data-status="{{ r.status }}" data-text="{{ r.request_id.lower() }} {{ r.customer_name.lower() }} {{ r.title.lower() }}">
+                                <td class="fw-bold"><code>{{ r.request_id }}</code></td>
+                                <td>
+                                    <div>{{ r.customer_name }}</div>
+                                    <small class="text-secondary">{{ r.mobile_number }}</small>
+                                </td>
+                                <td>{{ r.category }}</td>
+                                <td class="text-truncate" style="max-width: 180px;">{{ r.title }}</td>
+                                <td>
+                                    {% if r.priority == 'Emergency' %}
+                                        <span class="badge bg-danger text-white">Emergency</span>
+                                    {% elif r.priority == 'Urgent' %}
+                                        <span class="badge text-white" style="background-color: #f97316 !important;">Urgent</span>
+                                    {% elif r.priority == 'Normal' %}
+                                        <span class="badge text-white" style="background-color: #3d6b61 !important;">Normal</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary text-white">{{ r.priority or 'Normal' }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ r.visit_date.strftime('%b %d, %Y') if r.visit_date else '-' }}</td>
+                                <td>{{ '₹' ~ '{:,.2f}'.format(r.estimated_cost) if r.estimated_cost else '-' }}</td>
+                                <td>
+                                    {% if r.status in ('Pending', 'Pending Review') %}
+                                        {% if not r.assigned_worker_id %}
+                                            <span class="badge bg-info-subtle text-primary border border-primary-subtle"><i class="fas fa-hand-paper me-1"></i> Open for Artisan Claim</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Pending Review</span>
+                                        {% endif %}
+                                    {% elif r.status == 'Price Estimate Sent' %}
+                                        <span class="badge bg-info text-dark">Price Estimate Sent</span>
+                                    {% elif r.status == 'Price Estimate Approved' %}
+                                        <span class="badge bg-success">Quote Approved</span>
+                                    {% elif r.status == 'Price Estimate Rejected' %}
+                                        <span class="badge bg-danger">Quote Rejected</span>
+                                    {% elif r.status == 'Changes Requested' %}
+                                        <span class="badge bg-warning text-dark">Changes Requested</span>
+                                    {% elif r.status in ('Assigned', 'Worker Assigned') %}
+                                        <span class="badge bg-primary">Worker Assigned</span>
+                                    {% elif r.status == 'Travelling' %}
+                                        <span class="badge bg-info text-dark">Travelling</span>
+                                    {% elif r.status == 'Work Started' %}
+                                        <span class="badge bg-primary">Work Started</span>
+                                    {% elif r.status == 'OTP Verified' %}
+                                        <span class="badge bg-success">OTP Verified</span>
+                                    {% elif r.status == 'Work Completed' %}
+                                        <span class="badge bg-warning text-dark">Work Completed</span>
+                                    {% elif r.status == 'Rework Required' %}
+                                        <span class="badge bg-danger">Rework Required</span>
+                                    {% elif r.status == 'Work Approved' %}
+                                        <span class="badge bg-success">Work Approved</span>
+                                    {% elif r.status == 'Invoice Generated' %}
+                                        <span class="badge bg-primary">Invoice Generated</span>
+                                    {% elif r.status == 'Paid' %}
+                                        <span class="badge bg-success">Paid</span>
+                                    {% elif r.status == 'Closed' %}
+                                        <span class="badge bg-secondary">Closed</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ r.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1 align-items-center">
+                                         <button class="btn btn-sm btn-light border py-1 px-2 d-inline-flex align-items-center gap-1 review-btn" 
+                                                 data-dbid="{{ r.id }}"
+                                                 data-reqid="{{ r.request_id }}"
+                                                 data-customer-name="{{ r.customer_name|escape }}"
+                                                 data-mobile-number="{{ r.mobile_number|escape }}"
+                                                 data-category="{{ r.category|escape }}"
+                                                 data-title="{{ r.title|escape }}"
+                                                 data-description="{{ (r.description or '')|escape }}"
+                                                 data-voice-path="{{ r.voice_path or '' }}"
+                                                 data-photos="{{ r.photos or '' }}"
+                                                 data-address="{{ r.address|escape }}"
+                                                 data-latitude="{{ r.latitude or '' }}"
+                                                 data-longitude="{{ r.longitude or '' }}"
+                                                 data-assigned-worker-id="{{ r.assigned_worker_id or '' }}"
+                                                 data-visit-date="{{ r.visit_date or '' }}"
+                                                 data-estimated-cost="{{ r.estimated_cost or '' }}"
+                                                 data-priority="{{ r.priority or 'Normal' }}"
+                                                 data-status="{{ r.status }}"
+                                                 onclick="openReviewModalFromBtn(this)">
+                                             <i data-lucide="eye" style="width: 12px; height: 12px;"></i>
+                                             {% if r.status in ('Closed', 'Completed', 'Work Completed', 'Cancelled') %}
+                                                 Details
+                                             {% elif r.status in ('Assigned', 'In Progress') %}
+                                                 Manage
+                                             {% elif r.status == 'Price Estimate Approved' %}
+                                                 Assign
+                                             {% else %}
+                                                 Review
+                                             {% endif %}
+                                         </button>
+                                        {% if r.status in ('Pending', 'Pending Review', 'Price Estimate Rejected', 'Changes Requested') %}
+                                            <a href="{{ url_for('admin.create_quotation', request_id=r.id) }}" class="btn btn-sm btn-outline-primary py-1 px-2 d-inline-flex align-items-center gap-1">
+                                                <i data-lucide="file-plus" style="width: 12px; height: 12px;"></i> Quote
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="9" class="text-center py-4 text-secondary small">No customer service requests registered in system.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- REVIEW & ASSIGN SERVICE REQUEST MODAL -->
+<div class="modal fade" id="reviewRequestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold" id="reqModalHeader">Review Service Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-4">
+                    
+                    <!-- Left detail pane -->
+                    <div class="col-lg-6 d-flex flex-column gap-3">
+                        <div>
+                            <h6 class="fw-bold mb-1" id="reqModalCategory">Category</h6>
+                            <h5 class="fw-bold text-primary mb-2" id="reqModalTitle">Service Title</h5>
+                            <p class="text-secondary small bg-light p-3 rounded" id="reqModalDesc">Description text...</p>
+                        </div>
+                        
+                        <!-- Voice Memo Playback -->
+                        <div id="reqModalVoiceContainer" class="p-3 rounded border bg-light bg-opacity-25 d-none">
+                            <h6 class="fw-bold text-dark mb-2 small d-flex align-items-center gap-1">
+                                <i data-lucide="mic" style="width: 14px; height: 14px; color: var(--primary-color);"></i>
+                                Customer Voice Note
+                            </h6>
+                            <audio id="reqModalVoiceAudio" controls style="width: 100%; height: 36px;"></audio>
+                        </div>
+
+                        <!-- Image attachment list -->
+                        <div id="reqModalPhotosContainer" class="d-none">
+                            <h6 class="fw-bold text-dark mb-2 small">Service Photos</h6>
+                            <div class="d-flex flex-wrap gap-2" id="reqModalPhotosGallery">
+                                <!-- Loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Address -->
+                        <div>
+                            <h6 class="fw-bold mb-1 small">Service Site Address</h6>
+                            <p class="text-secondary small mb-0" id="reqModalAddress"></p>
+                        </div>
+                    </div>
+
+                    <!-- Right assignment pane -->
+                    <div class="col-lg-6 d-flex flex-column gap-3 border-start ps-lg-4">
+                        
+                        <!-- Read-only Summary for Closed/Completed Services -->
+                        <div id="closedServiceNoticePane" class="d-none">
+                            <div class="alert alert-secondary border mb-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <h6 class="fw-bold mb-0 text-dark">Service Ticket Finalized</h6>
+                                    <span class="badge bg-success" id="closedModalStatusBadge">Closed</span>
+                                </div>
+                                <p class="small text-muted mb-0">This service request has been finalized. Technician allocation forms are locked.</p>
+                            </div>
+
+                            <div class="card border p-3 bg-light bg-opacity-50">
+                                <h6 class="fw-bold small border-bottom pb-2 mb-3 text-secondary">Finalized Assignment Summary</h6>
+                                <div class="d-flex flex-column gap-2 small">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-secondary">Assigned Technician:</span>
+                                        <strong id="closedModalWorker" class="text-dark">Not Assigned</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-secondary">Scheduled Visit Date:</span>
+                                        <strong id="closedModalVisitDate" class="text-dark">-</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-secondary">Estimated Cost:</span>
+                                        <strong id="closedModalCost" class="text-dark">-</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-secondary">Priority Level:</span>
+                                        <strong id="closedModalPriority" class="text-dark">Normal</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="allocationPaneNotice" class="alert alert-warning small d-none">
+                            <strong>Price Estimate Pending:</strong> The customer must review and approve a digital quotation before technician allocation.
+                            <div class="mt-2 text-end">
+                                <a href="#" id="noticeCreateQuoteBtn" class="btn btn-sm btn-primary py-1 px-2 d-inline-flex align-items-center gap-1">
+                                    <i data-lucide="file-plus" style="width:12px; height:12px;"></i> Create Digital Quote
+                                </a>
+                            </div>
+                        </div>
+
+                        <div id="allocationFormContainer">
+                            <h6 class="fw-bold text-dark border-bottom pb-2 mb-0" id="formContainerTitle">Technician Allocation Form</h6>
+                            
+                            <form action="{{ url_for('admin.assign_service') }}" method="POST" class="d-flex flex-column gap-3" id="technicianAssignForm">
+                                <input type="hidden" name="request_id" id="formRequestId">
+                                
+                                <div class="mb-2">
+                                    <label class="form-label text-secondary small d-flex justify-content-between align-items-center mb-1">
+                                        <span>Assign Field Worker *</span>
+                                        <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 d-flex align-items-center gap-1" id="btnRunAiMatch" onclick="runAiWorkerMatch()">
+                                            <i data-lucide="sparkles" style="width: 14px; height: 14px; color: var(--primary-color);"></i> Run AI Worker Match
+                                        </button>
+                                    </label>
+                                    <select class="form-select" name="worker_id" id="formWorkerId" required>
+                                        <option value="">Select Technician</option>
+                                        {% for w in workers %}
+                                            <option value="{{ w.id }}">{{ w.user.username }} (Skills: {{ w.skills }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div id="aiMatchResults" class="p-3 bg-light rounded border d-none small mb-2">
+                                    <!-- Populated by JS -->
+                                </div>
+
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-secondary small">Scheduled Visit Date *</label>
+                                        <input type="date" class="form-control" name="visit_date" id="formVisitDate" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label text-secondary small">Estimated Cost ($) *</label>
+                                        <input type="number" step="0.01" class="form-control" name="estimated_cost" id="formEstCost" placeholder="120.00" required>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="form-label text-secondary small">Work Priority *</label>
+                                    <select class="form-select" name="priority" id="formPriority" required>
+                                        <option value="Normal">Normal Priority</option>
+                                        <option value="Urgent">Urgent Priority</option>
+                                        <option value="Emergency">Emergency Priority</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="form-label text-secondary small">Custom Note to Customer (Optional)</label>
+                                    <textarea class="form-control" name="admin_note" rows="2" placeholder="e.g. Please ensure technician has access to the backyard."></textarea>
+                                </div>
+
+                            <div class="border rounded p-3 bg-light bg-opacity-25" id="miniMapContainer" style="display: none;">
+                                <h6 class="fw-bold small mb-2 d-flex align-items-center gap-1">
+                                    <i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--primary-color);"></i>
+                                    Coordinate Geolocation Map
+                                </h6>
+                                <div id="requestDetailMap" style="height: 180px; border-radius: var(--radius-sm);" class="border"></div>
+                            </div>
+
+                            <button type="submit" id="submitAssignBtn" class="btn btn-primary w-100 py-2 mt-2">Publish Assignments</button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 1. Filter logic
+    function filterRequests() {
+        const query = document.getElementById('serviceRequestSearch').value.toLowerCase();
+        const status = document.getElementById('serviceRequestStatusFilter').value;
+        const rows = document.querySelectorAll('.request-row-item');
+        
+        rows.forEach(r => {
+            const rText = r.getAttribute('data-text');
+            const rStatus = r.getAttribute('data-status');
+            
+            const matchesQuery = rText.includes(query);
+            const matchesStatus = (status === 'ALL' || rStatus === status);
+            
+            if (matchesQuery && matchesStatus) {
+                r.style.display = '';
+            } else {
+                r.style.display = 'none';
+            }
+        });
+    }
+
+    // 2. Leaflet Detail map
+    let requestMap = null;
+    let requestMarker = null;
+
+    let currentServiceDbId = null;
+
+    function openReviewModalFromBtn(btn) {
+        const d = btn.dataset;
+        openReviewModal(
+            d.dbid, d.reqid, d.customerName, d.mobileNumber, d.category, d.title,
+            d.description, d.voicePath, d.photos, d.address, d.latitude, d.longitude,
+            d.assignedWorkerId, d.visitDate, d.estimatedCost, d.priority, d.status
+        );
+    }
+
+    function openReviewModal(dbId, reqId, name, phone, category, title, desc, voice, photos, address, lat, lng, workerId, visitDate, estCost, priority, status) {
+        currentServiceDbId = dbId;
+        document.getElementById('reqModalHeader').innerText = `Service Request Review [${reqId}]`;
+        document.getElementById('formRequestId').value = reqId;
+        
+        document.getElementById('reqModalCategory').innerText = category;
+        document.getElementById('reqModalTitle').innerText = title;
+        document.getElementById('reqModalDesc').innerText = desc || 'No additional text details provided.';
+        document.getElementById('reqModalAddress').innerText = address + ` (Customer Contact: ${name} - ${phone})`;
+
+        // Audio Handler
+        const voiceContainer = document.getElementById('reqModalVoiceContainer');
+        const voiceAudio = document.getElementById('reqModalVoiceAudio');
+        if (voice) {
+            voiceAudio.src = voice;
+            voiceContainer.classList.remove('d-none');
+        } else {
+            voiceAudio.src = '';
+            voiceContainer.classList.add('d-none');
+        }
+
+        // Photos gallery list handler
+        const photosContainer = document.getElementById('reqModalPhotosContainer');
+        const gallery = document.getElementById('reqModalPhotosGallery');
+        gallery.innerHTML = '';
+        if (photos && photos.trim() !== "") {
+            const arr = photos.split(',');
+            arr.forEach(picPath => {
+                const img = document.createElement('img');
+                img.src = picPath;
+                img.className = 'border rounded';
+                img.style.cssText = 'width: 90px; height: 90px; object-fit: cover; cursor: pointer;';
+                img.onclick = () => window.open(picPath);
+                gallery.appendChild(img);
+            });
+            photosContainer.classList.remove('d-none');
+        } else {
+            photosContainer.classList.add('d-none');
+        }
+
+        // Form Fields pre-fills
+        document.getElementById('formWorkerId').value = workerId || '';
+        document.getElementById('formVisitDate').value = visitDate || '';
+        document.getElementById('formEstCost').value = estCost || '';
+        document.getElementById('formPriority').value = priority || 'Normal';
+
+        // Clear previous AI matching
+        document.getElementById('aiMatchResults').classList.add('d-none');
+        document.getElementById('aiMatchResults').innerHTML = '';
+
+        // Workflow allocation guard
+        const allocationNotice = document.getElementById('allocationPaneNotice');
+        const allocationForm = document.getElementById('allocationFormContainer');
+        const closedNotice = document.getElementById('closedServiceNoticePane');
+
+        const isClosedStage = ['Closed', 'Completed', 'Work Completed', 'Cancelled'].includes(status);
+        const isPriceEstimateStage = ['Pending', 'Pending Review', 'Price Estimate Sent', 'Price Estimate Rejected', 'Changes Requested'].includes(status);
+        
+        if (isClosedStage) {
+            document.getElementById('reqModalHeader').innerText = `Service Request Details [${reqId}] (${status})`;
+            allocationNotice.classList.add('d-none');
+            allocationForm.classList.add('d-none');
+            closedNotice.classList.remove('d-none');
+
+            // Populate status badge
+            const badge = document.getElementById('closedModalStatusBadge');
+            badge.innerText = status;
+            if (['Closed', 'Completed', 'Work Completed'].includes(status)) {
+                badge.className = 'badge bg-success';
+            } else if (status === 'Cancelled') {
+                badge.className = 'badge bg-danger';
+            } else {
+                badge.className = 'badge bg-secondary';
+            }
+
+            // Find assigned worker name from select options
+            const workerSelect = document.getElementById('formWorkerId');
+            let workerName = 'Not Assigned';
+            if (workerId) {
+                for (let opt of workerSelect.options) {
+                    if (opt.value == workerId) {
+                        workerName = opt.text;
+                        break;
+                    }
+                }
+            }
+            document.getElementById('closedModalWorker').innerText = workerName;
+            document.getElementById('closedModalVisitDate').innerText = visitDate || 'N/A';
+            document.getElementById('closedModalCost').innerText = estCost ? `$${parseFloat(estCost).toFixed(2)}` : 'N/A';
+            document.getElementById('closedModalPriority').innerText = priority || 'Normal';
+        } else if (isPriceEstimateStage) {
+            document.getElementById('reqModalHeader').innerText = `Review Service Request [${reqId}]`;
+            closedNotice.classList.add('d-none');
+            allocationNotice.classList.remove('d-none');
+            allocationForm.classList.add('d-none');
+            document.getElementById('noticeCreateQuoteBtn').href = `/admin/service-request/${dbId}/quotation/create`;
+        } else {
+            const isAssigned = ['Assigned', 'In Progress'].includes(status);
+            if (isAssigned) {
+                document.getElementById('reqModalHeader').innerText = `Manage Assignment [${reqId}] (${status})`;
+                document.getElementById('formContainerTitle').innerText = 'Update Technician Assignment';
+                document.getElementById('submitAssignBtn').innerText = 'Update Assignment';
+            } else {
+                document.getElementById('reqModalHeader').innerText = `Assign Technician [${reqId}]`;
+                document.getElementById('formContainerTitle').innerText = 'Technician Allocation Form';
+                document.getElementById('submitAssignBtn').innerText = 'Publish Assignments';
+            }
+            closedNotice.classList.add('d-none');
+            allocationNotice.classList.add('d-none');
+            allocationForm.classList.remove('d-none');
+        }
+
+        // Show Modal
+        const modalObj = new bootstrap.Modal(document.getElementById('reviewRequestModal'));
+        modalObj.show();
+
+        // Render Map if coordinates exist
+        const miniMap = document.getElementById('miniMapContainer');
+        if (lat && lng) {
+            miniMap.style.display = 'block';
+            const parsedLat = parseFloat(lat);
+            const parsedLng = parseFloat(lng);
+            
+            setTimeout(() => {
+                if (requestMap === null) {
+                    requestMap = L.map('requestDetailMap').setView([parsedLat, parsedLng], 14);
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                        maxZoom: 19,
+                        subdomains: 'abcd',
+                        attribution: '© OpenStreetMap © CARTO'
+                    }).addTo(requestMap);
+                    requestMarker = L.marker([parsedLat, parsedLng]).addTo(requestMap);
+                    requestMap.invalidateSize();
+                } else {
+                    requestMap.setView([parsedLat, parsedLng], 14);
+                    requestMarker.setLatLng([parsedLat, parsedLng]);
+                }
+                requestMarker.bindPopup(`<strong>${reqId}</strong><br>${address}`).openPopup();
+                requestMap.invalidateSize();
+            }, 300);
+        } else {
+            miniMap.style.display = 'none';
+        }
+    }
+
+    // AI Worker Recommendations Functionality
+    async function runAiWorkerMatch() {
+        const container = document.getElementById('aiMatchResults');
+        container.classList.remove('d-none');
+        container.innerHTML = `<div class="spinner-border spinner-border-sm text-primary" role="status"></div> Analysing technician scores...`;
+
+        try {
+            const r = await fetch('/admin/api/ai/recommend-workers-service?service_request_id=' + currentServiceDbId);
+            if (r.ok) {
+                const data = await r.json();
+                if (data.length === 0) {
+                    container.innerHTML = `<div class="text-danger small">No recommended technicians found.</div>`;
+                    return;
+                }
+                let html = '<div class="d-flex flex-column gap-2 mt-2">';
+                data.forEach((w, index) => {
+                    const stars = '★'.repeat(Math.round(w.rating)) + '☆'.repeat(5 - Math.round(w.rating));
+                    const isTop = index === 0;
+                    const cardStyle = isTop 
+                        ? 'background-color: #f0f7ff; border: 1.5px solid var(--primary-color);' 
+                        : 'background-color: #ffffff; border: 1px solid var(--border-color);';
+                    
+                    html += `
+                        <div class="p-3 rounded d-flex justify-content-between align-items-center shadow-sm" style="${cardStyle}">
+                            <div style="flex: 1; padding-right: 12px;">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <strong class="text-dark small">@${w.username}</strong> 
+                                    <span class="badge ${isTop ? 'bg-success' : 'bg-secondary'}" style="font-size:0.65rem;">Score: ${w.score}</span>
+                                </div>
+                                <div class="text-secondary small mb-1" style="font-size:0.75rem;">
+                                    Rating: <span class="text-warning">${stars}</span> (${w.rating}) | Dist: <strong>${w.distance_km} km</strong>
+                                </div>
+                                <div class="small" style="font-size:0.75rem; color: #1e293b;">
+                                    <strong class="text-dark">Reason:</strong> <span class="text-secondary"><em>${w.match_reason}</em></span>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm ${isTop ? 'btn-primary' : 'btn-outline-primary'} py-1 px-3" style="font-size:0.75rem; white-space: nowrap;" onclick="applyMatchedWorker('${w.worker_id}')">Assign</button>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = `<div class="text-danger small">Failed to matching algorithm.</div>`;
+            }
+        } catch(e) {
+            container.innerHTML = `<div class="text-danger small">Error connecting to recommendation service.</div>`;
+        }
+    }
+
+    function applyMatchedWorker(workerId) {
+        document.getElementById('formWorkerId').value = workerId;
+        alert("Worker selected! Click 'Publish Assignments' to finalize assignment.");
+    }
+</script>
+{% endblock %}

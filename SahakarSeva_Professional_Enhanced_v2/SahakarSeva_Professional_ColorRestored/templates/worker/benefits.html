@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% block title %}Benefits & Social Security - Worker Portal{% endblock %}
+{% block page_title %}Benefits & Social Security{% endblock %}
+{% block page_title_bc %}Benefits{% endblock %}
+{% block nav_worker_benefits %}active{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+    <!-- Artisan Skill Tiering Summary Header -->
+    {% set tier_info = worker.get_next_tier_info() %}
+    <div class="card border-0 shadow-sm rounded-3 mb-4 bg-white p-3 p-md-4">
+        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="avatar-lg rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fs-4 fw-bold flex-shrink-0" style="width: 52px; height: 52px;">
+                    {{ current_user.username[:2]|upper }}
+                </div>
+                <div>
+                    <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                        <h5 class="fw-bold mb-0 text-dark">{{ current_user.username|title }}</h5>
+                        {% if worker.tier == 'Master Artisan' %}
+                            <span class="badge bg-purple-subtle text-purple border border-purple-subtle px-3 py-1 rounded-pill"><i class="fas fa-crown text-warning me-1"></i> Master Artisan</span>
+                        {% elif worker.tier == 'Skilled Craftsman' %}
+                            <span class="badge bg-primary-subtle text-primary border px-3 py-1 rounded-pill"><i class="fas fa-tools me-1"></i> Skilled Craftsman</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border px-3 py-1 rounded-pill"><i class="fas fa-user-graduate me-1"></i> Apprentice</span>
+                        {% endif %}
+                        <span class="badge bg-light text-secondary border px-2 py-1 rounded-pill small">{{ worker.experience_years or 0 }} yrs exp</span>
+                    </div>
+                    <div class="text-secondary small d-flex align-items-center gap-1">
+                        <i class="fas fa-info-circle text-primary"></i>
+                        <span><strong>Next Tier:</strong> {{ tier_info.requirement_text }}</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <a href="{{ url_for('worker.certificates_page') }}" class="btn btn-sm btn-outline-primary py-2 px-3 rounded-pill d-inline-flex align-items-center gap-1">
+                    <i class="fas fa-certificate"></i>
+                    <span>Manage Certifications</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cooperative Welfare Scheme Notice Banner -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4" style="background: linear-gradient(135deg, rgba(16, 76, 57, 0.08) 0%, rgba(22, 101, 77, 0.04) 100%); border-left: 4px solid #10b981 !important;">
+        <div class="card-body p-3 p-md-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="p-3 rounded-circle text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 48px; height: 48px; background: linear-gradient(135deg, #104c39, #17654d);">
+                    <i class="fas fa-shield-alt fa-lg"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1 text-dark">Welfare & Social Security Fund (4%)</h6>
+                    <p class="text-secondary small mb-0">4% of every completed job is saved into your personal welfare and insurance fund.</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-success text-white px-3 py-2 rounded-pill fw-semibold" style="color: #ffffff !important;">
+                    <i class="fas fa-shield-alt me-1 text-white"></i> Active Protection
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welfare & Insurance 3-Pillar Cards Grid -->
+    <div class="row g-3 g-md-4">
+        <!-- Pillar 1: Suraksha Nidhi Welfare Fund -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-3 p-3 p-md-4" style="background: var(--card-bg, #fff); border-top: 3px solid #10b981 !important;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-uppercase text-secondary fw-semibold small tracking-wider" style="font-size: 0.75rem;">Welfare Pool</span>
+                    <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 small">4% Welfare Fund</span>
+                </div>
+                <div class="fw-bold text-secondary small">Welfare Reserve</div>
+                <div class="display-6 fw-bold text-dark my-2">
+                    ₹{{ '%.2f'|format((welfare_summary.welfare_balance if welfare_summary and welfare_summary.welfare_balance is defined else worker.welfare_balance)|default(0.0)|float) }}
+                </div>
+                <p class="text-secondary small mb-3">Accumulated from completed jobs for insurance and emergency relief.</p>
+                <div class="mt-auto pt-2 border-top border-light-subtle d-flex justify-content-between align-items-center small text-muted">
+                    <span>Fund Account ID:</span>
+                    <span class="fw-semibold text-dark">{{ worker.welfare_fund_id or ('CWF-2026-' ~ worker.id) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pillar 2: PMSBY Accident Insurance -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-3 p-3 p-md-4" style="background: var(--card-bg, #fff); border-top: 3px solid #0ea5e9 !important;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-uppercase text-secondary fw-semibold small tracking-wider" style="font-size: 0.75rem;">Accident Cover</span>
+                    {% set pmsby_st = (welfare_summary.pmsby.status if welfare_summary and welfare_summary.pmsby else worker.pmsby_status)|default('Active') %}
+                    <span class="badge {% if pmsby_st == 'Active' %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning-emphasis{% endif %} rounded-pill px-2 py-1 small">
+                        <i class="fas fa-circle me-1" style="font-size: 8px;"></i>{{ pmsby_st }}
+                    </span>
+                </div>
+                <div class="fw-bold text-secondary small">PMSBY Policy</div>
+                <div class="h3 fw-bold text-dark my-2">₹2,00,000 <span class="fs-6 fw-normal text-muted">Cover</span></div>
+                <p class="text-secondary small mb-3">Pradhan Mantri Suraksha Bima Yojana covering accidental death and full disability.</p>
+                <div class="mt-auto pt-2 border-top border-light-subtle">
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>Annual Premium:</span>
+                        <span class="fw-semibold text-dark">₹20 / year</span>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Renewal Date:</span>
+                        <span class="fw-semibold text-dark">{{ (welfare_summary.pmsby.renewal_date if welfare_summary and welfare_summary.pmsby else 'Active Coverage') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pillar 3: PMJJBY Life Insurance -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-3 p-3 p-md-4" style="background: var(--card-bg, #fff); border-top: 3px solid #6366f1 !important;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-uppercase text-secondary fw-semibold small tracking-wider" style="font-size: 0.75rem;">Term Life Cover</span>
+                    {% set pmjjby_st = (welfare_summary.pmjjby.status if welfare_summary and welfare_summary.pmjjby else worker.pmjjby_status)|default('Accumulating') %}
+                    <span class="badge {% if pmjjby_st == 'Active' %}bg-success-subtle text-success{% elif pmjjby_st == 'Accumulating' %}bg-info-subtle text-info-emphasis{% else %}bg-warning-subtle text-warning-emphasis{% endif %} rounded-pill px-2 py-1 small">
+                        <i class="fas fa-circle me-1" style="font-size: 8px;"></i>{{ pmjjby_st }}
+                    </span>
+                </div>
+                <div class="fw-bold text-secondary small">PMJJBY Policy</div>
+                <div class="h3 fw-bold text-dark my-2">₹2,00,000 <span class="fs-6 fw-normal text-muted">Cover</span></div>
+                <p class="text-secondary small mb-2">Pradhan Mantri Jeevan Jyoti Bima Yojana term life protection.</p>
+                {% if welfare_summary and welfare_summary.pmjjby and welfare_summary.pmjjby.status != 'Active' %}
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>Fund Accumulation:</span>
+                        <span class="fw-semibold text-dark">₹{{ '%.0f'|format(welfare_summary.pmjjby.accumulated|default(0)) }} / ₹436</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-primary" role="progressbar" data-progress="{{ welfare_summary.pmjjby.progress_pct|default(0) }}" aria-valuenow="{{ welfare_summary.pmjjby.progress_pct|default(0) }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="mt-auto pt-2 border-top border-light-subtle">
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Auto-Debit Target:</span>
+                        <span class="fw-semibold text-dark">₹436 / year</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESIC Health Protection Strip -->
+    <div class="card border-0 shadow-sm rounded-3 mt-4" style="background: var(--card-bg, #fff);">
+        <div class="card-body p-3 p-md-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="p-3 rounded-circle text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 44px; height: 44px; background: #0284c7;">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-1 text-dark">ESIC Medical & Sickness Benefits</h6>
+                    <p class="text-secondary small mb-0">Free OPD, hospitalization, maternity, and temporary disablement allowance at all cooperative panel dispensaries.</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="text-md-end">
+                    <div class="small text-muted">10-Digit IP Number</div>
+                    <div class="fw-bold font-monospace text-dark">{{ (welfare_summary.esic.ip_number if welfare_summary and welfare_summary.esic else worker.esic_ip_number) or ('1100' ~ (982340 + worker.id)) }}</div>
+                </div>
+                <span class="badge bg-success text-white px-2 py-1 rounded-pill small" style="color: #ffffff !important;">
+                    <i class="fas fa-check-circle me-1 text-white"></i> Active
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welfare Micro-Cess Contribution Ledger -->
+    <div class="card border-0 shadow-sm rounded-3 mt-4" style="background: var(--card-bg, #fff);">
+        <div class="card-header bg-transparent border-0 pt-4 pb-2 px-3 px-md-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="fw-bold text-dark mb-1">Welfare Cess Contribution History</h5>
+                <p class="text-secondary small mb-0">Record of 4% welfare contributions from completed jobs and insurance coverage.</p>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% set ledger_items = (welfare_summary.ledger if welfare_summary and welfare_summary.ledger else []) %}
+            {% if ledger_items %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.875rem;">
+                    <thead class="table-light text-secondary small text-uppercase">
+                        <tr>
+                            <th class="ps-4 py-3">Date & Time</th>
+                            <th class="py-3">Type</th>
+                            <th class="py-3">Description</th>
+                            <th class="py-3">Ref ID</th>
+                            <th class="text-end pe-4 py-3">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in ledger_items %}
+                        <tr>
+                            <td class="ps-4 py-3 text-nowrap text-secondary">{{ tx.created_at }}</td>
+                            <td class="py-3">
+                                {% if tx.type == 'CESS_CREDIT' %}
+                                <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1">Welfare Contribution</span>
+                                {% elif 'PREMIUM' in tx.type %}
+                                <span class="badge bg-info-subtle text-info-emphasis rounded-pill px-2 py-1">Insurance Auto-Debit</span>
+                                {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary rounded-pill px-2 py-1">{{ tx.type }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 text-dark fw-medium">{{ tx.description }}</td>
+                            <td class="py-3 font-monospace small text-muted">{{ tx.reference_id or '—' }}</td>
+                            <td class="text-end pe-4 py-3 fw-bold {% if tx.amount > 0 %}text-success{% else %}text-danger{% endif %}">
+                                {% if tx.amount > 0 %}+₹{{ '%.2f'|format(tx.amount|float) }}{% else %}-₹{{ '%.2f'|format(tx.amount|abs|float) }}{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5 px-3">
+                <div class="p-3 rounded-circle bg-light d-inline-flex text-muted mb-3">
+                    <i class="fas fa-receipt fa-2x"></i>
+                </div>
+                <h6 class="fw-bold text-dark">No Welfare Entries Yet</h6>
+                <p class="text-secondary small mb-0">When you complete jobs, your 4% welfare contributions will automatically appear here.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('[data-progress]').forEach(function(el) {
+            var val = el.getAttribute('data-progress') || '0';
+            el.style.width = val + '%';
+        });
+    });
+</script>
+{% endblock %}

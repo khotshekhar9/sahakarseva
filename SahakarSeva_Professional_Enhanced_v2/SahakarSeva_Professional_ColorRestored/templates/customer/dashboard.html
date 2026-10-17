@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Home - SahakarSeva{% endblock %}
+{% block page_title %}Home{% endblock %}
+{% block page_title_bc %}Citizen Overview{% endblock %}
+{% block nav_customer_dash %}active{% endblock %}
+
+{% block content %}
+<div class="simple-dashboard container-fluid px-0">
+  <section class="welcome-hero simple-hero">
+    <div>
+      <div class="eyebrow">SAHAKARSEVA</div>
+      <h1 class="greeting-heading">Hi {{ current_user.username|title }} 👋</h1>
+      <p>Trusted workers. Simple service. Fair work.</p>
+    </div>
+    <button class="btn btn-danger hero-emergency" type="button" onclick="openEmergencyModal()">🚨 Emergency Help</button>
+  </section>
+
+  {% if active_emergencies %}
+  <div class="mt-3">
+    {% for emg in active_emergencies %}
+    <div class="alert emergency-status-card p-3 rounded-3 shadow-sm d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2" role="alert">
+      <div class="d-flex align-items-center gap-2">
+        <span class="emergency-pulse-dot" style="width:10px;height:10px;background:#ef4444;border-radius:50%;display:inline-block;" aria-hidden="true"></span>
+        <div>
+          <strong class="emergency-heading text-white small">⚡ Active Emergency Request #{{ emg.request_id }}</strong>
+          <div class="small text-white-50">{{ emg.category }} · {{ emg.title or 'Emergency Assistance' }} · Status: <span class="badge bg-white text-danger fw-bold">{{ emg.status }}</span></div>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-wrap emergency-banner-actions">
+        <a class="btn btn-sm btn-light fw-bold text-danger d-inline-flex align-items-center gap-1 emergency-track-btn" href="{{ url_for('customer.booking_details', booking_id=emg.id) }}">
+          <i data-lucide="activity" style="width:14px;height:14px;"></i>
+          <span>Track Live Status</span>
+        </a>
+        {% if (emg.status == 'Broadcasting' or emg.broadcast_status == 'Broadcasting') and not emg.assigned_worker_id %}
+        <button class="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-1 emergency-cancel-btn" type="button"
+                data-action="cancel-booking"
+                data-booking-id="{{ emg.id }}"
+                data-req-id="{{ emg.request_id }}">
+          <i data-lucide="x-circle" style="width:14px;height:14px;"></i>
+          <span>Cancel Broadcast</span>
+        </button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-sm-6 col-xl-3">
+      <a class="quick-card primary" href="{{ url_for('customer.book_service') }}">
+        <span class="quick-icon"><i data-lucide="plus-circle"></i></span>
+        <span><strong>Book Service</strong><small>Get a verified worker.</small></span>
+      </a>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <a class="quick-card" href="{{ url_for('customer.bookings_page') }}">
+        <span class="quick-icon"><i data-lucide="calendar-days"></i></span>
+        <span><strong>My Bookings</strong><small>See and edit your bookings.</small></span>
+      </a>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <a class="quick-card" href="{{ url_for('customer.payments_page') }}">
+        <span class="quick-icon"><i data-lucide="wallet"></i></span>
+        <span><strong>Payments</strong><small>View bills and pay safely.</small></span>
+      </a>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <button class="quick-card w-100 border-0 text-start" type="button" onclick="toggleServiceAssistant()">
+        <span class="quick-icon"><i data-lucide="message-circle"></i></span>
+        <span><strong>Ask Assistant</strong><small>Type or speak what you need.</small></span>
+      </button>
+    </div>
+  </div>
+
+  <section class="simple-section mt-4">
+    <div class="section-head">
+      <div>
+        <h2>Latest Booking</h2>
+        <p>Here is what is happening now.</p>
+      </div>
+      <a class="btn btn-light border" href="{{ url_for('customer.bookings_page') }}">View All</a>
+    </div>
+    {% if service_requests %}
+      {% set s = service_requests[0] %}
+      <div class="simple-list-card">
+        <div class="d-flex justify-content-between gap-2">
+          <div>
+            <strong>{{ s.category }} · {{ s.title }}</strong>
+            <div class="small text-secondary mt-1">{{ s.address }}</div>
+          </div>
+          <span class="status-chip">{{ s.status|replace('_',' ') }}</span>
+        </div>
+        <div class="small text-secondary mt-2">
+          {{ s.visit_date.strftime('%d %b %Y') if s.visit_date else 'Date to be confirmed' }}
+          {% if s.preferred_time %} · {{ s.preferred_time }}{% endif %}
+        </div>
+        <div class="mt-3 pt-2 border-top">
+          <a class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1" href="{{ url_for('customer.booking_details', booking_id=s.id) }}">
+            <i data-lucide="activity" style="width:14px;height:14px;"></i>
+            <span>View Status</span>
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <div class="empty-card">
+        <div class="empty-icon">🛠️</div>
+        <h3>No bookings yet</h3>
+        <p>Book your first verified worker.</p>
+        <a class="btn btn-primary" href="{{ url_for('customer.book_service') }}">Book Service</a>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="help-card mt-4">
+    <div>
+      <h2>Need help?</h2>
+      <p>Ask the assistant in English, Hindi or Marathi.</p>
+    </div>
+    <button class="btn btn-primary" onclick="toggleServiceAssistant()">Ask Assistant</button>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Delegated handler for cancel-booking buttons (avoids Jinja2-in-onclick linting errors)
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-action="cancel-booking"]');
+    if (btn) {
+      openCancelBookingModal(
+        btn.dataset.bookingId,
+        btn.dataset.reqId
+      );
+    }
+  });
+  if (window.lucide) lucide.createIcons();
+</script>
+{% endblock %}
